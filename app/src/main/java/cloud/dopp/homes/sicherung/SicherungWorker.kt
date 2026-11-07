@@ -29,7 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * Daten sichern's one job (#194, laib ADR 0029): a [Lauf] over the
  * folders the person granted, then, each when its switch is on and its
- * permission granted, the contacts ([KontakteLauf]) and the SMS and calls
+ * permission granted, the contacts ([KontakteLauf], after the corrections
+ * of them the person accepted on Homes, [KorrekturenLauf]) and the SMS and calls
  * ([NachrichtenLauf]). Daily on an unmetered network while the phone
  * charges and its battery is not low, and once at once on "Jetzt sichern".
  *
@@ -85,6 +86,10 @@ class SicherungWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
             var ausgelassen = false
             if (kontakte && halt()) ausgelassen = true
             if (kontakte && weiter(ergebnisse) && !halt()) {
+                // the corrections the person took on Homes first, so the copy that follows carries them (owner 2026-11-07)
+                if (Erlaubnis.hat(ctx, Erlaubnis.KONTAKTE_AENDERN)) {
+                    ergebnisse += sicher({ store.meldeKontakte(it) }) { KorrekturenLauf(c, HandyKorrektur(ctx)).laufen() }
+                }
                 ergebnisse += if (Erlaubnis.hat(ctx, Erlaubnis.KONTAKTE)) {
                     sicher({ store.meldeKontakte(it) }) { KontakteLauf(c, store, HandyKontakte(ctx), File(cache, "kontakte")).laufen() }
                 } else {

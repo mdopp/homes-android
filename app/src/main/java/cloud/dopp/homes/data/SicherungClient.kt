@@ -3,6 +3,7 @@ package cloud.dopp.homes.data
 import cloud.dopp.homes.data.Napi.DateiJson
 import cloud.dopp.homes.data.Napi.FehlendJson
 import cloud.dopp.homes.data.Napi.KontakteJson
+import cloud.dopp.homes.data.Napi.KorrekturenJson
 import cloud.dopp.homes.data.Napi.LetzteJson
 import cloud.dopp.homes.data.Napi.SchluesselJson
 import cloud.dopp.homes.data.Napi.StandJson
@@ -48,6 +49,31 @@ class SicherungClient(
      * no sentence, the app says "pair again" itself.
      */
     class Abgelehnt(val code: Int, val satz: String?) : IOException("Homes answered $code")
+
+    /**
+     * One accepted correction of the person's own contact [uid] (the lookup
+     * key „Kontakte übertragen“ sent), named [name] as the link showed it.
+     */
+    data class Korrektur(val id: String, val uid: String, val name: String, val aenderungen: List<Aenderung>) {
+        /**
+         * One field: [art] vorname, nachname, telefon, mail, adresse,
+         * geburtstag, firma or position; [vorher] "" is new, [nachher] "" taken
+         * away; a number's kind mobil, privat or geschaeftlich.
+         */
+        data class Aenderung(
+            val nr: Int,
+            val art: String,
+            val vorher: String,
+            val nachher: String,
+            val vorherArt: String = "",
+            val nachherArt: String = "",
+            val vorherAdresse: Anschrift? = null,
+            val nachherAdresse: Anschrift? = null,
+        )
+
+        /** A postal address as the page asks for it. */
+        data class Anschrift(val strasse: String, val plz: String, val ort: String, val land: String)
+    }
 
     /** One source as Homes reports it: when the last file arrived (RFC 3339), how many, how big, how many wait. */
     data class QuelleStand(val zuletzt: String?, val dateien: Long, val bytes: Long, val wartend: Long)
@@ -223,6 +249,21 @@ class SicherungClient(
         return rufe(req) { resp -> kontakteAus(resp.code, resp.body?.string()) }
     }
 
+    /**
+     * The accepted corrections of the person's own contacts (Kontakt prüfen
+     * lassen, owner 2026-11-07); throws [Abgelehnt] or an IOException.
+     */
+    fun korrekturen(): List<Korrektur> =
+        rufe(Napi.KORREKTUREN.request(base, token)) { resp -> korrekturenAus(resp.code, resp.body?.string()) }
+
+    /** What the phone wrote of correction [id]: the numbers in [geschrieben]; a 404 (nothing waits) is no error. */
+    fun erledigt(id: String, geschrieben: List<Int>) {
+        val e = Napi.KORREKTUR_ERLEDIGT.with(id)
+        rufe(json(e, e.json(JSONArray(geschrieben)))) { resp ->
+            if (resp.code !in 200..299 && resp.code != 404) throw Abgelehnt(resp.code, satzAus(resp.body?.string()))
+        }
+    }
+
     companion object {
         private val VCARD = Napi.VCARD.toMediaType()
 
@@ -236,6 +277,38 @@ class SicherungClient(
                 o.optInt(KontakteJson.NEU),
                 o.optInt(KontakteJson.GEAENDERT),
                 o.optInt(KontakteJson.ENTFERNT),
+            )
+        }
+
+        /** A `korrekturen` reply: each correction with its changes; a malformed change or one without a UID left out. */
+        fun korrekturenAus(code: Int, body: String?): List<Korrektur> {
+            if (code !in 200..299) throw Abgelehnt(code, satzAus(body))
+            val list = HomesHttp.json(body)?.optJSONArray(KorrekturenJson.KORREKTUREN) ?: throw Abgelehnt(code, null)
+            return (0 until list.length()).mapNotNull { i -> list.optJSONObject(i)?.let(::korrekturAus) }
+        }
+
+        private fun korrekturAus(o: JSONObject): Korrektur? {
+            val id = o.optString(KorrekturenJson.ID).ifBlank { return null }
+            val uid = o.optString(KorrekturenJson.UID).ifBlank { return null }
+            val aenderungen = o.optJSONArray(KorrekturenJson.AENDERUNGEN) ?: return null
+            val liste = (0 until aenderungen.length()).mapNotNull { i ->
+                val a = aenderungen.optJSONObject(i) ?: return@mapNotNull null
+                if (!a.has(KorrekturenJson.NR)) return@mapNotNull null
+                Korrektur.Aenderung(
+                    nr = a.optInt(KorrekturenJson.NR), art = a.optString(KorrekturenJson.ART),
+                    vorher = a.optString(KorrekturenJson.VORHER), nachher = a.optString(KorrekturenJson.NACHHER),
+                    vorherArt = a.optString(KorrekturenJson.VORHER_ART), nachherArt = a.optString(KorrekturenJson.NACHHER_ART),
+                    vorherAdresse = adresseAus(a.optJSONObject(KorrekturenJson.VORHER_ADRESSE)),
+                    nachherAdresse = adresseAus(a.optJSONObject(KorrekturenJson.NACHHER_ADRESSE)),
+                )
+            }
+            return Korrektur(id, uid, o.optString(KorrekturenJson.NAME), liste)
+        }
+
+        private fun adresseAus(o: JSONObject?): Korrektur.Anschrift? = o?.let {
+            Korrektur.Anschrift(
+                it.optString(KorrekturenJson.STRASSE), it.optString(KorrekturenJson.PLZ),
+                it.optString(KorrekturenJson.ORT), it.optString(KorrekturenJson.LAND),
             )
         }
 

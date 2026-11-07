@@ -391,6 +391,39 @@ object Napi {
     }
 
     /**
+     * `GET /napi/kontakte/korrekturen` (Kontakt prüfen lassen, owner 2026-11-07):
+     * the accepted changes of the person's own contacts, each with the UID the
+     * app sent („Kontakte übertragen“: the lookup key) and per change its number
+     * [NR], its field [ART], before and after; a number's kind, an address's parts.
+     */
+    object KorrekturenJson {
+        const val KORREKTUREN = "korrekturen"
+        const val ID = "id"
+        const val UID = "uid"
+        const val NAME = "name"
+        const val AENDERUNGEN = "aenderungen"
+        const val NR = "nr"
+        const val ART = "art"
+        const val VORHER = "vorher"
+        const val NACHHER = "nachher"
+        const val VORHER_ART = "vorher_art"
+        const val NACHHER_ART = "nachher_art"
+        const val VORHER_ADRESSE = "vorher_adresse"
+        const val NACHHER_ADRESSE = "nachher_adresse"
+        const val STRASSE = "strasse"
+        const val PLZ = "plz"
+        const val ORT = "ort"
+        const val LAND = "land"
+        const val FEHLER = "fehler"
+    }
+
+    /** `POST /napi/kontakte/korrekturen/{id}`: `{ok}`, or `{fehler}` (404: nothing of it waits any more). */
+    object KorrekturErledigtJson {
+        const val OK = "ok"
+        const val FEHLER = "fehler"
+    }
+
+    /**
      * A refused `GET /napi/gemeinsam/…` (the Homes account, #206): `{fehler}`
      * with Homes' German sentence; the answer itself is vCard or iCalendar.
      */
@@ -699,6 +732,14 @@ object Napi {
      * The Homes account (#206): the household's shared contacts, as [VCARD].
      * 304 when [IF_NONE_MATCH] names the state Homes has.
      */
+    /** The accepted corrections of the person's own contacts, for the phone to write (owner 2026-11-07). */
+    val KORREKTUREN = Endpoint(Method.GET, "/napi/kontakte/korrekturen", reply = listOf(KorrekturenJson))
+
+    /** What the phone wrote of one: `{geschrieben: [nr…]}`; every other accepted change of it it could not. */
+    val KORREKTUR_ERLEDIGT = Endpoint(
+        Method.POST, "/napi/kontakte/korrekturen/{id}", body = listOf("geschrieben"), reply = listOf(KorrekturErledigtJson),
+    )
+
     val GEMEINSAM_KONTAKTE = Endpoint(
         Method.GET, "/napi/gemeinsam/kontakte", query = listOf(SCHREIBBAR_QUERY), allowed = mapOf(SCHREIBBAR_QUERY to listOf("1")),
         reply = listOf(GemeinsamJson), headers = listOf(IF_NONE_MATCH), replyHeaders = listOf(ETAG),
