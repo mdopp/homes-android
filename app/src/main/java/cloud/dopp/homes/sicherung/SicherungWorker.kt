@@ -87,8 +87,9 @@ class SicherungWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
             if (kontakte && halt()) ausgelassen = true
             if (kontakte && weiter(ergebnisse) && !halt()) {
                 // the corrections the person took on Homes first, so the copy that follows carries them (owner 2026-11-07)
-                if (Erlaubnis.hat(ctx, Erlaubnis.KONTAKTE_AENDERN)) {
-                    ergebnisse += sicher({ store.meldeKontakte(it) }) { KorrekturenLauf(c, HandyKorrektur(ctx)).laufen() }
+                // a side step: Homes not answering it stops nothing after it; the next run asks again
+                if (Erlaubnis.hat(ctx, Erlaubnis.KONTAKTE_SCHALTER)) {
+                    sicher({ store.meldeKontakte(it) }) { KorrekturenLauf(c, HandyKorrektur(ctx)).laufen() }
                 }
                 ergebnisse += if (Erlaubnis.hat(ctx, Erlaubnis.KONTAKTE)) {
                     sicher({ store.meldeKontakte(it) }) { KontakteLauf(c, store, HandyKontakte(ctx), File(cache, "kontakte")).laufen() }
