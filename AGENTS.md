@@ -65,7 +65,10 @@ These rules apply to every session, human or agent.
   foreground, posts nothing, reads the granted folders only (storage access
   framework, no storage permission; the one writer is a restore on a new
   phone, `sicherung/SafZiel.kt`, run from its screen, not from this job) and, with their switches on, the
-  contacts, SMS and call log (read permissions only), and is the one caller
+  contacts, SMS and call log (read permissions; the one write is Kontakt prüfen lassen's, owner
+  2026-11-07: before the contacts go up, the corrections the person accepted on Homes' review of
+  their own contacts are written into those phone contacts, `sicherung/HandyKorrektur.kt`, data rows
+  only, never without such a correction), and is the one caller
   that does not pass `ScreenGate`. Without a granted folder or a switch on it
   makes no request. And Hochladen (the owner's call, 2026-11-04,
   `hochladen/Hochladen.kt`): the files shared to it, copied into the app's
@@ -105,6 +108,11 @@ These rules apply to every session, human or agent.
   entries only. Android's SyncManager runs the adapters (the switch,
   „Jetzt abgleichen“, hourly, and a `gemeinsam` frame of the open live
   stream, #209); the app adds no job, alarm or worker for them. `ManifestTest` holds this.
+  Beside the account's own entries, one other writer of contacts exists:
+  Kontakt prüfen lassen's (owner 2026-11-07, `sicherung/HandyKorrektur.kt`),
+  which writes the person's own contact only by a correction they accepted
+  on Homes, as the app and not as a sync adapter; `ManifestTest` holds it to
+  data rows and to the backup run.
 - The other direction stays: a person's own contacts go phone → archive
   („Kontakte übertragen“), and the Homes account's never do
   (`HomesKontoAusschlussTest`, `e2e` step 8).

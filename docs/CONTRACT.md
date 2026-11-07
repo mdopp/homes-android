@@ -63,7 +63,7 @@ each row naming the Homes file and lines it came from.
 | one device (widget, restored 2026-11-03) | `GET /napi/portal/state`, `POST /napi/ha/call`; its picker `GET /napi/portal/start/addable` |
 | app-icon shortcuts | Garagentor, Einkaufsliste, Zeitleiste, Dokument scannen: see (i); the garage among the favourites, else `GET /napi/portal/start/addable` (without cameras: Homes draws no card for one), `POST /napi/ha/call` |
 | energy | `GET /napi/portal/energy`: the flow now, per total `today` (kWh since the house's midnight; homes#213), and `charge`, how full the battery is (mdopp/homes#228) |
-| Daten sichern | `GET /napi/sicherung/stand`, `POST /napi/sicherung/fehlend`, `POST /napi/sicherung/uploads`, `HEAD`/`PATCH /napi/sicherung/uploads/{id}`, `GET /napi/sicherung/schluessel`, `POST /napi/kontakte`, `GET /napi/sicherung/letzte`, `GET /napi/sicherung/letzte/{quelle}/{pfad...}`: see (e) |
+| Daten sichern | `GET /napi/sicherung/stand`, `POST /napi/sicherung/fehlend`, `POST /napi/sicherung/uploads`, `HEAD`/`PATCH /napi/sicherung/uploads/{id}`, `GET /napi/sicherung/schluessel`, `POST /napi/kontakte`, `GET /napi/kontakte/korrekturen`, `POST /napi/kontakte/korrekturen/{id}`, `GET /napi/sicherung/letzte`, `GET /napi/sicherung/letzte/{quelle}/{pfad...}`: see (e) |
 | Standortverlauf | `GET /napi/standort`, `POST /napi/standort`, `…/standort/import…`: see (f) |
 | Homes-Konto | `GET /napi/gemeinsam/kontakte`, `GET /napi/gemeinsam/kalender` (`?schreibbar=1`), `PUT\|DELETE /napi/gemeinsam/kalender/{kalender}/{uid}`, `PUT\|DELETE /napi/gemeinsam/kontakte/{uid}`: see (g) |
 | what the box can do | `GET /napi/kann`, `POST /napi/kann/anfordern`: see (h) |
@@ -288,6 +288,24 @@ after the folders, only while the switch is on and the permission granted.
   `PHOTO;ENCODING=b;TYPE=JPEG` (Android's large one, else the thumbnail,
   at most 256 px a side), for Homes to ask Immich whose face it is
   (homes#298); the face the Homes account added never.
+- **Korrekturen** (Kontakt prüfen lassen, owner 2026-11-07; Homes'
+  side mdopp/homes#301; WRITE_CONTACTS, asked for by the same switch): in
+  the same run, before the contacts go up, `GET /napi/kontakte/korrekturen`
+  → `{korrekturen: [{id, uid, name, aenderungen: [{nr, art, vorher,
+  nachher, vorher_art, nachher_art, vorher_adresse, nachher_adresse}]}]}`,
+  the changes the person accepted on Homes' review of one of their own
+  contacts. `uid` is the lookup key this switch sent; the app finds the
+  phone's contact by it (`Contacts.lookupContact`, which follows Android
+  joining and splitting raw contacts; a contact that went by its id only
+  is taken only while its name is still `name`) and writes each change into
+  the data row of its writable raw contacts (not the Homes account's, not a
+  messenger's read-only one) that still holds `vorher`, or adds a row to
+  the raw contact with the name; a field changed on the phone meanwhile is
+  left alone. The writes go as the app, not as a sync adapter, so the
+  contact's own account (Google) syncs them. Then `POST
+  /napi/kontakte/korrekturen/{id}` `{geschrieben: [nr…]}`: what it wrote,
+  or found written already; Homes shows the rest as not written. A phone
+  contact is never touched without such a correction.
 - **„SMS und Anrufe“** (READ_SMS, READ_CALL_LOG): the SMS and
   MMS, and the calls, newer than a high-water mark per kind (the largest
   date that reached the box; the first run takes everything), as XML in the
