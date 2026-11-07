@@ -29,7 +29,7 @@ budget widget    4938  # 4,703: the home-screen widgets, their rendering and pin
 budget sicherung 3517  # 3,031: Daten sichern — backups, contacts, SMS and calls, age;
                        # 3183 -> 3199 (owner approved 2026-11-06): „Kontakte übertragen“
                        #   sends each contact's own picture as its PHOTO, ≤256 px, for Homes' „Ist das …?“ in Immich (homes#298);
-                       # 3199 -> 3517 (owner's yes asked for in the PR, 2026-11-07): Kontakt prüfen lassen — the accepted
+                       # 3199 -> 3517 (owner approved 2026-11-07: Kontakt prüfen lassen) — the accepted
                        #   corrections written into the person's own phone contacts, Korrektur.kt (the plan) and HandyKorrektur.kt
 budget ui        3500  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
@@ -43,7 +43,7 @@ budget data      3120  # 2,780: Homes' calls (Napi), clients, models, the token 
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
                        #   PUT and DELETE, GemeinsamClient.schreiben (homes#278);
-                       # 3007 -> 3120 (owner's yes asked for in the PR, 2026-11-07): Kontakt prüfen lassen — GET and POST
+                       # 3007 -> 3120 (owner approved 2026-11-07: Kontakt prüfen lassen) — GET and POST
                        #   /napi/kontakte/korrekturen, their reply shapes and parser
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before

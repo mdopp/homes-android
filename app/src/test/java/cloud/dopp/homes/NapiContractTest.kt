@@ -222,7 +222,7 @@ class NapiContractTest {
                 "internal/napi/kontakte.go:49-122 (text/vcard :65-69), registered napi.go:242, the reply internal/caldav/spiegel.go:277-282",
                 sends = setOf("kontakte", "neu", "geaendert", "entfernt", "fehler"),
             ),
-            // Kontakt prüfen lassen (owner 2026-11-07; mdopp/homes#301 at 49488ae, not merged yet; registered korrekturen.go:101-107, napi.go:329)
+            // Kontakt prüfen lassen (owner 2026-11-07; mdopp/homes main at 7ac431f, the merge of homes#301; registered korrekturen.go:101-107, napi.go:329)
             Route(
                 "GET", "/napi/kontakte/korrekturen",
                 "internal/napi/korrekturen.go:54-71, a correction :33-38 and its change :28-31, the change internal/kontaktantwort/felder.go:157-167, an address felder.go:11-16",
