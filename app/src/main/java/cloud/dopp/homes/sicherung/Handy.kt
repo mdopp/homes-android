@@ -32,7 +32,7 @@ object Erlaubnis {
     val KONTAKTE = arrayOf(Manifest.permission.READ_CONTACTS)
 
     /** Kontakt prüfen lassen (owner 2026-11-07): the corrections the person took go into their own contacts. */
-    val KONTAKTE_AENDERN = arrayOf(Manifest.permission.WRITE_CONTACTS)
+    private val KONTAKTE_AENDERN = arrayOf(Manifest.permission.WRITE_CONTACTS)
 
     /** What the contacts' switch asks for: reading them for the archive, and changing them by an accepted correction. */
     val KONTAKTE_SCHALTER = KONTAKTE + KONTAKTE_AENDERN
