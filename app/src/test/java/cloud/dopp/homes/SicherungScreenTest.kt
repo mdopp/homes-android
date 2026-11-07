@@ -153,7 +153,7 @@ class SicherungScreenTest {
     @Test
     fun theStatusLinesFollowTheOtherCards() {
         val app = shadowOf(ctx() as android.app.Application)
-        app.grantPermissions(android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.READ_SMS, android.Manifest.permission.READ_CALL_LOG)
+        app.grantPermissions(android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.READ_SMS, android.Manifest.permission.READ_CALL_LOG)
         val store = cloud.dopp.homes.sicherung.SicherungStore(ctx())
         store.setzeKontakteAn(true)
         store.setzeSmsAn(true)
@@ -213,7 +213,8 @@ class SicherungScreenTest {
     /** Allowed: the switch is on and the daily run is planned. */
     @Test
     fun anAllowedPermissionTurnsTheSwitchOn() {
-        shadowOf(ctx() as android.app.Application).grantPermissions(android.Manifest.permission.READ_CONTACTS)
+        // reading for the archive, changing by an accepted correction (owner 2026-11-07): the switch asks for both
+        shadowOf(ctx() as android.app.Application).grantPermissions(android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.WRITE_CONTACTS)
         val a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
         a.findViewById<SwitchCompat>(R.id.handy_kontakte).performClick()
         assertTrue(a.findViewById<SwitchCompat>(R.id.handy_kontakte).isChecked)

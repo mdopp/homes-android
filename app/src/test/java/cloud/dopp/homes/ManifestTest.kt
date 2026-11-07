@@ -208,7 +208,9 @@ class ManifestTest {
             "app/src/main/java/cloud/dopp/homes/konto/KalenderAbgleich.kt",
             "app/src/main/java/cloud/dopp/homes/konto/HomesKonto.kt",
         )
-        val fremd = sources.filterKeys { it !in konto }.filterValues { t -> t.contains("ContactsContract") || t.contains("CalendarContract") }
+        // Kontakt prüfen lassen (owner 2026-11-07): the person's own contacts, by an accepted correction only
+        val korrektur = "app/src/main/java/cloud/dopp/homes/sicherung/HandyKorrektur.kt"
+        val fremd = sources.filterKeys { it !in konto && it != korrektur }.filterValues { t -> t.contains("ContactsContract") || t.contains("CalendarContract") }
             .flatMap { (p, t) -> schreibt.filter { t.contains(it) }.map { "$p: $it" } }
         assertTrue("writes contacts or calendars outside the Homes account:\n" + fremd.joinToString("\n"), fremd.isEmpty())
         konto.forEach { p ->
@@ -218,6 +220,26 @@ class ManifestTest {
                 assertTrue("$p writes $ziel not as the account's sync adapter", ziel.startsWith("alsAdapter(") || ziel.startsWith("zeile") || ziel == "uri" || ziel.startsWith("KontakteAbgleich.alsAdapter(") || ziel.startsWith("KalenderAbgleich.alsAdapter("))
             }
         }
+    }
+
+    /**
+     * The one writer of a person's own contacts (Kontakt prüfen lassen, owner
+     * 2026-11-07): data rows only, never a raw contact or a contact, never the
+     * calendar, never as a sync adapter (the person's account syncs the edit),
+     * and only the Homes account's raw contacts left out; it is called by the
+     * corrections' run alone.
+     */
+    @Test
+    fun aPersonsOwnContactIsWrittenOnlyByAnAcceptedCorrection() {
+        val t = sources.getValue("app/src/main/java/cloud/dopp/homes/sicherung/HandyKorrektur.kt")
+        Regex("""(?:newInsert|newUpdate|newDelete)\(([^)]*)\)""").findAll(t).forEach { m ->
+            val ziel = m.groupValues[1].trim()
+            assertTrue("HandyKorrektur writes $ziel, not a data row", ziel == "ContactsContract.Data.CONTENT_URI" || ziel.startsWith("zeile("))
+        }
+        assertTrue("not as the app", !t.contains("alsAdapter") && !t.contains("CALLER_IS_SYNCADAPTER") && !t.contains("CalendarContract"))
+        assertTrue("the Homes account's raw contacts are written", t.contains("ACCOUNT_TYPE} != ?") && t.contains("HomesKonto.TYP") && t.contains("RAW_CONTACT_IS_READ_ONLY} = 0"))
+        val callers = sources.filter { (p, s) -> p != "app/src/main/java/cloud/dopp/homes/sicherung/HandyKorrektur.kt" && s.contains("HandyKorrektur(") }.keys
+        assertEquals("who builds the writer", setOf("app/src/main/java/cloud/dopp/homes/sicherung/SicherungWorker.kt"), callers)
     }
 
     /** One receiver restarts the live service after a boot and after an app update, both allowed starts. */

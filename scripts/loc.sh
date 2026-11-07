@@ -26,9 +26,11 @@ budget() { # budget <package> <cap>  — "." is the files beside the packages
 known=""
 # package    cap     size on 2026-11-03, and what it is
 budget widget    4938  # 4,703: the home-screen widgets, their rendering and pinning
-budget sicherung 3199  # 3,031: Daten sichern — backups, contacts, SMS and calls, age;
+budget sicherung 3517  # 3,031: Daten sichern — backups, contacts, SMS and calls, age;
                        # 3183 -> 3199 (owner approved 2026-11-06): „Kontakte übertragen“
-                       #   sends each contact's own picture as its PHOTO, ≤256 px, for Homes' „Ist das …?“ in Immich (homes#298)
+                       #   sends each contact's own picture as its PHOTO, ≤256 px, for Homes' „Ist das …?“ in Immich (homes#298);
+                       # 3199 -> 3517 (owner approved 2026-11-07: Kontakt prüfen lassen) — the accepted
+                       #   corrections written into the person's own phone contacts, Korrektur.kt (the plan) and HandyKorrektur.kt
 budget ui        3500  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
@@ -36,11 +38,13 @@ budget ui        3500  # 3,026: the activities: start screen, pairing, settings 
                        #   (+12 of it is #237's level sheet, merged meanwhile);
                        # 3320 -> 3500: „Deine Geräte“ as tiles (owner, 2026-11-04): ui/FavoritenAnsicht.kt, the
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
-budget data      3007  # 2,780: Homes' calls (Napi), clients, models, the token store;
+budget data      3120  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
-                       #   PUT and DELETE, GemeinsamClient.schreiben (homes#278)
+                       #   PUT and DELETE, GemeinsamClient.schreiben (homes#278);
+                       # 3007 -> 3120 (owner approved 2026-11-07: Kontakt prüfen lassen) — GET and POST
+                       #   /napi/kontakte/korrekturen, their reply shapes and parser
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader

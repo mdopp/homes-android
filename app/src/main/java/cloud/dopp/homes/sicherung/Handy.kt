@@ -30,6 +30,12 @@ import java.io.OutputStreamWriter
 /** The permissions behind the two switches (laib ADR 0029): each switch asks for its own. */
 object Erlaubnis {
     val KONTAKTE = arrayOf(Manifest.permission.READ_CONTACTS)
+
+    /** Kontakt prüfen lassen (owner 2026-11-07): the corrections the person took go into their own contacts. */
+    private val KONTAKTE_AENDERN = arrayOf(Manifest.permission.WRITE_CONTACTS)
+
+    /** What the contacts' switch asks for: reading them for the archive, and changing them by an accepted correction. */
+    val KONTAKTE_SCHALTER = KONTAKTE + KONTAKTE_AENDERN
     val SMS = arrayOf(Manifest.permission.READ_SMS, Manifest.permission.READ_CALL_LOG)
 
     fun hat(ctx: Context, rechte: Array<String>): Boolean =

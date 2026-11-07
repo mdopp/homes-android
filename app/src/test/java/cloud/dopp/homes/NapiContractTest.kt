@@ -222,6 +222,19 @@ class NapiContractTest {
                 "internal/napi/kontakte.go:49-122 (text/vcard :65-69), registered napi.go:242, the reply internal/caldav/spiegel.go:277-282",
                 sends = setOf("kontakte", "neu", "geaendert", "entfernt", "fehler"),
             ),
+            // Kontakt prüfen lassen (owner 2026-11-07; mdopp/homes main at 7ac431f, the merge of homes#301; registered korrekturen.go:101-107, napi.go:329)
+            Route(
+                "GET", "/napi/kontakte/korrekturen",
+                "internal/napi/korrekturen.go:54-71, a correction :33-38 and its change :28-31, the change internal/kontaktantwort/felder.go:157-167, an address felder.go:11-16",
+                sends = setOf(
+                    "korrekturen", "id", "uid", "name", "aenderungen", "nr", "art", "vorher", "nachher", "vorher_art", "nachher_art",
+                    "vorher_adresse", "nachher_adresse", "strasse", "plz", "ort", "land", "fehler",
+                ),
+            ),
+            Route(
+                "POST", "/napi/kontakte/korrekturen/{id}", "internal/napi/korrekturen.go:75-99",
+                body = setOf("geschrieben"), sends = setOf("ok", "fehler"),
+            ),
             // Sicherung zurückholen (mdopp/homes main at 433fb1a, the merge of homes#219 for homes#209; registered sicherung.go:131-132).
             Route(
                 "GET", "/napi/sicherung/letzte", "internal/napi/sicherung_letzte.go:211-220, an entry :105-109",

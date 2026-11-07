@@ -80,7 +80,7 @@ class SicherungActivity : AppCompatActivity() {
     /** The two switches: their permissions, and how each is kept. */
     /** A switch: its permissions, and its key in `/napi/kann`'s `sicherung` (homes ADR 0001 §2). */
     private enum class Schalter(val rechte: Array<String>, val key: String) {
-        KONTAKTE(Erlaubnis.KONTAKTE, Napi.TEIL_KONTAKTE),
+        KONTAKTE(Erlaubnis.KONTAKTE_SCHALTER, Napi.TEIL_KONTAKTE),
         SMS(Erlaubnis.SMS, Quelle.SMS.wire),
     }
 
