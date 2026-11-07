@@ -138,31 +138,31 @@ object Korrigieren {
 
     /** A postal address, matched by street, code, place and country. */
     private fun adresse(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? {
-        val neu = a.nachherAdresse?.let { n -> TEILE.zip(listOf(n.strasse, n.plz, n.ort, n.land)).toMap<String, Any?>() + (StructuredPostal.FORMATTED_ADDRESS to null) }
-        val alt = a.vorherAdresse
-        if (alt == null && zeilen.any { z -> z.mime == StructuredPostal.CONTENT_ITEM_TYPE && a.nachherAdresse != null && TEILE.map { norm(z.wert(it)) } == teile(a.nachherAdresse) }) return emptyList()
-        if (alt == null) return neu?.let { listOf(Schritt.Neu(ziel, StructuredPostal.CONTENT_ITEM_TYPE, it + (StructuredPostal.TYPE to StructuredPostal.TYPE_HOME))) }
         val postal = zeilen.filter { it.mime == StructuredPostal.CONTENT_ITEM_TYPE }
-        val z = postal.firstOrNull { z -> TEILE.map { norm(z.wert(it)) } == teile(alt) }
-            ?: return if (a.nachherAdresse == null || postal.any { z -> TEILE.map { norm(z.wert(it)) } == teile(a.nachherAdresse) }) emptyList() else null
-        return listOf(if (neu == null) Schritt.Weg(z.id) else Schritt.Aendern(z.id, neu))
+        fun von(x: Korrektur.Anschrift?) = x?.let { w -> postal.firstOrNull { z -> TEILE.map { norm(z.wert(it)) } == teile(w) } }
+        val neu = a.nachherAdresse?.let { n -> TEILE.zip(listOf(n.strasse, n.plz, n.ort, n.land)).toMap<String, Any?>() + (StructuredPostal.FORMATTED_ADDRESS to null) }
+        val z = von(a.vorherAdresse)
+        return when {
+            z != null -> listOf(if (neu == null) Schritt.Weg(z.id) else Schritt.Aendern(z.id, neu))
+            neu == null -> if (a.vorherAdresse == null) null else emptyList() // taken away already
+            von(a.nachherAdresse) != null -> emptyList() // written already
+            a.vorherAdresse != null -> null // changed on the phone meanwhile
+            else -> listOf(Schritt.Neu(ziel, StructuredPostal.CONTENT_ITEM_TYPE, neu + (StructuredPostal.TYPE to StructuredPostal.TYPE_HOME)))
+        }
     }
 
     /** A field the contact has once: its row when it holds the value before (none when that is ""). */
     private fun einzeln(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long, f: Feld): List<Schritt>? {
-        val (mime, spalte, vorher) = Triple(f.mime, f.spalte, a.vorher)
-        val werte = f.werte
-        val z = zeilen.firstOrNull { it.mime == mime && f.welche(it) }
+        val z = zeilen.firstOrNull { it.mime == f.mime && f.welche(it) }
         val neu = a.nachher.trim()
+        val ist = z?.wert(f.spalte).orEmpty()
         return when {
-            z != null && z.wert(spalte) == neu && neu.isNotEmpty() -> emptyList() // written already
-            z == null && vorher.isNotBlank() && neu.isEmpty() -> emptyList()
-            z == null && vorher.isNotBlank() -> null
-            z == null -> if (neu.isEmpty()) null else listOf(Schritt.Neu(ziel, mime, werte(neu)))
-            z.wert(spalte) != vorher.trim() -> null
-            neu.isEmpty() && mime == Organization.CONTENT_ITEM_TYPE -> listOf(Schritt.Aendern(z.id, mapOf(spalte to null)))
-            neu.isEmpty() -> listOf(Schritt.Weg(z.id))
-            else -> listOf(Schritt.Aendern(z.id, werte(neu)))
+            ist == neu -> emptyList() // written already, or taken away already
+            ist != a.vorher.trim() -> null // changed on the phone meanwhile
+            z == null -> listOf(Schritt.Neu(ziel, f.mime, f.werte(neu)))
+            neu.isNotEmpty() -> listOf(Schritt.Aendern(z.id, f.werte(neu)))
+            f.mime == Organization.CONTENT_ITEM_TYPE -> listOf(Schritt.Aendern(z.id, mapOf(f.spalte to null)))
+            else -> listOf(Schritt.Weg(z.id))
         }
     }
 
@@ -193,6 +193,7 @@ object Korrigieren {
  * nothing written. Nothing is written without a correction.
  */
 class KorrekturenLauf(private val client: SicherungClient, private val buch: Kontaktbuch) {
+    @Suppress("SwallowedException") // Homes not answering is said by the run's result; the next run asks again
     fun laufen(): Lauf.Ergebnis {
         val alle = try {
             client.korrekturen()
