@@ -29,7 +29,10 @@ data class Modul(
     /** Its own phone app; null for a module that is only on the web. */
     val app: App?,
     val aufgabe: Aufgabe?,
-)
+) {
+    /** What the row's tap opens: [ziel] where Homes names one, else [web]. */
+    val tippen: String? get() = ziel ?: web
+}
 
 /**
  * The person's modules and setup tasks (`GET /napi/einrichtung`, owner

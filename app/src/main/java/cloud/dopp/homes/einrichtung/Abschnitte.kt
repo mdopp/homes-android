@@ -72,7 +72,7 @@ object Abschnitte {
         // below the modules, Homes' own start page (owner, 2026-11-04), whenever the box answered
         val homes = ServerStore.baseUrl(a)?.takeIf { e != null }?.let { HomesPages.url(it, HomesPages.START) }
         fuellen(a, R.id.oeffnen_section, R.id.oeffnen_group, grau, oeffnen.map { m ->
-            zeile(a, Bilder.fuer(m.icon), m.titel, m.stand) { (m.ziel ?: m.web)?.let { oeffnen(a, it.toUri()) } }
+            zeile(a, Bilder.fuer(m.icon), m.titel, m.stand) { m.tippen?.let { oeffnen(a, it.toUri()) } }
         } + listOfNotNull(homes?.let { zeile(a, R.drawable.ic_stat_homes, a.getString(R.string.oeffnen_homes), null) { oeffnen(a, it.toUri()) } }))
         val aufgaben = e?.aufgaben.orEmpty()
         val offen = if (e != null && e.offen > 0) e.offen else aufgaben.size
