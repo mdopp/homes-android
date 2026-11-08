@@ -15,6 +15,8 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import cloud.dopp.homes.R
 import cloud.dopp.homes.data.Napi
 import cloud.dopp.homes.data.Napi.Quelle
@@ -114,7 +116,7 @@ class SicherungActivity : AppCompatActivity() {
             )
             k.findViewById<View>(R.id.quelle_wie).setOnClickListener {
                 val a = k.findViewById<View>(R.id.quelle_anleitung)
-                a.visibility = if (a.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+                a.isVisible = !a.isVisible
             }
             k.findViewById<Button>(R.id.quelle_schluessel).setOnClickListener { zeigeSeite(archivTresor()) }
         }
@@ -146,7 +148,7 @@ class SicherungActivity : AppCompatActivity() {
 
     private fun zeigeSeite(url: String?) {
         url ?: return
-        runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE)) }
+        runCatching { startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).addCategory(Intent.CATEGORY_BROWSABLE)) }
     }
 
     private fun karte(q: Quelle): View =
