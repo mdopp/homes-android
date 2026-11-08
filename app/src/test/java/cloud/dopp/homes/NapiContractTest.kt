@@ -23,7 +23,8 @@ import java.lang.reflect.Modifier
  * archive key and the contacts (laib ADR 0029) are copied from mdopp/homes
  * main at 7c88b6c (the merge of homes#210); Standortverlauf from main at
  * 145ec05 (the merge of homes#212). The favorites and the energy totals'
- * `today` (owner, 2026-11-02) from mdopp/homes#213 at a709b9f.
+ * `today` (owner, 2026-11-02) from mdopp/homes#213 at a709b9f. A module's
+ * `ziel` and `stand` of `/napi/einrichtung` from mdopp/homes#310 at 9a8d1f3.
  *
  * The declarations are read by reflection: every static field of `Napi` is
  * looked at, so a path declared outside an endpoint is caught too. The
@@ -69,8 +70,8 @@ class NapiContractTest {
 
         /** `/napi/einrichtung`'s answer: `einrichten.Antwort`, `NapiModul`, `NapiApp`, `NapiAufgabe` and the ziele's keys. */
         val EINRICHTUNG = setOf(
-            "version", "offen", "module", "ziele", "name", "titel", "icon", "oeffnen", "web", "app", "nur_web", "aufgabe",
-            "paket", "store", "erledigt", "am", "wie", "einrichten", "einkauf", "zeitleiste", "scannen",
+            "version", "offen", "module", "ziele", "name", "titel", "icon", "oeffnen", "web", "ziel", "stand", "app", "nur_web",
+            "aufgabe", "paket", "store", "erledigt", "am", "wie", "einrichten", "einkauf", "zeitleiste", "scannen",
         )
 
         /** Every /napi route Homes serves, as its handler reads and answers it. */
@@ -333,7 +334,7 @@ class NapiContractTest {
             // registered napi.go:243-244, not_found napi.go:334.
             Route(
                 "GET", "/napi/einrichtung",
-                "internal/napi/einrichtung.go:18-45, the answer internal/einrichten/einrichten.go:233-266, ziele cmd/homes/module.go:307-313",
+                "internal/napi/einrichtung.go:18-45, the answer internal/einrichten/einrichten.go:242-307, ziele cmd/homes/module.go:351-357, ziel and stand :359-368",
                 sends = EINRICHTUNG + setOf("ok", "reason"),
             ),
             Route(

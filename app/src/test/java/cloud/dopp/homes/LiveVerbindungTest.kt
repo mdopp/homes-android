@@ -63,7 +63,6 @@ class LiveVerbindungTest {
         TokenStore.backend = ctx.getSharedPreferences("test_tokens", Context.MODE_PRIVATE)
         TokenStore.save(ctx, "homes_device_T1")
         screen(true)
-        Live.setEnabled(ctx, true)
         Live.open = { req, l -> listeners += l; FakeSource(req).also { opened += it } }
         Live.postWatch = { }
         // a tool widget not yet bound: the stream is wanted, and no widget's read reaches the network —

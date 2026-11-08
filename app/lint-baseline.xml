@@ -632,17 +632,6 @@
 
     <issue
         id="UnusedIds"
-        message="The resource `R.id.e_today_label` appears to be unused"
-        errorLine1="                android:id=&quot;@+id/e_today_label&quot;"
-        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="47"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="UnusedIds"
         message="The resource `R.id.e_autarkie_l` appears to be unused"
         errorLine1="                    android:id=&quot;@+id/e_autarkie_l&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">

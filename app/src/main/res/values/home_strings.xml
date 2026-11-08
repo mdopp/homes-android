@@ -39,7 +39,7 @@
 
     <!-- The widget types the app offers (#34). -->
     <string name="widget_type_device">Ein Gerät</string>
-    <string name="widget_type_energy">Energie · Jetzt und heute</string>
+    <string name="widget_type_energy">Energie</string>
 
     <!-- The start screen's devices (owner, 2026-11-02). -->
     <string name="home_devices_title">Deine Geräte</string>
@@ -55,14 +55,12 @@
     <string name="home_level_done">Fertig</string>
     <string name="home_device_switching">schaltet …</string>
 
-    <!-- The live widgets (LiveService). -->
-    <string name="live_switch">Live-Widgets</string>
+    <!-- The live widgets (LiveService); no switch (owner, 2026-11-08: live is the one way). -->
     <string name="live_channel">Live-Widgets</string>
     <string name="live_channel_desc">Zeigt, ob die Widgets live mit Homes verbunden sind.</string>
     <string name="live_connecting">Verbinde …</string>
     <string name="live_on">Widgets live</string>
     <string name="live_paused">Pausiert, Bildschirm aus</string>
-    <string name="live_battery_on">Aktuell, solange der Bildschirm an ist</string>
     <string name="live_battery_off">Tippen und „Zulassen“ wählen</string>
     <string name="live_battery_title">Widgets aktuell halten</string>
     <string name="live_battery_why">Damit die Widgets von selbst aktuell bleiben, tippe auf „Erlauben“ und dann im nächsten Fenster auf „Zulassen“.</string>

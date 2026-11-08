@@ -51,14 +51,12 @@ import okhttp3.sse.EventSources
 
 /**
  * When the live widgets run, and how they are started (#176: the old app's
- * mechanism, widgets only). They run while the app is paired, the switch in
- * the app is on (the default) and a widget the stream keeps current ([FED])
- * is placed; [LiveService] then decides by the screen whether to hold the
- * connection.
+ * mechanism, widgets only). They run while the app is paired and a widget the
+ * stream keeps current ([FED]) is placed — live is the one way (owner,
+ * 2026-11-08: the „Live-Widgets“ switch is gone; its stored value is ignored);
+ * [LiveService] then decides by the screen whether to hold the connection.
  */
 object Live {
-    private const val PREFS = "homes_live"
-    private const val KEY_ON = "on"
 
     /** The widgets the stream keeps current: frames, refetches on frames, or the screen-on resync. */
     val FED: List<Class<out AppWidgetProvider>> = listOf(
@@ -88,24 +86,12 @@ object Live {
     @Volatile
     var refuseForeground = false
 
-    private fun p(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-
-    /** The switch in the app: on unless the person turned it off. */
-    fun isEnabled(ctx: Context): Boolean = p(ctx).getBoolean(KEY_ON, true)
-
-    /** Flip the switch; called from the app's screen, so it may start the service. */
-    fun setEnabled(ctx: Context, on: Boolean) {
-        p(ctx).edit().putBoolean(KEY_ON, on).apply()
-        ensure(ctx)
-    }
-
     private fun fedPlaced(ctx: Context): Boolean {
         val mgr = AppWidgetManager.getInstance(ctx) ?: return false
         return FED.any { runCatching { mgr.getAppWidgetIds(ComponentName(ctx, it)) }.getOrNull()?.isNotEmpty() == true }
     }
 
-    fun wanted(ctx: Context): Boolean =
-        isEnabled(ctx) && ServerStore.isConfigured(ctx) && TokenStore.isPaired(ctx) && fedPlaced(ctx)
+    fun wanted(ctx: Context): Boolean = ServerStore.isConfigured(ctx) && TokenStore.isPaired(ctx) && fedPlaced(ctx)
 
     /**
      * On the battery-optimization exemption list: the documented exemption that

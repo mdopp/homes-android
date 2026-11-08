@@ -73,7 +73,7 @@ class HomeScreenTest {
         // one list, no groups (owner, 2026-11-03): one device and the energy, then the tools
         val list = a.findViewById<ViewGroup>(R.id.widgets_group)
         assertEquals(WidgetTypes.ALL.size, list.childCount)
-        assertEquals(listOf("Ein Gerät", "Energie · Jetzt und heute"), (0 until list.childCount).map { texts(list.getChildAt(it)).single() })
+        assertEquals(listOf("Ein Gerät", "Energie"), (0 until list.childCount).map { texts(list.getChildAt(it)).single() })
         assertNull("no Box group", a.findViewById<View>(ctx().resources.getIdentifier("box_group", "id", ctx().packageName).takeIf { it != 0 } ?: View.NO_ID))
         val all = texts(a.window.decorView)
         listOf("Box", "Haushalt").forEach { assertTrue("a group heading: $it", it !in all) }
@@ -233,39 +233,40 @@ class HomeScreenTest {
         a.findViewById<ViewGroup>(R.id.connected_section).let { g -> (0 until g.childCount).map { g.getChildAt(it) } }
 
     /**
-     * The live switch is the last row of the widgets' card, in its row style
-     * (owner, 2026-11-03), under „Widget hinzufügen“ and its hint; „Gekoppelt
-     * mit …“ right above „Kopplung aufheben“.
+     * The row asking for „Zulassen“ is the last row of the widgets' card, in its
+     * row style (owner, 2026-11-03), under „Widget hinzufügen“ and its hint — no
+     * live switch (owner, 2026-11-08: live is the one way); „Gekoppelt mit …“
+     * right above „Kopplung aufheben“.
      */
     @Test
-    fun theLiveSwitchIsTheWidgetCardsLastRowAndThePairingSitsByUnpair() {
+    fun theZulassenRowIsTheWidgetCardsLastRowAndThePairingSitsByUnpair() {
         paired()
         val a = open()
         val order = children(a)
         val title = order.indexOfFirst { (it as? TextView)?.text?.toString() == ctx().getString(R.string.home_widgets_title) }
         val card = a.findViewById<ViewGroup>(R.id.widgets_card)
         assertTrue("the widgets' title, then the card", title in 0 until order.indexOf(card))
-        assertEquals("the widgets, then the live row", listOf(R.id.widgets_group, R.id.live_row), (0 until card.childCount).map { card.getChildAt(it).id })
-        val row = a.findViewById<ViewGroup>(R.id.live_row)
-        assertTrue("the switch is in the row", a.findViewById<View>(R.id.live_switch).parent === row)
-        assertEquals(listOf("Live-Widgets"), listOf(a.findViewById<TextView>(R.id.live_title).text.toString()))
+        assertEquals("the widgets, then the row", listOf(R.id.widgets_group, R.id.live_row), (0 until card.childCount).map { card.getChildAt(it).id })
+        assertEquals("a live switch", 0, ctx().resources.getIdentifier("live_switch", "id", ctx().packageName))
+        assertEquals("Widgets aktuell halten", a.findViewById<TextView>(R.id.live_title).text.toString())
+        assertEquals("Tippen und „Zulassen“ wählen", a.findViewById<TextView>(R.id.live_battery).text.toString())
         assertEquals("no paragraph of its own", -1, order.indexOf(a.findViewById(R.id.live_battery)))
         val status = order.indexOf(a.findViewById(R.id.status))
         assertEquals("„Gekoppelt mit …“ right above „Kopplung aufheben“", order.indexOf(a.findViewById(R.id.logout_btn)) - 1, status)
         assertEquals("Gekoppelt mit 127.0.0.1", a.findViewById<TextView>(R.id.status).text.toString())
     }
 
-    /** „Zulassen“ is asked for only while the exemption is missing; granted, the row's line is short. */
+    /** The row is there only while the exemption is missing; granted, it is gone (owner 2026-11-08: nothing to explain). */
     @Test
     fun zulassenOnlyWhileTheExemptionIsMissing() {
         paired()
         val pm = shadowOf(ctx().getSystemService(android.os.PowerManager::class.java))
         pm.setIgnoringBatteryOptimizations(ctx().packageName, true)
-        var line = open().findViewById<TextView>(R.id.live_battery).text.toString()
-        assertTrue("granted, yet it asks: $line", "Zulassen" !in line)
+        assertEquals("granted, yet the row is there", View.GONE, open().findViewById<View>(R.id.live_row).visibility)
         pm.setIgnoringBatteryOptimizations(ctx().packageName, false)
-        line = open().findViewById<TextView>(R.id.live_battery).text.toString()
-        assertTrue("missing, and it does not ask: $line", "Zulassen" in line)
+        val a = open()
+        assertEquals("missing, and no row asks", View.VISIBLE, a.findViewById<View>(R.id.live_row).visibility)
+        assertTrue("Zulassen" in a.findViewById<TextView>(R.id.live_battery).text.toString())
     }
 
     private val shutter = """{"ok":true,"favorites":[

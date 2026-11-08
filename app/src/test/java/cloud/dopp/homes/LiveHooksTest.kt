@@ -122,9 +122,9 @@ class LiveHooksTest {
         assertTrue("it did not start the live service", started())
     }
 
-    /** Beside the switch: whether a restart after a killed process can go live by itself, and the way to allow it. */
+    /** The row asking for the exemption (so a restart after a killed process goes live by itself): its tap asks; granted, it is gone. */
     @Test
-    fun theExemptionStateStandsBesideTheSwitch() {
+    fun theZulassenRowAsksOnlyWhileTheExemptionIsMissing() {
         val pm = shadowOf(ctx().getSystemService(PowerManager::class.java))
         pm.setIgnoringBatteryOptimizations(ctx().packageName, false)
         var a = Robolectric.buildActivity(HomeActivity::class.java).setup().get()
@@ -138,6 +138,7 @@ class LiveHooksTest {
 
         pm.setIgnoringBatteryOptimizations(ctx().packageName, true)
         a = Robolectric.buildActivity(HomeActivity::class.java).setup().get()
-        assertEquals(string("live_battery_on"), a.findViewById<TextView>(id).text.toString())
+        val row = ctx().resources.getIdentifier("live_row", "id", ctx().packageName)
+        assertEquals("granted, and the row is still there", android.view.View.GONE, a.findViewById<android.view.View>(row).visibility)
     }
 }

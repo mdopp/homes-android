@@ -91,9 +91,12 @@ Fields the widgets read beyond a value to show:
 ## (c) The live stream
 
 One foreground service (`realtime/LiveService.kt`, type `specialUse`, a quiet
-"Live-Widgets" notification) runs while the app is paired, its switch is on
-(the default) and a widget the stream keeps current is placed (one device,
-energy, tools; the Box widgets are gone, owner 2026-11-03). It listens for the screen itself. While the screen is on it
+"Live-Widgets" notification) runs while the app is paired and a widget the
+stream keeps current is placed (one device, energy, tools; the Box widgets are
+gone, owner 2026-11-03). There is no switch (owner, 2026-11-08: „es ist jetzt
+der einzige Weg“); an older install's stored switch value is ignored. The
+start screen keeps one row only while the battery exemption is missing:
+„Widgets aktuell halten · Tippen und „Zulassen“ wählen“. It listens for the screen itself. While the screen is on it
 holds `GET /napi/portal/events` and reads one frame, `card_state`; on
 screen-off it drops the connection. Once connected it posts its watch set
 (`POST /napi/portal/watch`: `entity_ids`, the device widgets' devices and,
@@ -552,9 +555,9 @@ anfordern“ (`anfordern`).
 
 (The owner's call, 2026-11-04; Homes' side is mdopp/homes#269,
 docs/REFERENCE.md there.) `GET /napi/einrichtung` → `{version: 1, offen,
-module: [{name, titel, icon, oeffnen, web, app: {name, paket, store}, nur_web,
-aufgabe: {titel, erledigt, am, wie, einrichten}}], ziele: {einkauf,
-zeitleiste, scannen}}`, the device's person's modules that are on.
+module: [{name, titel, icon, oeffnen, web, ziel?, stand?, app: {name, paket,
+store}, nur_web, aufgabe: {titel, erledigt, am, wie, einrichten}}], ziele:
+{einkauf, zeitleiste, scannen}}`, the device's person's modules that are on.
 
 - **When the app reads:** at start and resume, at most every five minutes,
   and when the answer of `/napi/kann` changed (so also right after the
@@ -565,10 +568,16 @@ zeitleiste, scannen}}`, the device's person's modules that are on.
 - **„Öffnen“** below „Deine Geräte“: Homes decides it (owner, 2026-11-07;
   mdopp/homes#300). `oeffnen` (bool) per module marks the ones the app lists,
   in the answer's order, each only with a `web`; a missing `oeffnen` counts as
-  false. Only when no module in the answer carries the field at all (an older
-  Homes) does the app fall back to its own list, `Einrichtung.OEFFNEN`
-  (the owner's of 2026-11-04: `dokumente`, `standort` (Zeitleiste), `musik`
-  (Musik verwalten), in that order, each with a `web`). Each opens in a Custom Tab,
+  false, and the app has no list of its own any more (2026-11-08). A row
+  opens `ziel` where Homes names one, else `web` (owner 2026-11-08: „direkter
+  bauen“; mdopp/homes#310: for Standortverlauf, once the person connected
+  Reitti, Reitti itself, so a tap lands in the timeline, not on the page with
+  the token form — „Trennen“ stays on that page, reached from Mehr →
+  Standortverlauf's line „Reitti ist verbunden.“ or from Homes' Mehr), and
+  says `stand` under its title where Homes sends one („Zuletzt aufgezeichnet
+  heute 08:40“, „Noch nicht verbunden“; Musik: „2 Dateien nicht übernommen“).
+  Both are https-checked and trimmed like `web`; absent, the row is as before.
+  Each opens in a Custom Tab,
   where the person's login is; below them „Homes“, Homes' own start page
   (`/start` of the paired address), whenever the box answered. A module
   with its own app is a task while the app is missing, and then the
@@ -643,4 +652,5 @@ one is named by its type. It is switched by the box's `teilen` key `musik`.
   stay until done; a result, once seen in the app, goes with its
   notification. The channel „Hochladen“ shows a badge on the app's icon;
   the live widgets' channel does not (`live_widgets_v2`, the old one
-  deleted): nothing there to act on, and the app shows it by its switch.
+  deleted): nothing there to act on, and the start screen says the line's
+  state itself (`verbindung/`).

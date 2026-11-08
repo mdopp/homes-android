@@ -20,6 +20,10 @@ data class Modul(
     val icon: String,
     /** Its page in Homes or its service's address, https only; null when it has none. */
     val web: String?,
+    /** What the row's tap opens instead of [web] (`ziel`, homes#310: the timeline itself), https only; null: [web]. */
+    val ziel: String?,
+    /** One line under the title (`stand`, homes#310: „Zuletzt aufgezeichnet heute 08:40“); null when Homes says none. */
+    val stand: String?,
     /** Homes lists it under „Öffnen“ (`oeffnen`, homes#300); false when the answer does not say. */
     val oeffnen: Boolean,
     /** Its own phone app; null for a module that is only on the web. */
@@ -31,20 +35,16 @@ data class Modul(
  * The person's modules and setup tasks (`GET /napi/einrichtung`, owner
  * 2026-11-04): what the start screen offers to open, the tasks still open,
  * and where the launcher's shortcuts lead. Nothing is taken on a guess: an
- * unknown field is ignored, an address that is not https is none. [vomServer]:
- * some module in the answer carries `oeffnen`, so Homes decides „Öffnen“.
+ * unknown field is ignored, an address that is not https is none.
  */
-class Einrichtung(val offen: Int, val module: List<Modul>, val ziele: Map<String, String>, private val vomServer: Boolean) {
+class Einrichtung(val offen: Int, val module: List<Modul>, val ziele: Map<String, String>) {
 
     /**
      * „Öffnen“ (owner, 2026-11-07: from the server): the modules Homes marks `oeffnen`, in the
-     * answer's order, each with an address; from an older Homes, which marks none, [OEFFNEN].
+     * answer's order, each with an address. No list of the app's own any more (2026-11-08):
+     * every Homes marks them.
      */
-    val oeffnen: List<Modul> get() = if (vomServer) {
-        module.filter { it.oeffnen && it.web != null }
-    } else {
-        OEFFNEN.mapNotNull { n -> module.firstOrNull { it.name == n && it.web != null } }
-    }
+    val oeffnen: List<Modul> get() = module.filter { it.oeffnen && it.web != null }
 
     /** The open setup tasks: a done one leaves the list, and then the phone's own app icon is the way in. */
     val aufgaben: List<Modul> get() = module.filter { it.aufgabe?.erledigt == false }
@@ -62,13 +62,6 @@ class Einrichtung(val offen: Int, val module: List<Modul>, val ziele: Map<String
     }
 
     companion object {
-        /**
-         * Fallback only (2026-11-07): what „Öffnen“ shows from an older Homes that sends no
-         * `oeffnen`; a Homes that does decides the list itself. The owner's list of 2026-11-04:
-         * Dokumente, the Zeitleiste (standort) and Musik verwalten (Gesundheit removed 2026-11-07).
-         */
-        val OEFFNEN = listOf("dokumente", "standort", "musik")
-
         /** The launcher's targets the app knows: Einkaufsliste, Zeitleiste, Dokument scannen. */
         private val ZIELE = listOf(EinrichtungJson.EINKAUF, EinrichtungJson.ZEITLEISTE, EinrichtungJson.SCANNEN)
 
@@ -83,7 +76,6 @@ class Einrichtung(val offen: Int, val module: List<Modul>, val ziele: Map<String
                 offen = o.optInt(EinrichtungJson.OFFEN, 0).coerceAtLeast(0),
                 module = roh.mapNotNull(::modul),
                 ziele = ZIELE.mapNotNull { k -> https(HomesHttp.text(ziele, k))?.let { k to it } }.toMap(),
-                vomServer = roh.any { it.has(EinrichtungModulJson.OEFFNEN) },
             )
         }
 
@@ -97,6 +89,8 @@ class Einrichtung(val offen: Int, val module: List<Modul>, val ziele: Map<String
                 titel = HomesHttp.text(o, EinrichtungModulJson.TITEL) ?: name,
                 icon = HomesHttp.text(o, EinrichtungModulJson.ICON) ?: name,
                 web = https(HomesHttp.text(o, EinrichtungModulJson.WEB)),
+                ziel = https(HomesHttp.text(o, EinrichtungModulJson.ZIEL)),
+                stand = HomesHttp.text(o, EinrichtungModulJson.STAND)?.trim()?.takeIf { it.isNotEmpty() },
                 oeffnen = o?.optBoolean(EinrichtungModulJson.OEFFNEN, false) == true,
                 app = if (o?.optBoolean(EinrichtungModulJson.NUR_WEB, false) == true || paket == null) {
                     null

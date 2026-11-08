@@ -81,7 +81,6 @@ class HomesKontoPushTest {
         TokenStore.backend = app.getSharedPreferences("test_tokens", Context.MODE_PRIVATE)
         TokenStore.save(app, "homes_device_T1")
         shadowOf(app.getSystemService(PowerManager::class.java)).setIsInteractive(true)
-        Reach.call("cloud.dopp.homes.realtime.Live", "setEnabled", app, true)
         Reach.set("cloud.dopp.homes.realtime.Live", "open", { req: Request, l: EventSourceListener ->
             listeners += l
             FakeSource(req).also { opened += it }

@@ -31,9 +31,10 @@
             android:scaleType="fitCenter"
             android:contentDescription="@string/energy_widget_label" />
 
-        <!-- Heute (owner, 2026-11-03): the number first, then its word; the
-             numbers end and the words begin on one axis down the middle of
-             the column, „Heute“ centred over it. Autarkie now is the last row. -->
+        <!-- What the counters added today (owner, 2026-11-03): the number first,
+             then its word; the numbers end and the words begin on one axis down
+             the middle of the column. No „Heute“ heading (owner, 2026-11-08): the
+             kWh beside the live picture's W say it. Autarkie now is the last row. -->
         <LinearLayout
             android:id="@+id/e_today_block"
             android:layout_width="@dimen/energy_today_width"
@@ -42,18 +43,6 @@
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
             android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/e_today_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="2dp"
-                android:gravity="center"
-                android:maxLines="1"
-                android:text="@string/energy_today"
-                android:fontFamily="sans-serif-black"
-                android:textColor="#FFF2F2F5"
-                android:textSize="14sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"

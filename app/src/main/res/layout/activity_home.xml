@@ -275,9 +275,10 @@
                 android:layout_marginBottom="@dimen/space_xs"
                 android:text="@string/home_widgets_hint" />
 
-            <!-- One card (owner, 2026-11-03): the widgets to add, then the live row in
-                 the same row style; its line asks for „Zulassen“ only while the
-                 battery exemption is missing. -->
+            <!-- One card (owner, 2026-11-03): the widgets to add, then, in the same
+                 row style and only while the battery exemption is missing, the row
+                 that asks for „Zulassen“ (owner 2026-11-08: no live switch, live
+                 is the one way). -->
             <LinearLayout
                 android:id="@+id/widgets_card"
                 android:layout_width="match_parent"
@@ -291,11 +292,12 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />
 
-                <!-- The live widgets (LiveService): on by default once paired. -->
+                <!-- Widgets aktuell halten: gone once the exemption is granted (HomeActivity.render). -->
                 <LinearLayout
                     android:id="@+id/live_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:visibility="gone"
                     android:background="?android:attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:minHeight="56dp"
@@ -323,26 +325,20 @@
                             android:id="@+id/live_title"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/live_switch"
+                            android:text="@string/live_battery_title"
                             android:textColor="@color/homes_text"
                             android:textSize="16sp" />
 
-                        <!-- Whether a restart after a killed process goes live by itself; a tap asks for it. -->
+                        <!-- The one action: „Zulassen“, so a restart after a killed process goes live by itself. -->
                         <TextView
                             android:id="@+id/live_battery"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:text="@string/live_battery_off"
                             android:textColor="@color/homes_text_muted"
                             android:textSize="13sp" />
                     </LinearLayout>
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/live_switch"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:contentDescription="@string/live_switch" />
                 </LinearLayout>
             </LinearLayout>
 

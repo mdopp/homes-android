@@ -27,10 +27,7 @@ object Napi {
     /** HEAD and PATCH are the resumable upload's (`/napi/sicherung/uploads/{id}`, #194); PUT and DELETE the Homes account's writes. */
     enum class Method { GET, POST, HEAD, PATCH, PUT, DELETE }
 
-    /**
-     * The resumable upload's offset: a reply header of HEAD, a request header of
-     * PATCH (`/napi/sicherung/uploads/{id}`, #194).
-     */
+    /** The resumable upload's offset: a reply header of HEAD, a request header of PATCH (`/napi/sicherung/uploads/{id}`, #194). */
     const val UPLOAD_OFFSET = "Upload-Offset"
 
     /**
@@ -583,6 +580,8 @@ object Napi {
         const val ICON = "icon"
         const val OEFFNEN = "oeffnen" // the app lists it under „Öffnen“, in the answer's order (homes#300)
         const val WEB = "web"
+        const val ZIEL = "ziel" // what the row's tap opens instead of WEB, per person: the timeline itself (homes#310)
+        const val STAND = ImportStandJson.STAND // one line under the title: „Zuletzt aufgezeichnet heute 08:40“ (homes#310)
         const val NUR_WEB = "nur_web"
         const val PAKET = "paket"
         const val STORE = "store"

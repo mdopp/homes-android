@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit
  * The person's modules and setup tasks (`/napi/einrichtung`, owner
  * 2026-11-04): the answer read as Homes writes it (docs/REFERENCE.md), an
  * older Homes' 404 that hides it all, which modules „Öffnen“ lists (Homes'
- * `oeffnen`, or the fallback for an older Homes), a module's picture, which tasks show, and what the phone tells Homes it has installed.
+ * `oeffnen`), a row's own target and state (`ziel`, `stand`, homes#310), a module's picture, which tasks show, and what the phone tells Homes it has installed.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -62,6 +62,10 @@ class EinrichtungTest {
         assertTrue("a finished task, am and wie beside", e.module[1].aufgabe!!.erledigt)
         assertNull(e.module[2].app)
         assertEquals("https://homes.example/einkauf", e.module[2].web)
+        assertNull("no target of its own", e.module[2].ziel)
+        assertNull("no state", e.module[2].stand)
+        assertEquals("https://reitti.example/timeline", e.module[4].ziel)
+        assertEquals("Zuletzt aufgezeichnet heute 08:40", e.module[4].stand)
         assertEquals(
             mapOf("einkauf" to "https://homes.example/einkauf", "zeitleiste" to "https://reitti.example", "scannen" to "https://homes.example/napi/upload"),
             e.ziele,
@@ -78,13 +82,17 @@ class EinrichtungTest {
         val e = Einrichtung.lesen(
             """{"version":1,"offen":-3,"module":[{"titel":"ohne Namen"},
                {"name":"dokumente","web":"http://klartext.example","nur_web":true},
-               {"name":"standort","web":"javascript:alert(1)","nur_web":true},
-               {"name":"musik","icon":"z","web":"https://z.example","nur_web":true,"neu":"ein Feld von morgen"}],
+               {"name":"standort","oeffnen":true,"web":"javascript:alert(1)","ziel":"http://klartext.example","stand":"   ","nur_web":true},
+               {"name":"musik","icon":"z","oeffnen":true,"web":"https://z.example","ziel":"https://reitti.example/x","stand":" Alles einsortiert ","nur_web":true,"neu":"ein Feld von morgen"}],
                "ziele":{"einkauf":"http://klartext.example","unbekannt":"https://u.example","zeitleiste":"https://r.example"}}""",
         )!!
         assertEquals(0, e.offen)
         assertEquals("a module without its name is none", listOf("dokumente", "standort", "musik"), e.module.map { it.name })
         assertEquals("only https addresses", listOf("musik"), e.oeffnen.map { it.name })
+        assertNull("an http target", e.module[1].ziel)
+        assertNull("a blank state", e.module[1].stand)
+        assertEquals("https://reitti.example/x", e.module[2].ziel)
+        assertEquals("Alles einsortiert", e.module[2].stand)
         assertEquals("only https targets the app knows", mapOf("zeitleiste" to "https://r.example"), e.ziele)
     }
 
@@ -126,24 +134,12 @@ class EinrichtungTest {
         )
         assertEquals(listOf(true, false, false, true, true), e.module.map { it.oeffnen })
         val keins = Einrichtung.lesen(ANTWORT.replace("\"nur_web\":true", "\"oeffnen\":false,\"nur_web\":true"))!!
-        assertTrue("Homes marks none: „Öffnen“ is empty, not the fallback", keins.oeffnen.isEmpty())
+        assertTrue("Homes marks none: „Öffnen“ is empty", keins.oeffnen.isEmpty())
     }
 
-    /** An older Homes sends no `oeffnen`: the fallback, three modules (owner, 2026-11-04; Gesundheit gone 2026-11-07), in their order. */
-    @Test fun anOlderHomesWithoutOeffnenGetsTheFallback() {
-        val e = Einrichtung.lesen(ANTWORT)!!
-        assertEquals("musik is not on this box", listOf("dokumente", "standort"), e.oeffnen.map { it.name })
-        assertTrue("not Einkauf, not a module with its own app", e.oeffnen.none { it.name in setOf("einkauf", "fotos", "filme", "sprechen") })
-        val alle = Einrichtung.lesen(
-            """{"version":1,"module":[
-               {"name":"musik","titel":"Musik verwalten","web":"https://homes.example/musik","nur_web":true},
-               {"name":"notizen","titel":"Notizen","web":"https://homes.example/notizen","nur_web":true},
-               {"name":"standort","titel":"Zeitleiste","web":"https://reitti.example","nur_web":true},
-               {"name":"kalender","titel":"Kalender","web":"https://homes.example/kalender","nur_web":true},
-               {"name":"dokumente","titel":"Dokumente","nur_web":true}]}""",
-        )!!
-        assertEquals("in the owner's order; dokumente without an address is none", listOf("standort", "musik"), alle.oeffnen.map { it.name })
-        assertEquals(listOf("dokumente", "standort", "musik"), Einrichtung.OEFFNEN)
+    /** No list of the app's own (2026-11-08): an answer without `oeffnen` lists nothing; every Homes marks them. */
+    @Test fun withoutOeffnenNothingIsListed() {
+        assertTrue(Einrichtung.lesen(ANTWORT)!!.oeffnen.isEmpty())
     }
 
     /** Drawables cannot come from Homes: a known `icon` key has its picture, an unknown or missing one the generic one. */
@@ -213,7 +209,7 @@ class EinrichtungTest {
              "aufgabe":{"titel":"Filme und Musik auf dem Handy einrichten","erledigt":true,"am":"2026-11-04","wie":"app","einrichten":"https://homes.example/einrichten/filme"}},
             {"name":"einkauf","titel":"Einkauf","icon":"einkauf","web":"https://homes.example/einkauf","nur_web":true},
             {"name":"dokumente","titel":"Dokumente","icon":"dokumente","web":"https://homes.example/dokumente","nur_web":true},
-            {"name":"standort","titel":"Zeitleiste","icon":"standort","web":"https://reitti.example","nur_web":true},
+            {"name":"standort","titel":"Zeitleiste","icon":"standort","web":"https://reitti.example","ziel":"https://reitti.example/timeline","stand":"Zuletzt aufgezeichnet heute 08:40","nur_web":true},
             {"name":"sprechen","titel":"Sprechen","icon":"sprechen",
              "app":{"name":"Signal","paket":"org.thoughtcrime.securesms","store":"https://play.google.com/store/apps/details?id=org.thoughtcrime.securesms"},
              "nur_web":false}],

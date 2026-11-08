@@ -33,8 +33,9 @@ import kotlin.concurrent.thread
  * significant-motion sensor gets a sentence: it keeps the plain interval.
  * Refused, the switch stays off with a sentence; a tap on it leads on.
  * Two modes, „Detailliert (mehr Akku)“ and „Sparsam“. Below: whether the
- * person connected Reitti on Homes (if not, one sentence, a tap opens Homes'
- * page), what waits on the phone, „Jetzt senden“.
+ * person connected Reitti on Homes (if not, one sentence; a tap opens Homes'
+ * page either way — the token form, or, connected, the quiet „Trennen“ there),
+ * what waits on the phone, „Jetzt senden“.
  */
 class StandortActivity : AppCompatActivity() {
 
@@ -68,8 +69,9 @@ class StandortActivity : AppCompatActivity() {
             Aufzeichnung.anpassen(applicationContext, neu = true)
         }
         findViewById<TextView>(R.id.standort_meldung).setOnClickListener { tippeHinweis() }
+        // not connected: Homes' page with the token form; connected: the same page, where „Trennen“ lives (owner 2026-11-08)
         findViewById<TextView>(R.id.standort_reitti).setOnClickListener {
-            if (verbindung == StandortClient.Verbindung.NichtVerbunden) {
+            if (verbindung == StandortClient.Verbindung.NichtVerbunden || verbindung is StandortClient.Verbindung.Verbunden) {
                 runCatching { startActivity(HomesPages.intent(this, HomesPages.STANDORT)) }
             }
         }
