@@ -222,15 +222,10 @@ class SicherungActivity : AppCompatActivity() {
         val k = karte(q)
         val fehlt = Spuren.teil(this, k.findViewById(R.id.quelle_spur), KannStore.kann(this), Liste.SICHERUNG, q.wire, ::render)
         val offen = store.ordner(q) == null
-        val warnung = if (offen) null else warnung(q)
+        val (zeile, gut) = zeile(q, offen)
         k.findViewById<TextView>(R.id.quelle_zuletzt).apply {
-            text = when {
-                offen -> getString(R.string.sicherung_offen)
-                warnung != null -> getString(R.string.sicherung_warnung, warnung)
-                else -> store.uebertragen(q)?.let { (zeit, _) -> getString(R.string.sicherung_ok, Anzeige.zeit(zeit)) }
-                    ?: getString(R.string.sicherung_bereit)
-            }
-            setTextColor(getColor(if (offen || warnung != null) R.color.homes_accent else R.color.homes_text))
+            text = zeile
+            setTextColor(getColor(if (gut) R.color.homes_text else R.color.homes_accent))
             visibility = if (fehlt) View.GONE else View.VISIBLE
         }
         k.findViewById<Button>(R.id.quelle_waehlen).apply {
@@ -239,6 +234,13 @@ class SicherungActivity : AppCompatActivity() {
         }
         k.findViewById<View>(R.id.quelle_wie).visibility = if (offen && !fehlt) View.VISIBLE else View.GONE
         if (!offen || fehlt) k.findViewById<View>(R.id.quelle_anleitung).visibility = View.GONE
+    }
+
+    /** [q]'s one line, and whether it is a ✓: not set up, why not, or the last transfer. */
+    private fun zeile(q: Quelle, offen: Boolean): Pair<String, Boolean> {
+        if (offen) return getString(R.string.sicherung_offen) to false
+        warnung(q)?.let { return getString(R.string.sicherung_warnung, it) to false }
+        return (store.uebertragen(q)?.let { (zeit, _) -> getString(R.string.sicherung_ok, Anzeige.zeit(zeit)) } ?: getString(R.string.sicherung_bereit)) to true
     }
 
     /** Why [q]'s folder does not go, as a sentence with its next step; null while it does. */
