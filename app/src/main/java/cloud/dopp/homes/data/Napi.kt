@@ -394,7 +394,8 @@ object Napi {
      * `GET /napi/kontakte/korrekturen` (Kontakt prüfen lassen, owner 2026-11-07):
      * the accepted changes of the person's own contacts, each with the UID the
      * app sent („Kontakte übertragen“: the lookup key) and per change its number
-     * [NR], its field [ART], before and after; a number's kind, an address's parts.
+     * [NR], its field [ART], before and after; a number's or e-mail's kind and whether it is
+     * the main one, an address's parts (the street one line), a photo's JPEG [BILD] (base64).
      */
     object KorrekturenJson {
         const val KORREKTUREN = "korrekturen"
@@ -408,8 +409,11 @@ object Napi {
         const val NACHHER = "nachher"
         const val VORHER_ART = "vorher_art"
         const val NACHHER_ART = "nachher_art"
+        const val VORHER_HAUPT = "vorher_haupt"
+        const val NACHHER_HAUPT = "nachher_haupt"
         const val VORHER_ADRESSE = "vorher_adresse"
         const val NACHHER_ADRESSE = "nachher_adresse"
+        const val BILD = "bild"
         const val STRASSE = "strasse"
         const val PLZ = "plz"
         const val ORT = "ort"

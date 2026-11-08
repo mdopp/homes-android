@@ -292,9 +292,18 @@ after the folders, only while the switch is on and the permission granted.
   side mdopp/homes#301; WRITE_CONTACTS, asked for by the same switch): in
   the same run, before the contacts go up, `GET /napi/kontakte/korrekturen`
   → `{korrekturen: [{id, uid, name, aenderungen: [{nr, art, vorher,
-  nachher, vorher_art, nachher_art, vorher_adresse, nachher_adresse}]}]}`,
-  the changes the person accepted on Homes' review of one of their own
-  contacts. `uid` is the lookup key this switch sent; the app finds the
+  nachher, vorher_art, nachher_art, vorher_haupt, nachher_haupt,
+  vorher_adresse, nachher_adresse, bild}]}]}`, the changes the person
+  accepted on Homes' review of one of their own contacts. Since homes#304
+  (owner 2026-11-08): a number's kind (mobil, privat, geschaeftlich,
+  andere → Phone.TYPE MOBILE, HOME, WORK, OTHER) and an e-mail's (privat,
+  geschaeftlich, andere → Email.TYPE HOME, WORK, OTHER) are written only
+  when they changed, the main one (`*_haupt`) as `IS_PRIMARY` and
+  `IS_SUPER_PRIMARY`; `art` `foto` replaces the raw contact's picture with
+  `bild` (a JPEG of at most 512 px, Homes made it from the pixels alone);
+  `art` `notiz` adds `nachher` below the note after an empty line (once).
+  An address's `strasse` is the one street line. The other way, „Kontakte
+  übertragen“ sends the phone's primary number and e-mail as `TYPE=PREF`. `uid` is the lookup key this switch sent; the app finds the
   phone's contact by it (`Contacts.lookupContact`, which follows Android
   joining and splitting raw contacts; a contact that went by its id only
   is taken only while its name is still `name`) and writes each change into

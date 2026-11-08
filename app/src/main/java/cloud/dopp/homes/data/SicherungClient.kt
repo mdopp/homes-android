@@ -1,5 +1,6 @@
 package cloud.dopp.homes.data
 
+import android.util.Base64
 import cloud.dopp.homes.data.Napi.DateiJson
 import cloud.dopp.homes.data.Napi.FehlendJson
 import cloud.dopp.homes.data.Napi.KontakteJson
@@ -57,8 +58,10 @@ class SicherungClient(
     data class Korrektur(val id: String, val uid: String, val name: String, val aenderungen: List<Aenderung>) {
         /**
          * One field: [art] vorname, nachname, telefon, mail, adresse,
-         * geburtstag, firma or position; [vorher] "" is new, [nachher] "" taken
-         * away; a number's kind mobil, privat or geschaeftlich.
+         * geburtstag, firma, position, foto ([bild], a JPEG) or notiz ([nachher]
+         * added to the note); [vorher] "" is new, [nachher] "" taken away; a
+         * number's kind mobil, privat, geschaeftlich or andere, an e-mail's
+         * privat, geschaeftlich or andere, and whether each is the main one.
          */
         data class Aenderung(
             val nr: Int,
@@ -69,6 +72,9 @@ class SicherungClient(
             val nachherArt: String = "",
             val vorherAdresse: Anschrift? = null,
             val nachherAdresse: Anschrift? = null,
+            val vorherHaupt: Boolean = false,
+            val nachherHaupt: Boolean = false,
+            val bild: ByteArray? = null,
         )
 
         /** A postal address as the page asks for it. */
@@ -300,6 +306,8 @@ class SicherungClient(
                     vorherArt = a.optString(KorrekturenJson.VORHER_ART), nachherArt = a.optString(KorrekturenJson.NACHHER_ART),
                     vorherAdresse = adresseAus(a.optJSONObject(KorrekturenJson.VORHER_ADRESSE)),
                     nachherAdresse = adresseAus(a.optJSONObject(KorrekturenJson.NACHHER_ADRESSE)),
+                    vorherHaupt = a.optBoolean(KorrekturenJson.VORHER_HAUPT), nachherHaupt = a.optBoolean(KorrekturenJson.NACHHER_HAUPT),
+                    bild = a.optString(KorrekturenJson.BILD).ifEmpty { null }?.let { runCatching { Base64.decode(it, Base64.DEFAULT) }.getOrNull() },
                 )
             }
             return Korrektur(id, uid, o.optString(KorrekturenJson.NAME), liste)

@@ -222,13 +222,13 @@ class NapiContractTest {
                 "internal/napi/kontakte.go:49-122 (text/vcard :65-69), registered napi.go:242, the reply internal/caldav/spiegel.go:277-282",
                 sends = setOf("kontakte", "neu", "geaendert", "entfernt", "fehler"),
             ),
-            // Kontakt prüfen lassen (owner 2026-11-07; mdopp/homes main at 7ac431f, the merge of homes#301; registered korrekturen.go:101-107, napi.go:329)
+            // Kontakt prüfen lassen (owner 2026-11-07 and 2026-11-08; mdopp/homes feat/kontakt-v2, homes#304; registered korrekturen.go:101-107, napi.go:329)
             Route(
                 "GET", "/napi/kontakte/korrekturen",
-                "internal/napi/korrekturen.go:54-71, a correction :33-38 and its change :28-31, the change internal/kontaktantwort/felder.go:157-167, an address felder.go:11-16",
+                "internal/napi/korrekturen.go:54-71, a correction :33-38 and its change :28-31, the change internal/kontaktantwort/felder.go:246-259, an address felder.go:14-21 (strasse the one street line, Zeilenweise)",
                 sends = setOf(
                     "korrekturen", "id", "uid", "name", "aenderungen", "nr", "art", "vorher", "nachher", "vorher_art", "nachher_art",
-                    "vorher_adresse", "nachher_adresse", "strasse", "plz", "ort", "land", "fehler",
+                    "vorher_haupt", "nachher_haupt", "vorher_adresse", "nachher_adresse", "strasse", "plz", "ort", "land", "bild", "fehler",
                 ),
             ),
             Route(

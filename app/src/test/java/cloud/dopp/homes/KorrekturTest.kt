@@ -1,18 +1,25 @@
 package cloud.dopp.homes
 
+import android.database.MatrixCursor
+import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds.Email
 import android.provider.ContactsContract.CommonDataKinds.Event
+import android.provider.ContactsContract.CommonDataKinds.Note
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
+import android.provider.ContactsContract.CommonDataKinds.Photo
 import android.provider.ContactsContract.CommonDataKinds.StructuredName
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import cloud.dopp.homes.data.SicherungClient
 import cloud.dopp.homes.data.SicherungClient.Korrektur
+import cloud.dopp.homes.sicherung.HandyKontakte
+import cloud.dopp.homes.sicherung.Kontakt
 import cloud.dopp.homes.sicherung.Kontaktbuch
 import cloud.dopp.homes.sicherung.KorrekturenLauf
 import cloud.dopp.homes.sicherung.Korrigieren
 import cloud.dopp.homes.sicherung.Lauf
 import cloud.dopp.homes.sicherung.Schritt
+import cloud.dopp.homes.sicherung.Vcard
 import cloud.dopp.homes.sicherung.Zeile
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.Dispatcher
@@ -87,6 +94,70 @@ class KorrekturTest {
         assertEquals(emptyList<Int>(), Korrigieren.plan(k, emptyList()).second)
     }
 
+    /**
+     * owner 2026-11-08: a kind is written only when it changed, the main number
+     * and e-mail address as Android's primary flags, the contact's own photo
+     * into the raw contact's picture, the message below the note (once).
+     */
+    @Test
+    fun kindsTheMainOneThePhotoAndTheNote() {
+        val bild = byteArrayOf(-1, -40, -1)
+        val mit = zeilen + Zeile(6, 10, Photo.CONTENT_ITEM_TYPE, emptyMap()) + Zeile(7, 10, Note.CONTENT_ITEM_TYPE, mapOf(Note.NOTE to "Kennt Anna"))
+        val k = Korrektur(
+            "f", "u", "Hilde Oma",
+            listOf(
+                Korrektur.Aenderung(0, "telefon", "0711 445566", "0711 445566", vorherArt = "privat", nachherArt = "privat", nachherHaupt = true),
+                Korrektur.Aenderung(1, "mail", "hilde@example.org", "hilde@example.org", vorherArt = "andere", nachherArt = "geschaeftlich"),
+                Korrektur.Aenderung(2, "mail", "", "hilde@neu.example", nachherArt = "privat", nachherHaupt = true),
+                Korrektur.Aenderung(3, "foto", "", "", bild = bild),
+                Korrektur.Aenderung(4, "notiz", "", "Bin umgezogen."),
+            ),
+        )
+        val (schritte, geschrieben) = Korrigieren.plan(k, mit)
+        assertEquals(listOf(0, 1, 2, 3, 4), geschrieben)
+        assertEquals(Schritt.Aendern(2, mapOf(Phone.NUMBER to "0711 445566", ContactsContract.Data.IS_PRIMARY to 1, ContactsContract.Data.IS_SUPER_PRIMARY to 1)), schritte[0])
+        assertEquals(Schritt.Aendern(3, mapOf(Email.ADDRESS to "hilde@example.org", Email.TYPE to Email.TYPE_WORK)), schritte[1])
+        assertEquals(
+            Schritt.Neu(10, Email.CONTENT_ITEM_TYPE, mapOf(Email.ADDRESS to "hilde@neu.example", Email.TYPE to Email.TYPE_HOME, ContactsContract.Data.IS_PRIMARY to 1, ContactsContract.Data.IS_SUPER_PRIMARY to 1)),
+            schritte[2],
+        )
+        val foto = schritte[3] as Schritt.Aendern
+        assertEquals(6L, foto.zeile)
+        assertTrue(foto.werte[Photo.PHOTO] === bild)
+        assertEquals(Schritt.Aendern(7, mapOf(Note.NOTE to "Kennt Anna\n\nBin umgezogen.")), schritte[4])
+        // a contact without a picture or a note gets them as new rows; a note that holds it already, nothing
+        val (neu, _) = Korrigieren.plan(k.copy(aenderungen = k.aenderungen.drop(3)), zeilen)
+        assertEquals(Photo.CONTENT_ITEM_TYPE, (neu[0] as Schritt.Neu).mime)
+        assertEquals(Schritt.Neu(10, Note.CONTENT_ITEM_TYPE, mapOf(Note.NOTE to "Bin umgezogen.")), neu[1])
+        val schon = zeilen + Zeile(7, 10, Note.CONTENT_ITEM_TYPE, mapOf(Note.NOTE to "Kennt Anna\n\nBin umgezogen."))
+        assertEquals(Pair(emptyList<Schritt>(), listOf(4)), Korrigieren.plan(k.copy(aenderungen = k.aenderungen.drop(4)), schon))
+    }
+
+    /** The other way: the phone's main number and e-mail go to Homes' mirror as TYPE=PREF. */
+    @Test
+    fun theMainOnesGoToHomesAsPref() {
+        val c = MatrixCursor(arrayOf(ContactsContract.Data.MIMETYPE, "data1", "data2", ContactsContract.Data.IS_SUPER_PRIMARY))
+        c.addRow(arrayOf<Any?>(Phone.CONTENT_ITEM_TYPE, "0171 1", Phone.TYPE_MOBILE, 1))
+        c.addRow(arrayOf<Any?>(Phone.CONTENT_ITEM_TYPE, "0711 2", Phone.TYPE_HOME, 0))
+        c.addRow(arrayOf<Any?>(Email.CONTENT_ITEM_TYPE, "a@b.de", Email.TYPE_WORK, 1))
+        var k = Kontakt(uid = "u")
+        while (c.moveToNext()) k = HandyKontakte.dazu(k, c)
+        val text = Vcard.karte(k)
+        assertTrue(text, text.contains("TEL;TYPE=CELL,VOICE,PREF:0171 1\r\n"))
+        assertTrue(text, text.contains("TEL;TYPE=HOME,VOICE:0711 2\r\n"))
+        assertTrue(text, text.contains("EMAIL;TYPE=INTERNET,WORK,PREF:a@b.de\r\n"))
+    }
+
+    @Test
+    fun theReplyCarriesTheMainOneAndThePhoto() {
+        val out = SicherungClient.korrekturenAus(
+            200,
+            """{"korrekturen":[{"id":"a","uid":"u","name":"N","aenderungen":[{"nr":0,"art":"foto","bild":"/9j/"},{"nr":1,"art":"telefon","vorher":"1","nachher":"1","vorher_haupt":true}]}]}""",
+        )
+        assertEquals(listOf(0xff.toByte(), 0xd8.toByte(), 0xff.toByte()), out[0].aenderungen[0].bild?.toList())
+        assertTrue(out[0].aenderungen[1].vorherHaupt && !out[0].aenderungen[1].nachherHaupt)
+    }
+
     // --- the run, against a Homes that serves one correction ----------------------
 
     private val server = MockWebServer()
@@ -128,7 +199,7 @@ class KorrekturTest {
         assertEquals(2, c.korrekturen().size)
         val buch = Buch(mapOf("lookup.1" to zeilen))
         assertEquals(Lauf.Ergebnis.FERTIG, KorrekturenLauf(c, buch).laufen())
-        assertEquals(listOf(listOf(Schritt.Aendern(2, mapOf(Phone.NUMBER to "0711 445577", Phone.TYPE to Phone.TYPE_HOME)))), buch.geschrieben)
+        assertEquals(listOf(listOf(Schritt.Aendern(2, mapOf(Phone.NUMBER to "0711 445577")))), buch.geschrieben) // the kind unchanged: the phone's own TYPE stays
         assertEquals("f1", erledigt[0].first)
         assertEquals("[1]", JSONObject(erledigt[0].second).getJSONArray("geschrieben").toString())
         assertEquals("f2", erledigt[1].first) // not on the phone: nothing written, said so
