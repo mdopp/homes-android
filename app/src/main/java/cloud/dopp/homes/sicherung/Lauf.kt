@@ -299,12 +299,12 @@ class Lauf(
         /** Below Android's ten minutes for a background job: the run ends between two pieces and goes on. */
         const val FRIST_MS = 9 * 60 * 1000L
 
-        const val ORDNER_WHATSAPP = "WhatsApp-Ordner nicht mehr freigegeben: tippe hier, um ihn neu zu wählen."
-        const val ORDNER_SIGNAL = "Signal-Ordner nicht mehr freigegeben: tippe hier, um ihn neu zu wählen."
+        const val ORDNER_WHATSAPP = "WhatsApp-Ordner nicht mehr freigegeben."
+        const val ORDNER_SIGNAL = "Signal-Ordner nicht mehr freigegeben."
         const val KEINE_WHATSAPP =
-            "Im WhatsApp-Ordner liegt keine Sicherung: schalte in WhatsApp das Ende-zu-Ende-verschlüsselte Backup ein (Anleitung unten)."
+            "Im WhatsApp-Ordner liegt keine Sicherung: schalte in WhatsApp unter Chats → Chat-Backup das Ende-zu-Ende-verschlüsselte Backup ein."
         const val KEINE_SIGNAL =
-            "Im Signal-Ordner liegt keine Sicherung: schalte in Signal die Chat-Backups ein und wähle dort diesen Ordner (Anleitung unten)."
+            "Im Signal-Ordner liegt keine Sicherung: schalte in Signal unter Chats die Chat-Backups ein und wähle dort diesen Ordner."
         const val SPAETER = "Noch nicht alles übertragen: die App macht beim nächsten Mal im WLAN weiter."
         const val UNERREICHBAR = "Homes war nicht erreichbar: die App versucht es bald von selbst wieder."
         const val BESCHAEFTIGT = "Die Box ist gerade beschäftigt: die App versucht es bald von selbst wieder."

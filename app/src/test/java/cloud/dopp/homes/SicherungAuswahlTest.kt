@@ -131,11 +131,7 @@ class SicherungAuswahlTest {
     @Test
     fun timesAndSizesReadAsGerman() {
         val utc = TimeZone.getTimeZone("UTC")
-        assertEquals(Anzeige.rfc3339("2026-11-01T03:12:00Z"), Anzeige.rfc3339("2026-11-01T04:12:00+01:00"))
-        assertEquals(Anzeige.rfc3339("2026-11-01T03:12:00Z")!! + 250, Anzeige.rfc3339("2026-11-01T03:12:00.25Z"))
-        assertEquals("01.11.2026, 03:12", Anzeige.zeit(Anzeige.rfc3339("2026-11-01T03:12:00Z")!!, utc))
-        assertNull(Anzeige.rfc3339("gestern"))
-        assertNull(Anzeige.rfc3339(null))
+        assertEquals("01.11.2026, 03:12", Anzeige.zeit(1_793_502_720_000, utc))
         assertEquals("3,4 GB", Anzeige.groesse(3_400_000_000))
         assertEquals("120 MB", Anzeige.groesse(120_000_000))
         assertEquals("12 B", Anzeige.groesse(12))

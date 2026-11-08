@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kontakte, SMS und Anrufe on „Daten sichern“ (laib ADR 0029): two
-     switches, each with its own permission; what goes where in one line. -->
+     switches, each with its own permission. -->
 <resources>
     <string name="handy_kontakte_titel">Kontakte</string>
     <string name="handy_sms_titel">SMS und Anrufe</string>
@@ -8,12 +8,8 @@
     <string name="handy_kontakte">Kontakte übertragen</string>
     <string name="handy_sms">SMS und Anrufe übertragen</string>
 
-    <string name="handy_kontakte_was">Die Kontakte kommen in dein eigenes Adressbuch „Handy-Kontakte“ auf der Box. Wer die Box verwaltet, kann es lesen, so wie deinen Kalender.</string>
-    <string name="handy_sms_was">SMS und Anrufe werden schon auf dem Handy für dein Archiv verschlüsselt. Lesen kannst du sie erst, wenn du dein Archiv öffnest.</string>
-
     <!-- the same scheme as the WhatsApp and Signal cards -->
-    <string name="handy_stand">Letzte Übertragung: %1$s – %2$s</string>
-    <string name="handy_stand_nie">Letzte Übertragung: noch keine – geschieht beim nächsten Sichern</string>
+    <string name="handy_stand">✓ Zuletzt übertragen: %1$s – %2$s</string>
 
     <string name="handy_kontakte_abgelehnt">Ohne die Erlaubnis für Kontakte bleibt das aus.</string>
     <string name="handy_sms_abgelehnt">Ohne die Erlaubnis für SMS und Anrufliste bleibt das aus.</string>

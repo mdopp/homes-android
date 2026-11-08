@@ -68,7 +68,7 @@ object Auswahl {
     fun versteckt(pfad: String): Boolean = pfad.split('/').any { it.startsWith(".") }
 
     /** Not changed for [RUHE_MS]. */
-    fun ruhig(d: Datei, jetzt: Long): Boolean = jetzt - d.geaendert >= RUHE_MS
+    private fun ruhig(d: Datei, jetzt: Long): Boolean = jetzt - d.geaendert >= RUHE_MS
 
     /** [neueste] against what was sent last: only a newer, different file counts. */
     private fun gegen(neueste: Datei?, zuletzt: Gesendet?, jetzt: Long): Wahl = when {
