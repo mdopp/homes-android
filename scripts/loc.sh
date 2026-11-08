@@ -31,7 +31,7 @@ budget sicherung 3560  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        #   sends each contact's own picture as its PHOTO, ≤256 px, for Homes' „Ist das …?“ in Immich (homes#298);
                        # 3199 -> 3517 (owner approved 2026-11-07: Kontakt prüfen lassen) — the accepted
                        #   corrections written into the person's own phone contacts, Korrektur.kt (the plan) and HandyKorrektur.kt;
-                       # 3517 -> 3560 (owner's yes asked in the PR, Kontakt prüfen lassen second round, homes#304): the kinds
+                       # 3517 -> 3560 (owner approved 2026-11-08: Kontakt-Formular v2, homes#304): the kinds
                        #   written only when changed, the main number and e-mail (primary flags, both ways), the photo row, the note
 budget ui        3500  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
@@ -47,7 +47,7 @@ budget data      3132  # 2,780: Homes' calls (Napi), clients, models, the token 
                        #   PUT and DELETE, GemeinsamClient.schreiben (homes#278);
                        # 3007 -> 3120 (owner approved 2026-11-07: Kontakt prüfen lassen) — GET and POST
                        #   /napi/kontakte/korrekturen, their reply shapes and parser;
-                       # 3120 -> 3132 (owner's yes asked in the PR, homes#304): the main ones and the photo in that reply
+                       # 3120 -> 3132 (owner approved 2026-11-08: Kontakt-Formular v2, homes#304): the main ones and the photo in that reply
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
