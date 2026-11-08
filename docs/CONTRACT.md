@@ -228,9 +228,13 @@ and 401 stop the run with a German sentence on the screen. Errors are
 (`{"error":"unauthorized"}`), for which the app says to pair again.
 
 `GET /napi/sicherung/stand` → `{quellen: {whatsapp|signal|sms: {zuletzt,
-dateien, bytes, wartend}}, frei_bytes}` is shown per source on the screen.
-The app never asks for or stores a messenger's key: keys go into the
-person's vault on the box (laib#986).
+dateien, bytes, wartend}}, frei_bytes}` is read for its refusal only (no
+archive on the box, not paired), one sentence on the screen: what arrived
+per source, and the room left, are Homes' page `/daten-sichern` (owner,
+2026-11-08: the screen keeps only what needs the phone, one line per
+source, and opens that page as „Alles im Überblick“). The app never asks
+for or stores a messenger's key: keys go into the person's vault on the
+box (laib#986); a source's folded guide opens the archive's `/tresor`.
 
 The screen's progress is the run's totals per source — files whole of all
 it sends, bytes on the box of all their bytes („3.809 von 18.017 Dateien,

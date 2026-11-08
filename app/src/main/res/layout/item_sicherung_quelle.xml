@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One source on „Daten sichern“ (#194): its folder, its last transfer,
-     what the box reports, its last word, and the folder picker. -->
+<!-- One source on „Daten sichern“ (#194; owner 2026-11-08: state and one action): its
+     line (✓ and the last transfer, or ⚠ and why), „Ordner freigeben“ while it is not set
+     up, and only then its short guide, folded, with the way to the key in the archive. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -17,40 +18,53 @@
         android:layout_marginBottom="@dimen/space_xs" />
 
     <TextView
-        android:id="@+id/quelle_ordner"
-        style="@style/Text.Homes.Body"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
         android:id="@+id/quelle_zuletzt"
         style="@style/Text.Homes.Body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/quelle_box"
-        style="@style/Text.Homes.Body"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <!-- The last word: a German sentence with the next step; a folder problem opens the picker. -->
-    <TextView
-        android:id="@+id/quelle_meldung"
-        style="@style/Text.Homes.Body"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/space_xs"
-        android:background="?android:attr/selectableItemBackground"
-        android:textColor="@color/homes_accent"
-        android:visibility="gone" />
 
     <Button
         android:id="@+id/quelle_waehlen"
         style="@style/Widget.Homes.Button.Ghost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/space_sm" />
+        android:layout_marginTop="@dimen/space_sm"
+        android:text="@string/sicherung_ordner_waehlen" />
+
+    <!-- The guide, only while the source is not set up: folded, a tap unfolds it. -->
+    <TextView
+        android:id="@+id/quelle_wie"
+        style="@style/Text.Homes.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:background="?android:attr/selectableItemBackground"
+        android:paddingTop="@dimen/space_xs"
+        android:paddingBottom="@dimen/space_xs"
+        android:text="@string/sicherung_wie"
+        android:textColor="@color/homes_accent" />
+
+    <LinearLayout
+        android:id="@+id/quelle_anleitung"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/quelle_schritte"
+            style="@style/Text.Homes.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/quelle_schluessel"
+            style="@style/Widget.Homes.Button.Ghost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/sicherung_schluessel" />
+    </LinearLayout>
 
     <!-- What the box lacks here (homes ADR 0001 §10): the source's trace, its button disabled. -->
     <LinearLayout

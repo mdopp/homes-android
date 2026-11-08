@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mehr → Daten sichern (#194): the two folders, the cards with the
-     switches for contacts and for SMS and calls (laib ADR 0029), the state, „Jetzt
-     sichern“, and the guide. Edge-to-edge like the home screen. -->
+<!-- Mehr → Daten sichern (#194; owner 2026-11-08: only what needs the phone): the link to
+     Homes' overview, the two folders, the switches for contacts and for SMS and calls
+     (laib ADR 0029), „Jetzt sichern“. Edge-to-edge like the home screen. -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/sicherung_root"
     android:layout_width="match_parent"
@@ -26,18 +26,26 @@
             android:layout_marginBottom="@dimen/space_sm"
             android:text="@string/sicherung_title" />
 
+        <!-- Everything at a glance, keys and E-Mail included, is Homes' page (owner 2026-11-08). -->
         <TextView
+            android:id="@+id/sicherung_ueberblick"
             style="@style/Text.Homes.Body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sicherung_intro" />
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="@dimen/space_xs"
+            android:paddingBottom="@dimen/space_xs"
+            android:text="@string/sicherung_ueberblick"
+            android:textColor="@color/homes_accent" />
 
+        <!-- Homes' own sentence why it cannot take backups, or that the app is not paired. -->
         <TextView
-            android:id="@+id/sicherung_frei"
+            android:id="@+id/sicherung_hinweis"
             style="@style/Text.Homes.Body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_sm" />
+            android:layout_marginTop="@dimen/space_sm"
+            android:visibility="gone" />
 
         <include
             android:id="@+id/sicherung_whatsapp"
@@ -47,8 +55,7 @@
             android:id="@+id/sicherung_signal"
             layout="@layout/item_sicherung_quelle" />
 
-        <!-- Kontakte (laib ADR 0029): a card like WhatsApp's and Signal's, the switch
-             in its title row, off until the person turns it on. -->
+        <!-- Kontakte (laib ADR 0029): the switch in its title row, off until the person turns it on. -->
         <LinearLayout
             android:id="@+id/handy_kontakte_karte"
             android:layout_width="match_parent"
@@ -80,12 +87,6 @@
             </LinearLayout>
 
             <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/handy_kontakte_was" />
-
-            <TextView
                 android:id="@+id/handy_kontakte_stand"
                 style="@style/Text.Homes.Body"
                 android:layout_width="match_parent"
@@ -112,8 +113,7 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <!-- SMS und Anrufe (laib ADR 0029): a card like WhatsApp's and Signal's, the switch
-             in its title row, off until the person turns it on. -->
+        <!-- SMS und Anrufe (laib ADR 0029): the switch in its title row, off until the person turns it on. -->
         <LinearLayout
             android:id="@+id/handy_sms_karte"
             android:layout_width="match_parent"
@@ -143,12 +143,6 @@
                     android:layout_height="wrap_content"
                     android:contentDescription="@string/handy_sms" />
             </LinearLayout>
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/handy_sms_was" />
 
             <TextView
                 android:id="@+id/handy_sms_stand"
@@ -210,126 +204,5 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_md"
             android:text="@string/zurueck_oeffnen" />
-
-        <TextView
-            style="@style/Text.Homes.Title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xl"
-            android:text="@string/sicherung_anleitung_title" />
-
-        <LinearLayout
-            android:id="@+id/sicherung_anleitung"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
-            android:background="@drawable/card_homes"
-            android:orientation="vertical"
-            android:padding="@dimen/card_padding">
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_signal_title" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_signal" />
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_whatsapp_title" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_whatsapp" />
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_sms_title" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_sms" />
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_kontakte_title" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_kontakte" />
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_mail_title" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_mail" />
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_kalender_title" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_kalender" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_standort" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md"
-                android:text="@string/sicherung_anleitung_versionen" />
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_nie_title" />
-
-            <TextView
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sicherung_anleitung_nie" />
-        </LinearLayout>
     </LinearLayout>
 </ScrollView>

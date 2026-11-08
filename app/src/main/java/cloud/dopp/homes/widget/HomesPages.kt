@@ -30,6 +30,9 @@ object HomesPages {
     /** Standortverlauf: where the person connects their Reitti once. */
     const val STANDORT = "/standort"
 
+    /** Daten sichern: everything at a glance, the way to the keys (Homes' internal/pages/nachrichten.go). */
+    const val DATEN = "/daten-sichern"
+
     /** [page] of [base]; from a widget it carries `von=widget.<kind>` exactly once (#180), so Homes counts the tap. */
     fun url(base: String, page: String, from: WidgetKind? = null): String {
         val full = base.trimEnd('/') + page

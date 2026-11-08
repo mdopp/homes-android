@@ -44,7 +44,9 @@ contacts and calendar are on the phone.
 - **Daten sichern:** every day, on Wi-Fi while charging, your WhatsApp and
   Signal backups go to the box. If you want, also your contacts, and your
   SMS and call log, encrypted on the phone before they leave it. On a new
-  phone the app brings the Signal and WhatsApp backups back.
+  phone the app brings the Signal and WhatsApp backups back. The screen
+  shows one line per source; everything at a glance is Homes' page
+  „Daten sichern“, one tap away.
 - **The household on the phone:** the shared contacts, calendars and
   reminders appear as an Android account „Homes“, so the dialer, WhatsApp,
   mail and the calendar app see them.

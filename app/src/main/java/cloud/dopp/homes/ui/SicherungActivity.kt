@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
-import android.provider.DocumentsContract
 import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
@@ -33,41 +32,38 @@ import cloud.dopp.homes.sicherung.KontakteLauf
 import cloud.dopp.homes.sicherung.Lauf
 import cloud.dopp.homes.sicherung.Meldung
 import cloud.dopp.homes.sicherung.NachrichtenLauf
+import cloud.dopp.homes.sicherung.Rueckholung
 import cloud.dopp.homes.sicherung.SafOrdner
 import cloud.dopp.homes.sicherung.SicherungStore
 import cloud.dopp.homes.sicherung.SicherungWorker
 import cloud.dopp.homes.sicherung.Zustand
+import cloud.dopp.homes.widget.HomesPages
 import kotlin.concurrent.thread
 
 /**
- * Mehr → Daten sichern (#194, laib ADR 0029). The person grants two
- * folders through the system picker — WhatsApp's
- * (`Android/media/com.whatsapp/WhatsApp`, suggested) and the one they chose
- * in Signal — and sees per source whether the folder is granted, when a file
- * last went over, what Homes reports (`/napi/sicherung/stand`) and the last
- * word as a German sentence with the next step. „Jetzt sichern“ starts a run
- * at once and shows its progress. The guide is on the screen itself.
+ * Mehr → Daten sichern (#194, laib ADR 0029; owner 2026-11-08: only what
+ * needs the phone, state and one action). Per source one line: ✓ and the
+ * last transfer, or ⚠ and why with its one button. WhatsApp and Signal
+ * need a folder granted through the system picker; while one is not set
+ * up, its short guide is folded below, with the way to the key in the
+ * person's archive (no key is asked for or stored here, laib#986).
+ * „Alles im Überblick“ opens Homes' page „Daten sichern“, the one
+ * overview with E-Mail, Kalender and what arrived on the box.
  *
- * No key is asked for or stored here: the keys go into the person's vault
- * on the box (laib#986).
- *
- * Below the two folders, two switches (laib ADR 0029), off until the person
- * turns one on: „Kontakte übertragen“ (READ_CONTACTS) and „SMS und Anrufliste
- * übertragen“ (READ_SMS, READ_CALL_LOG). Turning one on asks for its
- * permission; refused, it stays off with a sentence. A sideloaded app on
- * Android 13+ cannot even ask for SMS and the call log ("restricted
- * settings"): then the sentence says how to allow them in App-Info.
+ * Kontakte and SMS und Anrufe are switches (laib ADR 0029), off until the
+ * person turns one on: READ_CONTACTS, and READ_SMS with READ_CALL_LOG.
+ * Turning one on asks for its permission; refused, it stays off with a
+ * sentence. A sideloaded app on Android 13+ cannot even ask for SMS and the
+ * call log ("restricted settings"): then the sentence says how to allow
+ * them in App-Info. „Jetzt sichern“ starts a run at once and shows its progress.
  */
 class SicherungActivity : AppCompatActivity() {
 
     private lateinit var store: SicherungStore
 
-    /** What Homes last reported; null while it is read. */
+    /** What Homes last reported; null while it is read: only its refusal is shown. */
     @Volatile
     private var stand: SicherungClient.Stand? = null
-
-    /** What a look into each granted folder found, as the line under the folder; null while it looks. */
-    private val funde = HashMap<Quelle, String?>()
 
     private val waehleWhatsapp = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let { gewaehlt(Quelle.WHATSAPP, it) }
@@ -111,8 +107,19 @@ class SicherungActivity : AppCompatActivity() {
         karte(Quelle.WHATSAPP).findViewById<TextView>(R.id.quelle_name).setText(R.string.sicherung_whatsapp)
         karte(Quelle.SIGNAL).findViewById<TextView>(R.id.quelle_name).setText(R.string.sicherung_signal)
         Lauf.QUELLEN.forEach { q ->
-            karte(q).findViewById<Button>(R.id.quelle_waehlen).setOnClickListener { waehle(q) }
-            karte(q).findViewById<TextView>(R.id.quelle_meldung).setOnClickListener { if (ordnerFehlt(q)) waehle(q) }
+            val k = karte(q)
+            k.findViewById<Button>(R.id.quelle_waehlen).setOnClickListener { waehle(q) }
+            k.findViewById<TextView>(R.id.quelle_schritte).setText(
+                if (q == Quelle.SIGNAL) R.string.sicherung_anleitung_signal else R.string.sicherung_anleitung_whatsapp,
+            )
+            k.findViewById<View>(R.id.quelle_wie).setOnClickListener {
+                val a = k.findViewById<View>(R.id.quelle_anleitung)
+                a.visibility = if (a.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            }
+            k.findViewById<Button>(R.id.quelle_schluessel).setOnClickListener { zeigeSeite(archivTresor()) }
+        }
+        findViewById<View>(R.id.sicherung_ueberblick).setOnClickListener {
+            runCatching { startActivity(HomesPages.intent(this, HomesPages.DATEN)) }
         }
         Schalter.entries.forEach { art ->
             schalterView(art).setOnCheckedChangeListener { _, an -> if (!setzt) schalte(art, an) }
@@ -130,39 +137,16 @@ class SicherungActivity : AppCompatActivity() {
         KannLeser.lesen(this) // what the box can do: a part it lacks is a trace (homes ADR 0001 §10)
         render()
         ladeStand()
-        Lauf.QUELLEN.forEach(::schaueNach)
     }
 
-    /** Look into [q]'s granted folder off the main thread: is the backup the app would send there? */
-    private fun schaueNach(q: Quelle) {
-        val baum = store.ordner(q)?.takeIf { freigegeben(q) } ?: return
-        funde[q] = null
-        val app = applicationContext
-        thread {
-            val o = SafOrdner(app, baum)
-            val satz = if (q == Quelle.SIGNAL) {
-                Auswahl.neuesteSignal(o.dateien("", false).orEmpty())?.let {
-                    getString(R.string.sicherung_fund_signal, Anzeige.zeit(it.geaendert), Anzeige.groesse(it.groesse))
-                } ?: getString(R.string.sicherung_fund_signal_keine)
-            } else {
-                Auswahl.msgstoreDatei(o.dateien(Auswahl.DATENBANKEN, false).orEmpty())?.let {
-                    getString(R.string.sicherung_fund_whatsapp, Anzeige.zeit(it.geaendert), Anzeige.groesse(it.groesse))
-                } ?: getString(R.string.sicherung_fund_whatsapp_keine)
-            }
-            runOnUiThread {
-                funde[q] = satz
-                if (!isFinishing) renderQuelle(q)
-            }
-        }
+    /** The archive's page for the keys, from Homes' address; Homes' „Daten sichern“ when it cannot be told. */
+    private fun archivTresor(): String? = ServerStore.baseUrl(this)?.let { base ->
+        Rueckholung.archivAdresse(base)?.plus("tresor") ?: HomesPages.url(base, HomesPages.DATEN)
     }
 
-    /** The folder as the Files app names it, and below it what is in there. */
-    private fun ordnerZeile(q: Quelle): String {
-        val baum = store.ordner(q) ?: return getString(R.string.sicherung_ordner_nein)
-        val name = runCatching { Anzeige.ordner(DocumentsContract.getTreeDocumentId(baum)) }.getOrDefault(baum.toString())
-        if (!freigegeben(q)) return getString(R.string.sicherung_ordner_weg, name)
-        val fund = if (funde.containsKey(q)) funde[q] ?: getString(R.string.sicherung_fund_sucht) else null
-        return getString(R.string.sicherung_ordner_ja, name) + (fund?.let { "\n$it" } ?: "")
+    private fun zeigeSeite(url: String?) {
+        url ?: return
+        runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE)) }
     }
 
     private fun karte(q: Quelle): View =
@@ -172,9 +156,9 @@ class SicherungActivity : AppCompatActivity() {
 
     private fun freigegeben(q: Quelle): Boolean = store.ordner(q)?.let { SafOrdner.freigegeben(this, it) } == true
 
-    /** A folder was chosen once and its grant is gone: the tap on the sentence opens the picker. */
+    /** A folder was chosen once and its grant is gone, or the run found no backup in it: „Ordner freigeben“ again. */
     private fun ordnerFehlt(q: Quelle): Boolean =
-        (store.ordner(q) != null && !freigegeben(q)) || store.meldung(q)?.art == Meldung.Art.ORDNER
+        (store.ordner(q) != null && !freigegeben(q)) || store.meldung(q)?.art in setOf(Meldung.Art.ORDNER, Meldung.Art.KEINE)
 
     /** The box lacks [key] in its backup (homes ADR 0001 §3): the part cannot be switched on here. */
     private fun fehlt(key: String): Boolean = !KannStore.kann(this).hat(Liste.SICHERUNG, key)
@@ -211,10 +195,7 @@ class SicherungActivity : AppCompatActivity() {
                 }
                 store.setzeOrdner(q, baum)
                 SicherungWorker.planen(app)
-                if (!isFinishing) {
-                    render()
-                    schaueNach(q)
-                }
+                if (!isFinishing) render()
             }
         }
     }
@@ -225,66 +206,54 @@ class SicherungActivity : AppCompatActivity() {
         Lauf.QUELLEN.forEach(::renderQuelle)
         Schalter.entries.forEach(::renderSchalter)
         val s = stand
-        findViewById<TextView>(R.id.sicherung_frei).text = when {
-            !gekoppelt() -> Lauf.NICHT_GEKOPPELT
-            s is SicherungClient.Stand.Da -> s.freiBytes?.let { getString(R.string.sicherung_box_frei, Anzeige.groesse(it)) }.orEmpty()
+        val satz = when {
+            !gekoppelt() || s is SicherungClient.Stand.NichtGekoppelt -> Lauf.NICHT_GEKOPPELT
             s is SicherungClient.Stand.Fehler -> s.satz
-            s is SicherungClient.Stand.NichtGekoppelt -> Lauf.NICHT_GEKOPPELT
-            else -> ""
+            else -> null
+        }
+        findViewById<TextView>(R.id.sicherung_hinweis).apply {
+            text = satz.orEmpty()
+            visibility = if (satz == null) View.GONE else View.VISIBLE
         }
     }
 
+    /** [q]'s one line, its button while it needs one, its guide while it is not set up; only the trace where the box lacks it. */
     private fun renderQuelle(q: Quelle) {
         val k = karte(q)
         val fehlt = Spuren.teil(this, k.findViewById(R.id.quelle_spur), KannStore.kann(this), Liste.SICHERUNG, q.wire, ::render)
-        k.findViewById<Button>(R.id.quelle_waehlen).isEnabled = !fehlt
-        val frei = freigegeben(q)
-        k.findViewById<TextView>(R.id.quelle_ordner).text = ordnerZeile(q)
-        k.findViewById<Button>(R.id.quelle_waehlen).setText(
-            if (store.ordner(q) == null) R.string.sicherung_ordner_waehlen else R.string.sicherung_ordner_neu,
-        )
-        k.findViewById<TextView>(R.id.quelle_zuletzt).text = store.uebertragen(q)?.let { (zeit, n) ->
-            resources.getQuantityString(R.plurals.sicherung_zuletzt, n, Anzeige.zeit(zeit), n)
-        } ?: getString(R.string.sicherung_zuletzt_nie)
-        val box = k.findViewById<TextView>(R.id.quelle_box)
-        val boxText = boxZeile(q)
-        box.text = boxText
-        box.visibility = if (boxText.isEmpty()) View.GONE else View.VISIBLE
-
-        val m = store.meldung(q)
-        val satz = when {
-            store.ordner(q) != null && !frei -> if (q == Quelle.SIGNAL) Lauf.ORDNER_SIGNAL else Lauf.ORDNER_WHATSAPP
-            m == null -> null
-            m.art == Meldung.Art.OK -> getString(R.string.sicherung_geprueft, Anzeige.zeit(m.zeit))
-            else -> m.satz
+        val offen = store.ordner(q) == null
+        val warnung = if (offen) null else warnung(q)
+        k.findViewById<TextView>(R.id.quelle_zuletzt).apply {
+            text = when {
+                offen -> getString(R.string.sicherung_offen)
+                warnung != null -> getString(R.string.sicherung_warnung, warnung)
+                else -> store.uebertragen(q)?.let { (zeit, _) -> getString(R.string.sicherung_ok, Anzeige.zeit(zeit)) }
+                    ?: getString(R.string.sicherung_bereit)
+            }
+            setTextColor(getColor(if (offen || warnung != null) R.color.homes_accent else R.color.homes_text))
+            visibility = if (fehlt) View.GONE else View.VISIBLE
         }
-        val meldung = k.findViewById<TextView>(R.id.quelle_meldung)
-        meldung.text = satz.orEmpty()
-        meldung.visibility = if (satz == null) View.GONE else View.VISIBLE
-        val ruhig = m?.art == Meldung.Art.OK && frei
-        meldung.setTextColor(getColor(if (ruhig) R.color.homes_text_muted else R.color.homes_accent))
+        k.findViewById<Button>(R.id.quelle_waehlen).apply {
+            isEnabled = !fehlt
+            visibility = if (!fehlt && (offen || ordnerFehlt(q))) View.VISIBLE else View.GONE
+        }
+        k.findViewById<View>(R.id.quelle_wie).visibility = if (offen && !fehlt) View.VISIBLE else View.GONE
+        if (!offen || fehlt) k.findViewById<View>(R.id.quelle_anleitung).visibility = View.GONE
     }
 
-    /** What Homes reports for [q]. */
-    private fun boxZeile(q: Quelle): String = when (val s = stand) {
-        null -> if (gekoppelt()) getString(R.string.sicherung_box_laedt) else ""
-        is SicherungClient.Stand.Da -> {
-            val qs = s.quellen[q]
-            if (qs == null || (qs.dateien == 0L && qs.zuletzt == null)) {
-                getString(R.string.sicherung_box_nie)
-            } else {
-                val zuletzt = Anzeige.rfc3339(qs.zuletzt)?.let { Anzeige.zeit(it) } ?: qs.zuletzt.orEmpty()
-                val zeile = resources.getQuantityString(R.plurals.sicherung_box, qs.dateien.toInt(), qs.dateien.toInt(), Anzeige.groesse(qs.bytes), zuletzt)
-                if (qs.wartend > 0) zeile + "\n" + resources.getQuantityString(R.plurals.sicherung_box_wartend, qs.wartend.toInt(), qs.wartend.toInt()) else zeile
-            }
+    /** Why [q]'s folder does not go, as a sentence with its next step; null while it does. */
+    private fun warnung(q: Quelle): String? {
+        val m = store.meldung(q)
+        return when {
+            !freigegeben(q) -> if (q == Quelle.SIGNAL) Lauf.ORDNER_SIGNAL else Lauf.ORDNER_WHATSAPP
+            m != null && m.art != Meldung.Art.OK -> m.satz
+            else -> null
         }
-        SicherungClient.Stand.Unerreichbar -> getString(R.string.sicherung_box_unerreichbar)
-        else -> "" // Homes' sentence stands once, above the cards
     }
 
     private fun gekoppelt(): Boolean = ServerStore.isConfigured(this) && TokenStore.isPaired(this)
 
-    /** Ask Homes what reached the box; the screen shows it as it comes. */
+    /** Ask Homes for the state: a refusal (no archive on this box, not paired) is the screen's one sentence. */
     private fun ladeStand() {
         val base = ServerStore.baseUrl(this)
         val token = TokenStore.get(this)
@@ -468,7 +437,7 @@ class SicherungActivity : AppCompatActivity() {
         schalterView(art).isEnabled = !fehlt
         setzt = false
 
-        // Off: the card says what goes where, and nothing else.
+        // Off: the switch says it, and nothing else.
         val stand = standView(art)
         val standText = if (!an(art)) null else standZeile(art)
         stand.text = standText.orEmpty()
@@ -494,7 +463,7 @@ class SicherungActivity : AppCompatActivity() {
             }
     }
 
-    /** „Letzte Übertragung: <date> – <what>“, the same scheme on both cards; the same words before the first. */
+    /** „✓ Zuletzt übertragen: <date> – <what>“, the same scheme on every card; the same words before the first. */
     private fun standZeile(art: Schalter): String {
         val letzte: Pair<Long, String>? = if (art == Schalter.KONTAKTE) {
             store.kontakte()?.let { (zeit, e) -> zeit to Anzeige.kontakte(e.kontakte, e.neu, e.geaendert, e.entfernt) }
@@ -503,7 +472,7 @@ class SicherungActivity : AppCompatActivity() {
                 ?: store.uebertragen(Quelle.SMS)?.let { (zeit, _) -> zeit to "" }
         }
         return when {
-            letzte == null -> getString(R.string.handy_stand_nie)
+            letzte == null -> getString(R.string.sicherung_bereit)
             letzte.second.isEmpty() -> getString(R.string.handy_stand, Anzeige.zeit(letzte.first), "").removeSuffix(" – ")
             else -> getString(R.string.handy_stand, Anzeige.zeit(letzte.first), letzte.second)
         }

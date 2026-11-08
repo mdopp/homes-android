@@ -158,7 +158,7 @@ class SicherungLaufTest {
         whatsapp.entzogen = true
         assertEquals(Lauf.Ergebnis.FERTIG, lauf(ordner = { q -> if (q == Quelle.WHATSAPP) whatsapp else null }).laufen())
         assertEquals(
-            Meldung.Art.ORDNER to "WhatsApp-Ordner nicht mehr freigegeben: tippe hier, um ihn neu zu wählen.",
+            Meldung.Art.ORDNER to "WhatsApp-Ordner nicht mehr freigegeben.",
             g.meldungen[Quelle.WHATSAPP]!!.let { it.art to it.satz },
         )
         assertTrue(homes.anfragen.isEmpty())

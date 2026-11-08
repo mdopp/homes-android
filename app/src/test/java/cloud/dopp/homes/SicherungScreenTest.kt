@@ -3,6 +3,7 @@ package cloud.dopp.homes
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
@@ -34,10 +35,12 @@ import org.robolectric.annotation.Config
 import java.util.concurrent.TimeUnit
 
 /**
- * Mehr → Daten sichern (#194): the home screen leads there; the screen
- * shows both sources, the guide and „Jetzt sichern“, asks for no key; the
- * daily run waits for WLAN, the charger and enough battery, „Jetzt sichern“
- * only for WLAN.
+ * Mehr → Daten sichern (#194; owner 2026-11-08: only what needs the phone):
+ * the home screen leads there; the screen shows one line per source, the
+ * guide only folded for a source not set up, the way to the overview on
+ * Homes and to the key in the archive, „Jetzt sichern“, and asks for no key;
+ * the daily run waits for WLAN, the charger and enough battery, „Jetzt
+ * sichern“ only for WLAN.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -85,28 +88,66 @@ class SicherungScreenTest {
     }
 
     @Test
-    fun theScreenShowsBothSourcesTheGuideAndNoKeyField() {
+    fun aSourceNotSetUpSaysSoWithOneButtonAndItsGuideFolded() {
         val a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
         val whatsapp = a.findViewById<View>(R.id.sicherung_whatsapp)
         val signal = a.findViewById<View>(R.id.sicherung_signal)
         assertEquals("WhatsApp", whatsapp.findViewById<TextView>(R.id.quelle_name).text.toString())
         assertEquals("Signal", signal.findViewById<TextView>(R.id.quelle_name).text.toString())
-        listOf(whatsapp, signal).forEach {
-            assertEquals("Noch kein Ordner gewählt", it.findViewById<TextView>(R.id.quelle_ordner).text.toString())
-            assertEquals("Letzte Übertragung: noch keine", it.findViewById<TextView>(R.id.quelle_zuletzt).text.toString())
-            assertEquals("Ordner wählen", it.findViewById<TextView>(R.id.quelle_waehlen).text.toString())
+        mapOf(
+            whatsapp to listOf("Ende-zu-Ende-verschlüsseltes Backup", "64-stelligen Schlüssel", "nicht mit Passwort oder Passkey", "Bitwarden", "com.whatsapp"),
+            signal to listOf("Chat-Backups", "30-stellige Passphrase", "Bitwarden", "im Archiv eintragen"),
+        ).forEach { (k, schritte) ->
+            assertEquals("⚠ Noch nicht eingerichtet", k.findViewById<TextView>(R.id.quelle_zuletzt).text.toString())
+            val knopf = k.findViewById<Button>(R.id.quelle_waehlen)
+            assertEquals("Ordner freigeben", knopf.text.toString())
+            assertEquals(View.VISIBLE, knopf.visibility)
+            val anleitung = k.findViewById<View>(R.id.quelle_anleitung)
+            assertEquals("folded", View.GONE, anleitung.visibility)
+            k.findViewById<View>(R.id.quelle_wie).performClick()
+            assertEquals(View.VISIBLE, anleitung.visibility)
+            val text = k.findViewById<TextView>(R.id.quelle_schritte).text.toString()
+            schritte.forEach { assertTrue("the guide lacks „$it“", text.contains(it)) }
+            assertEquals("Schlüssel im Archiv eintragen", k.findViewById<Button>(R.id.quelle_schluessel).text.toString())
         }
-        val anleitung = texte(a.findViewById(R.id.sicherung_anleitung))
+        val alles = texte(a.findViewById(R.id.sicherung_root))
         listOf(
-            "Ende-zu-Ende-verschlüsseltes Backup", "64-stelligen Schlüssel verwenden", "Vaultwarden",
-            "Chat-Backups", "Auf dem Gerät", "30-stellige Passphrase",
-            "SMS und Anrufe übertragen", "Handy-Kontakte", "App-Passwort", "jede Stunde", "Google-Kalender",
-            "Gelöschte Termine bleiben im Archiv", "Mehr → Standortverlauf",
-            "je nach App-Version", "die sich selbst löschen", "einmaligen Ansicht",
-        ).forEach { assertTrue("the guide lacks „$it“", anleitung.contains(it)) }
-        assertFalse("Discord is gone (owner, 2026-11-03)", anleitung.contains("Discord"))
+            "Discord", "Vaultwarden", "Google-Kalender", "App-Passwort", "Was nie ins Archiv kommt", "Standortverlauf",
+            "Auf der Box", "Frei auf der Box", "Zuletzt geprüft", "Nach einem Schlüssel fragt sie nie",
+        ).forEach { assertFalse("the screen still says „$it“", alles.contains(it)) }
         assertEquals("Daten sichern", a.getString(R.string.sicherung_title))
         assertFalse("no key field: keys go into the vault on the box", hat(a.window.decorView, EditText::class.java))
+    }
+
+    /** A folder chosen once whose grant is gone: ⚠, why, the one button; no guide any more. */
+    @Test
+    fun aLostFolderIsAWarningWithItsButton() {
+        cloud.dopp.homes.sicherung.SicherungStore(ctx()).setzeOrdner(
+            cloud.dopp.homes.data.Napi.Quelle.WHATSAPP,
+            android.net.Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp"),
+        )
+        val k = Robolectric.buildActivity(SicherungActivity::class.java).setup().get().findViewById<View>(R.id.sicherung_whatsapp)
+        assertEquals("⚠ WhatsApp-Ordner nicht mehr freigegeben.", k.findViewById<TextView>(R.id.quelle_zuletzt).text.toString())
+        assertEquals(View.VISIBLE, k.findViewById<View>(R.id.quelle_waehlen).visibility)
+        assertEquals(View.GONE, k.findViewById<View>(R.id.quelle_wie).visibility)
+        assertEquals(View.GONE, k.findViewById<View>(R.id.quelle_anleitung).visibility)
+    }
+
+    /** „Alles im Überblick“ is Homes' page; the key goes to the archive's /tresor, or that page when the archive's address cannot be told. */
+    @Test
+    fun theOverviewAndTheKeyOpenTheirPages() {
+        ServerStore.setBaseUrl(ctx(), "https://www.box.test")
+        var a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
+        val ueberblick = a.findViewById<TextView>(R.id.sicherung_ueberblick)
+        assertEquals("Alles im Überblick ›", ueberblick.text.toString())
+        ueberblick.performClick()
+        assertEquals("https://www.box.test/daten-sichern", shadowOf(a).nextStartedActivity.dataString)
+        a.findViewById<View>(R.id.sicherung_signal).findViewById<View>(R.id.quelle_schluessel).performClick()
+        assertEquals("https://archiv.box.test/tresor", shadowOf(a).nextStartedActivity.dataString)
+        ServerStore.setBaseUrl(ctx(), "https://127.0.0.1:1")
+        a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
+        a.findViewById<View>(R.id.sicherung_signal).findViewById<View>(R.id.quelle_schluessel).performClick()
+        assertEquals("https://127.0.0.1:1/daten-sichern", shadowOf(a).nextStartedActivity.dataString)
     }
 
     @Test
@@ -122,18 +163,17 @@ class SicherungScreenTest {
     }
 
     /**
-     * Kontakte, SMS und Anrufe (laib ADR 0029): two cards like WhatsApp's and
-     * Signal's, the switch in the title row, off, one plain sentence in the
-     * body style (not the small capitals of a label) and, while off, nothing else.
+     * Kontakte, SMS und Anrufe (laib ADR 0029): two cards, the switch in the
+     * title row, off, and while off nothing else (owner 2026-11-08).
      */
     @Test
     fun twoCardsWithTheSwitchInTheTitleAndNothingElseWhileOff() {
         val a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
         mapOf(
-            R.id.handy_kontakte_karte to Triple(R.id.handy_kontakte, "Kontakte", "„Handy-Kontakte“"),
-            R.id.handy_sms_karte to Triple(R.id.handy_sms, "SMS und Anrufe", "für dein Archiv verschlüsselt"),
+            R.id.handy_kontakte_karte to (R.id.handy_kontakte to "Kontakte"),
+            R.id.handy_sms_karte to (R.id.handy_sms to "SMS und Anrufe"),
         ).forEach { (karteId, t) ->
-            val (schalterId, titel, satz) = t
+            val (schalterId, titel) = t
             val karte = a.findViewById<ViewGroup>(karteId)
             val zeile = karte.getChildAt(0) as ViewGroup
             assertEquals(titel, (zeile.getChildAt(0) as TextView).text.toString())
@@ -141,11 +181,7 @@ class SicherungScreenTest {
             assertEquals(schalterId, schalter.id)
             assertFalse(schalter.isChecked)
             val sichtbar = (1 until karte.childCount).map { karte.getChildAt(it) }.filter { it.visibility == View.VISIBLE }
-            assertEquals("off: only the sentence", 1, sichtbar.size)
-            val text = sichtbar.single() as TextView
-            assertTrue(text.text.toString(), text.text.contains(satz))
-            assertFalse("no capitals", text.isAllCaps)
-            assertEquals("no letter spacing", 0f, text.letterSpacing, 0f)
+            assertEquals("off: nothing but the switch", 0, sichtbar.size)
         }
     }
 
@@ -159,7 +195,7 @@ class SicherungScreenTest {
         store.setzeSmsAn(true)
         var a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
         listOf(R.id.handy_kontakte_stand, R.id.handy_sms_stand).forEach {
-            assertEquals("Letzte Übertragung: noch keine – geschieht beim nächsten Sichern", a.findViewById<TextView>(it).text.toString())
+            assertEquals("✓ Bereit – kommt beim nächsten Sichern", a.findViewById<TextView>(it).text.toString())
         }
         store.merkeKontakte(1_762_050_000_000, cloud.dopp.homes.data.SicherungClient.Kontakte(412, 3, 1, 0))
         store.merkeLetzte(
@@ -168,29 +204,9 @@ class SicherungScreenTest {
         )
         a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
         val zeit = cloud.dopp.homes.sicherung.Anzeige.zeit(1_762_050_000_000)
-        assertEquals("Letzte Übertragung: $zeit – 412 Kontakte, 3 neu, 1 geändert", a.findViewById<TextView>(R.id.handy_kontakte_stand).text.toString())
-        assertEquals("Letzte Übertragung: $zeit – 1.234 SMS, 56 MMS, 789 Anrufe", a.findViewById<TextView>(R.id.handy_sms_stand).text.toString())
+        assertEquals("✓ Zuletzt übertragen: $zeit – 412 Kontakte, 3 neu, 1 geändert", a.findViewById<TextView>(R.id.handy_kontakte_stand).text.toString())
+        assertEquals("✓ Zuletzt übertragen: $zeit – 1.234 SMS, 56 MMS, 789 Anrufe", a.findViewById<TextView>(R.id.handy_sms_stand).text.toString())
         WorkManager.getInstance(ctx()).cancelAllWork()
-    }
-
-    /**
-     * The intro covers all of it; the guide says per source what to do and what
-     * happens (owner, 2026-11-03).
-     */
-    @Test
-    fun theIntroAndTheGuideCoverContactsSmsAndCalls() {
-        val a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
-        val intro = a.getString(R.string.sicherung_intro)
-        listOf("WhatsApp", "Signal", "Kontakte", "SMS", "Anrufe", "Nach einem Schlüssel fragt sie nie").forEach {
-            assertTrue("the intro lacks „$it“", intro.contains(it))
-        }
-        val anleitung = texte(a.findViewById(R.id.sicherung_anleitung))
-        listOf(
-            "nicht Passwort und nicht Passkey", "aus einem Passkey lässt sich der Schlüssel nicht auslesen",
-            "aus- und gleich wieder einschalten",
-        ).forEach { assertTrue("the guide lacks „$it“", anleitung.contains(it)) }
-        listOf("In der Homes-App", "in der Homes-App", "Mehr → Daten sichern", "Eingeschränkte Einstellungen")
-            .forEach { assertFalse("the guide still says „$it“", anleitung.contains(it)) }
     }
 
     /** Refused: the switch stays off and says why. */
