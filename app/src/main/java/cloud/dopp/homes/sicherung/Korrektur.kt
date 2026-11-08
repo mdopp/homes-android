@@ -1,9 +1,12 @@
 package cloud.dopp.homes.sicherung
 
+import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds.Email
 import android.provider.ContactsContract.CommonDataKinds.Event
+import android.provider.ContactsContract.CommonDataKinds.Note
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
+import android.provider.ContactsContract.CommonDataKinds.Photo
 import android.provider.ContactsContract.CommonDataKinds.StructuredName
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import cloud.dopp.homes.data.SicherungClient
@@ -68,8 +71,10 @@ object Korrigieren {
     /** The write for [a]: a list of one, empty when nothing is to write (there already), null when it cannot be. */
     private fun schritt(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? = when (a.art) {
         "vorname", "nachname" -> name(a, zeilen, ziel)
-        "telefon" -> wert(a, zeilen, ziel, Feld(Phone.CONTENT_ITEM_TYPE, Phone.NUMBER, gleich = ::ziffern) { n -> mapOf(Phone.NUMBER to n, Phone.TYPE to telefonTyp(a.nachherArt)) })
-        "mail" -> wert(a, zeilen, ziel, Feld(Email.CONTENT_ITEM_TYPE, Email.ADDRESS, gleich = { it.lowercase() }) { n -> mapOf(Email.ADDRESS to n, Email.TYPE to Email.TYPE_OTHER) })
+        "telefon" -> wert(a, zeilen, ziel, Feld(Phone.CONTENT_ITEM_TYPE, Phone.NUMBER, gleich = ::ziffern) { n -> mapOf(Phone.NUMBER to n, Phone.TYPE to telefonTyp(a.nachherArt)) + haupt(a) })
+        "mail" -> wert(a, zeilen, ziel, Feld(Email.CONTENT_ITEM_TYPE, Email.ADDRESS, gleich = { it.lowercase() }) { n -> mapOf(Email.ADDRESS to n, Email.TYPE to mailTyp(a.nachherArt)) + haupt(a) })
+        "foto" -> foto(a, zeilen, ziel)
+        "notiz" -> notiz(a, zeilen, ziel)
         "adresse" -> adresse(a, zeilen, ziel)
         "geburtstag" -> einzeln(a, zeilen, ziel, GEBURTSTAG)
         "firma" -> einzeln(a, zeilen, ziel, FIRMA)
@@ -125,9 +130,33 @@ object Korrigieren {
             ?: return if (neu.isEmpty() || rows.any { gleich(it.wert(spalte)) == gleich(neu) }) emptyList() else null // done already, or changed meanwhile
         if (neu.isEmpty()) return listOf(Schritt.Weg(z.id))
         val w = werte(neu).toMutableMap()
-        if (mime == Phone.CONTENT_ITEM_TYPE && a.nachherArt.isEmpty()) w.remove(Phone.TYPE) // the kind as the phone had it
-        if (mime == Email.CONTENT_ITEM_TYPE) w.remove(Email.TYPE)
+        if (a.nachherArt.isEmpty() || a.nachherArt == a.vorherArt) w.remove(if (mime == Phone.CONTENT_ITEM_TYPE) Phone.TYPE else Email.TYPE) // the kind as the phone had it
         return listOf(Schritt.Aendern(z.id, w))
+    }
+
+    /** The main number or e-mail address (owner 2026-11-08): Android's primary flags, only when that changed. */
+    private fun haupt(a: Korrektur.Aenderung): Map<String, Any?> {
+        if (a.nachherHaupt == a.vorherHaupt) return emptyMap()
+        val v = if (a.nachherHaupt) 1 else 0
+        return mapOf(ContactsContract.Data.IS_PRIMARY to v, ContactsContract.Data.IS_SUPER_PRIMARY to v)
+    }
+
+    /** The contact's own photo (owner 2026-11-08): it replaces the raw contact's picture, or is its first. */
+    private fun foto(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? {
+        val bild = a.bild?.takeIf { it.isNotEmpty() } ?: return null
+        val z = zeilen.firstOrNull { it.mime == Photo.CONTENT_ITEM_TYPE && it.roh == ziel } ?: zeilen.firstOrNull { it.mime == Photo.CONTENT_ITEM_TYPE }
+        return listOf(if (z == null) Schritt.Neu(ziel, Photo.CONTENT_ITEM_TYPE, mapOf(Photo.PHOTO to bild)) else Schritt.Aendern(z.id, mapOf(Photo.PHOTO to bild)))
+    }
+
+    /** The contact's message (owner 2026-11-08), added below the note after an empty line; there already, nothing. */
+    private fun notiz(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? {
+        val neu = a.nachher.trim().ifEmpty { return null }
+        val z = zeilen.firstOrNull { it.mime == Note.CONTENT_ITEM_TYPE }
+        return when {
+            z == null -> listOf(Schritt.Neu(ziel, Note.CONTENT_ITEM_TYPE, mapOf(Note.NOTE to neu)))
+            z.wert(Note.NOTE).contains(neu) -> emptyList()
+            else -> listOf(Schritt.Aendern(z.id, mapOf(Note.NOTE to (z.wert(Note.NOTE) + "\n\n" + neu).trim())))
+        }
     }
 
     private val TEILE = listOf(StructuredPostal.STREET, StructuredPostal.POSTCODE, StructuredPostal.CITY, StructuredPostal.COUNTRY)
@@ -182,6 +211,13 @@ object Korrigieren {
         "privat" -> Phone.TYPE_HOME
         "geschaeftlich" -> Phone.TYPE_WORK
         else -> Phone.TYPE_OTHER
+    }
+
+    /** An e-mail address's kind as Android's Email.TYPE. */
+    private fun mailTyp(art: String): Int = when (art) {
+        "privat" -> Email.TYPE_HOME
+        "geschaeftlich" -> Email.TYPE_WORK
+        else -> Email.TYPE_OTHER
     }
 }
 

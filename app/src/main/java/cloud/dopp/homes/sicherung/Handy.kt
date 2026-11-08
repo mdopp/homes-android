@@ -149,8 +149,8 @@ class HandyKontakte(private val ctx: Context) : Adressbuch {
                     nachname = t(Name.FAMILY_NAME), vorname = t(Name.GIVEN_NAME), weitere = t(Name.MIDDLE_NAME),
                     praefix = t(Name.PREFIX), suffix = t(Name.SUFFIX),
                 )
-                Phone.CONTENT_ITEM_TYPE -> t(Phone.NUMBER)?.let { k.copy(telefone = k.telefone + Eintrag(it, telefonTypen(typ(Phone.TYPE)))) } ?: k
-                Email.CONTENT_ITEM_TYPE -> t(Email.ADDRESS)?.let { k.copy(mails = k.mails + Eintrag(it, ortTyp(typ(Email.TYPE)))) } ?: k
+                Phone.CONTENT_ITEM_TYPE -> t(Phone.NUMBER)?.let { k.copy(telefone = k.telefone + Eintrag(it, (telefonTypen(typ(Phone.TYPE)) + haupt(c)).distinct())) } ?: k
+                Email.CONTENT_ITEM_TYPE -> t(Email.ADDRESS)?.let { k.copy(mails = k.mails + Eintrag(it, ortTyp(typ(Email.TYPE)) + haupt(c))) } ?: k
                 Postal.CONTENT_ITEM_TYPE -> k.copy(
                     adressen = k.adressen + Adresse(
                         typen = ortTyp(typ(Postal.TYPE)), postfach = t(Postal.POBOX), zusatz = t(Postal.NEIGHBORHOOD),
@@ -172,6 +172,11 @@ class HandyKontakte(private val ctx: Context) : Adressbuch {
             }
         }
 
+        /** The main number or e-mail address (Android's primary flags) as vCard 3.0's TYPE=PREF, owner 2026-11-08. */
+        private fun haupt(c: Cursor): List<String> =
+            listOf(ContactsContract.Data.IS_SUPER_PRIMARY, ContactsContract.Data.IS_PRIMARY)
+                .any { s -> c.getColumnIndex(s).let { it >= 0 && !c.isNull(it) && c.getInt(it) != 0 } }.let { if (it) listOf("pref") else emptyList() }
+
         private fun text(c: Cursor, spalte: String): String? {
             val i = c.getColumnIndex(spalte)
             return if (i < 0 || c.isNull(i)) null else c.getString(i)?.takeIf { it.isNotBlank() }
@@ -183,6 +188,7 @@ class HandyKontakte(private val ctx: Context) : Adressbuch {
             ContactsContract.Data.DATA1, ContactsContract.Data.DATA2, ContactsContract.Data.DATA3, ContactsContract.Data.DATA4,
             ContactsContract.Data.DATA5, ContactsContract.Data.DATA6, ContactsContract.Data.DATA7, ContactsContract.Data.DATA8,
             ContactsContract.Data.DATA9, ContactsContract.Data.DATA10, ContactsContract.Data.RAW_CONTACT_ID, Photo.PHOTO,
+            ContactsContract.Data.IS_PRIMARY, ContactsContract.Data.IS_SUPER_PRIMARY,
         )
 
         /** Android's phone type as vCard 3.0 TYPE values. */
