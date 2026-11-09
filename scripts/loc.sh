@@ -33,7 +33,7 @@ budget sicherung 3600  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        #   corrections written into the person's own phone contacts, Korrektur.kt (the plan) and HandyKorrektur.kt;
                        # 3517 -> 3560 (owner approved 2026-11-08: Kontakt-Formular v2, homes#304): the kinds
                        #   written only when changed, the main number and e-mail (primary flags, both ways), the photo row, the note;
-                       # 3560 -> 3600 (AWAITING the owner's yes, 2026-11-09 „App erweitern“): Homes' own changes, a new
+                       # 3560 -> 3600 (owner approved 2026-11-09: Immich names to the owner's phone (new contact, rename)): Homes' own changes, a new
                        #   contact of a person named in Immich made as one raw contact with its rows (HandyKorrektur.neu, konto)
 budget ui        3500  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
