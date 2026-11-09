@@ -183,10 +183,39 @@ class KorrekturTest {
         server.start()
     }
 
-    private class Buch(val zeilen: Map<String, List<Zeile>>) : Kontaktbuch {
+    private class Buch(val zeilen: Map<String, List<Zeile>>, val namen: Set<String> = emptySet()) : Kontaktbuch {
         val geschrieben = ArrayList<List<Schritt>>()
         override fun zeilen(uid: String, name: String) = zeilen[uid]
+        override fun neu(name: String) = if (name in namen) null else listOf(Zeile(-1, Korrigieren.NEU, "", emptyMap()))
         override fun schreiben(schritte: List<Schritt>) { geschrieben += schritte }
+    }
+
+    /**
+     * A new contact Homes asks for (owner 2026-11-09, a person newly named in Immich): one
+     * raw contact made with its name row (first, last and display name in one) and its
+     * photo, every change said written; one the phone has by that name already is said
+     * written with nothing written, so a report that did not arrive makes no second.
+     */
+    @Test
+    fun aNewContactIsMadeOnceWithItsNameAndFace() {
+        val bild = byteArrayOf(-1, -40)
+        homes(
+            """{"korrekturen":[{"id":"n1","uid":"","name":"Yvonne Huber","aenderungen":[{"nr":0,"art":"vorname","nachher":"Yvonne"},""" +
+                """{"nr":1,"art":"nachname","nachher":"Huber"},{"nr":2,"art":"foto","bild":"/9g="}]},""" +
+                """{"id":"n2","uid":"","name":"Lia","aenderungen":[{"nr":0,"art":"vorname","nachher":"Lia"},{"nr":1,"art":"nachname"}]}]}""",
+        )
+        val c = SicherungClient(server.url("/").toString().trimEnd('/'), "homes_device_t", OkHttpClient())
+        val buch = Buch(emptyMap(), namen = setOf("Lia"))
+        assertEquals(Lauf.Ergebnis.FERTIG, KorrekturenLauf(c, buch).laufen())
+        assertEquals(1, buch.geschrieben.size)
+        val (name, foto) = buch.geschrieben[0]
+        assertEquals(
+            Schritt.Neu(Korrigieren.NEU, StructuredName.CONTENT_ITEM_TYPE, mapOf(StructuredName.GIVEN_NAME to "Yvonne", StructuredName.DISPLAY_NAME to "Yvonne Huber", StructuredName.FAMILY_NAME to "Huber")),
+            name,
+        )
+        assertTrue(foto is Schritt.Neu && foto.roh == Korrigieren.NEU && foto.mime == Photo.CONTENT_ITEM_TYPE && (foto.werte[Photo.PHOTO] as ByteArray).contentEquals(bild))
+        assertEquals("n1" to "[0,1,2]", erledigt[0].first to JSONObject(erledigt[0].second).getJSONArray("geschrieben").toString())
+        assertEquals("n2" to "[0,1]", erledigt[1].first to JSONObject(erledigt[1].second).getJSONArray("geschrieben").toString())
     }
 
     @Test
