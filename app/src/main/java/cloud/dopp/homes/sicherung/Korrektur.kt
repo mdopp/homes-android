@@ -35,6 +35,13 @@ interface Kontaktbuch {
      */
     fun zeilen(uid: String, name: String): List<Zeile>?
 
+    /**
+     * A new contact named [name] that Homes asks for (owner 2026-11-09, a person named in
+     * Immich): the rows of a raw contact not made yet ([Korrigieren.NEU]), which [schreiben]
+     * makes in the person's own account; null when the phone has a contact of that name.
+     */
+    fun neu(name: String): List<Zeile>?
+
     /** [schritte], all or none. */
     fun schreiben(schritte: List<Schritt>)
 }
@@ -52,18 +59,32 @@ interface Kontaktbuch {
  */
 object Korrigieren {
 
-    /** The writes for [k] into [zeilen], and the numbers of the changes they carry. */
+    /** The raw contact of a new contact, made by the same write as its rows. */
+    const val NEU = Long.MIN_VALUE
+
+    /**
+     * The writes for [k] into [zeilen], and the numbers of the changes they carry. A change of
+     * a row this plan adds goes into that row's write (a new contact's first and last name).
+     */
     fun plan(k: Korrektur, zeilen: List<Zeile>): Pair<List<Schritt>, List<Int>> {
         val ziel = (zeilen.firstOrNull { it.mime == StructuredName.CONTENT_ITEM_TYPE } ?: zeilen.firstOrNull())?.roh
             ?: return emptyList<Schritt>() to emptyList()
         val schritte = ArrayList<Schritt>()
         val geschrieben = ArrayList<Int>()
+        val neuBei = HashMap<Long, Int>() // a row this plan adds, by its id in stand: its write
         var stand = zeilen
         for (a in k.aenderungen) {
             val s = schritt(a, stand, ziel) ?: continue
             geschrieben += a.nr
-            s.firstOrNull()?.let { schritte += it }
-            stand = nachher(stand, s.firstOrNull())
+            val w = s.firstOrNull()
+            val i = (w as? Schritt.Aendern)?.let { neuBei[it.zeile] }
+            if (w is Schritt.Aendern && i != null) {
+                schritte[i] = (schritte[i] as Schritt.Neu).let { n -> n.copy(werte = n.werte + w.werte) }
+            } else if (w != null) {
+                if (w is Schritt.Neu) neuBei[-1L - stand.size] = schritte.size
+                schritte += w
+            }
+            stand = nachher(stand, w)
         }
         return schritte to geschrieben
     }
@@ -239,8 +260,12 @@ class KorrekturenLauf(private val client: SicherungClient, private val buch: Kon
             return Lauf.Ergebnis.UNERREICHBAR
         }
         for (k in alle) {
-            val zeilen = buch.zeilen(k.uid, k.name)
-            val (schritte, geschrieben) = if (zeilen == null) emptyList<Schritt>() to emptyList() else Korrigieren.plan(k, zeilen)
+            val zeilen = if (k.uid.isEmpty()) buch.neu(k.name) else buch.zeilen(k.uid, k.name)
+            val (schritte, geschrieben) = when {
+                zeilen != null -> Korrigieren.plan(k, zeilen)
+                k.uid.isEmpty() -> emptyList<Schritt>() to k.aenderungen.map { it.nr } // a new contact the phone has already
+                else -> emptyList<Schritt>() to emptyList()
+            }
             if (schritte.isNotEmpty()) buch.schreiben(schritte)
             try {
                 client.erledigt(k.id, geschrieben)

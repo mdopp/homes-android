@@ -286,7 +286,7 @@ class SicherungClient(
             )
         }
 
-        /** A `korrekturen` reply: each correction with its changes; a malformed change or one without a UID left out. */
+        /** A `korrekturen` reply: each correction with its changes, a malformed change left out; UID "" is a new contact. */
         fun korrekturenAus(code: Int, body: String?): List<Korrektur> {
             if (code !in 200..299) throw Abgelehnt(code, satzAus(body))
             val list = HomesHttp.json(body)?.optJSONArray(KorrekturenJson.KORREKTUREN) ?: throw Abgelehnt(code, null)
@@ -295,7 +295,7 @@ class SicherungClient(
 
         private fun korrekturAus(o: JSONObject): Korrektur? {
             val id = o.optString(KorrekturenJson.ID).ifBlank { return null }
-            val uid = o.optString(KorrekturenJson.UID).ifBlank { return null }
+            val uid = o.optString(KorrekturenJson.UID) // "": a new contact of a person named in Immich (Homes, 2026-11-09)
             val aenderungen = o.optJSONArray(KorrekturenJson.AENDERUNGEN) ?: return null
             val liste = (0 until aenderungen.length()).mapNotNull { i ->
                 val a = aenderungen.optJSONObject(i) ?: return@mapNotNull null

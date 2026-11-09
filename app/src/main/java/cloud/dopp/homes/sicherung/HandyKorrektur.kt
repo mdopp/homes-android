@@ -10,7 +10,10 @@ import cloud.dopp.homes.konto.HomesKonto
 /**
  * The phone's contacts for Kontakt prüfen lassen (owner 2026-11-07): the one
  * place the app writes a person's own contact, and only the data rows a
- * correction the person accepted on Homes names ([Korrigieren]).
+ * correction the person accepted on Homes names ([Korrigieren]); since
+ * 2026-11-09 also those Homes asks for itself (a contact's person renamed in
+ * Immich, and a new contact of a person newly named there, its one new raw
+ * contact made with its rows).
  *
  * The UID is the one „Kontakte übertragen“ sent ([HandyKontakte]): the
  * contact's lookup key without the Homes account's part, which Android
@@ -62,13 +65,43 @@ class HandyKorrektur(private val ctx: Context) : Kontaktbuch {
             ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id), arrayOf(ContactsContract.Contacts.DISPLAY_NAME), null, null, null,
         )?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
 
+    /** A new contact (owner 2026-11-09) only where no own contact has that name, so a report that did not arrive makes no second. */
+    override fun neu(name: String): List<Zeile>? {
+        val da = ctx.contentResolver.query(
+            ContactsContract.RawContacts.CONTENT_URI, arrayOf(ContactsContract.RawContacts._ID),
+            "${ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY} = ? AND ${ContactsContract.RawContacts.DELETED} = 0 AND " +
+                "(${ContactsContract.RawContacts.ACCOUNT_TYPE} IS NULL OR ${ContactsContract.RawContacts.ACCOUNT_TYPE} != ?)",
+            arrayOf(name.trim(), HomesKonto.TYP), null,
+        )?.use { it.count > 0 } ?: true
+        return if (da) null else listOf(Zeile(-1, Korrigieren.NEU, "", emptyMap()))
+    }
+
+    /**
+     * The account a new contact goes to: the one the person's own contacts are written in,
+     * the Google account most of them are in; none: the phone itself.
+     */
+    private fun konto(): Pair<String?, String?> {
+        val n = HashMap<String, Int>()
+        ctx.contentResolver.query(
+            ContactsContract.RawContacts.CONTENT_URI, arrayOf(ContactsContract.RawContacts.ACCOUNT_NAME),
+            "${ContactsContract.RawContacts.ACCOUNT_TYPE} = ? AND ${ContactsContract.RawContacts.DELETED} = 0", arrayOf(GOOGLE), null,
+        )?.use { c -> while (c.moveToNext()) c.getString(0)?.let { n[it] = (n[it] ?: 0) + 1 } }
+        return n.maxByOrNull { it.value }?.key?.let { GOOGLE to it } ?: (null to null)
+    }
+
     override fun schreiben(schritte: List<Schritt>) {
         val ops = ArrayList<ContentProviderOperation>()
+        if (schritte.any { it is Schritt.Neu && it.roh == Korrigieren.NEU }) { // the new contact's raw contact, the first write
+            val (typ, name) = konto()
+            ops += ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, typ).withValue(ContactsContract.RawContacts.ACCOUNT_NAME, name).build()
+        }
         for (s in schritte) {
             ops += when (s) {
                 is Schritt.Aendern -> ContentProviderOperation.newUpdate(zeile(s.zeile)).also { b -> s.werte.forEach { (k, v) -> b.withValue(k, v) } }.build()
                 is Schritt.Neu -> ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValue(ContactsContract.Data.RAW_CONTACT_ID, s.roh).withValue(ContactsContract.Data.MIMETYPE, s.mime)
+                    .also { b -> if (s.roh == Korrigieren.NEU) b.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0) else b.withValue(ContactsContract.Data.RAW_CONTACT_ID, s.roh) }
+                    .withValue(ContactsContract.Data.MIMETYPE, s.mime)
                     .also { b -> s.werte.forEach { (k, v) -> b.withValue(k, v) } }.build()
                 is Schritt.Weg -> ContentProviderOperation.newDelete(zeile(s.zeile)).build()
             }
@@ -79,6 +112,7 @@ class HandyKorrektur(private val ctx: Context) : Kontaktbuch {
     private fun zeile(id: Long): Uri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, id)
 
     private companion object {
+        const val GOOGLE = "com.google"
         val DATEN = (1..10).map { "data$it" }.toTypedArray()
         val MIMES = listOf(
             ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE,

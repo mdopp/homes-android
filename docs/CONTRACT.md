@@ -321,7 +321,16 @@ after the folders, only while the switch is on and the permission granted.
   contact's own account (Google) syncs them. Then `POST
   /napi/kontakte/korrekturen/{id}` `{geschrieben: [nr…]}`: what it wrote,
   or found written already; Homes shows the rest as not written. A phone
-  contact is never touched without such a correction.
+  contact is never touched without such a correction. Homes' own come the
+  same way (owner 2026-11-09, „App erweitern“; only to the Immich key
+  owner's devices): a contact whose Immich person was renamed gets
+  `vorname`/`nachname`, and `uid` `""` is a **new contact** of a person
+  newly named in Immich, `name` its name, `vorname`, `nachname` and the
+  face as `foto`. The app makes one raw contact with those rows in one
+  write, in the Google account most of the person's contacts are in (none:
+  the phone itself), unless a contact of that name is there already
+  (then all said written, nothing made); the next „Kontakte übertragen“
+  carries it to Homes.
 - **„SMS und Anrufe“** (READ_SMS, READ_CALL_LOG): the SMS and
   MMS, and the calls, newer than a high-water mark per kind (the largest
   date that reached the box; the first run takes everything), as XML in the

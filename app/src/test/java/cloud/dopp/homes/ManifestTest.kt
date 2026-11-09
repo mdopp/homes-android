@@ -224,17 +224,19 @@ class ManifestTest {
 
     /**
      * The one writer of a person's own contacts (Kontakt prüfen lassen, owner
-     * 2026-11-07): data rows only, never a raw contact or a contact, never the
-     * calendar, never as a sync adapter (the person's account syncs the edit),
-     * and only the Homes account's raw contacts left out; it is called by the
-     * corrections' run alone.
+     * 2026-11-07): data rows only, never a contact, never the calendar, never
+     * as a sync adapter (the person's account syncs the edit), and only the
+     * Homes account's raw contacts left out; a raw contact only made new, for
+     * a new contact Homes asks for (owner 2026-11-09), never changed or
+     * deleted; it is called by the corrections' run alone.
      */
     @Test
     fun aPersonsOwnContactIsWrittenOnlyByAnAcceptedCorrection() {
         val t = sources.getValue("app/src/main/java/cloud/dopp/homes/sicherung/HandyKorrektur.kt")
-        Regex("""(?:newInsert|newUpdate|newDelete)\(([^)]*)\)""").findAll(t).forEach { m ->
-            val ziel = m.groupValues[1].trim()
-            assertTrue("HandyKorrektur writes $ziel, not a data row", ziel == "ContactsContract.Data.CONTENT_URI" || ziel.startsWith("zeile("))
+        Regex("""(newInsert|newUpdate|newDelete)\(([^)]*)\)""").findAll(t).forEach { m ->
+            val ziel = m.groupValues[2].trim()
+            val neuerRoh = m.groupValues[1] == "newInsert" && ziel == "ContactsContract.RawContacts.CONTENT_URI"
+            assertTrue("HandyKorrektur writes $ziel, not a data row", neuerRoh || ziel == "ContactsContract.Data.CONTENT_URI" || ziel.startsWith("zeile("))
         }
         assertTrue("not as the app", !t.contains("alsAdapter") && !t.contains("CALLER_IS_SYNCADAPTER") && !t.contains("CalendarContract"))
         assertTrue("the Homes account's raw contacts are written", t.contains("ACCOUNT_TYPE} != ?") && t.contains("HomesKonto.TYP") && t.contains("RAW_CONTACT_IS_READ_ONLY} = 0"))

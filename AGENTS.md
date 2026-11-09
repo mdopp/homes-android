@@ -112,7 +112,10 @@ These rules apply to every session, human or agent.
   Kontakt prüfen lassen's (owner 2026-11-07, `sicherung/HandyKorrektur.kt`),
   which writes the person's own contact only by a correction they accepted
   on Homes, as the app and not as a sync adapter; `ManifestTest` holds it to
-  data rows and to the backup run.
+  data rows and to the backup run. Since 2026-11-09 („App erweitern“) Homes
+  sends its own changes the same way: a name its Immich person got, and a
+  new contact (`uid` `""`), the one case it makes a raw contact (never
+  changes or deletes one).
 - The other direction stays: a person's own contacts go phone → archive
   („Kontakte übertragen“), and the Homes account's never do
   (`HomesKontoAusschlussTest`, `e2e` step 8).
