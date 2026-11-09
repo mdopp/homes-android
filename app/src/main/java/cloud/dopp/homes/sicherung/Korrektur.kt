@@ -7,6 +7,7 @@ import android.provider.ContactsContract.CommonDataKinds.Note
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.CommonDataKinds.Photo
+import android.provider.ContactsContract.CommonDataKinds.Relation
 import android.provider.ContactsContract.CommonDataKinds.StructuredName
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import cloud.dopp.homes.data.SicherungClient
@@ -100,6 +101,7 @@ object Korrigieren {
         "geburtstag" -> einzeln(a, zeilen, ziel, GEBURTSTAG)
         "firma" -> einzeln(a, zeilen, ziel, FIRMA)
         "position" -> einzeln(a, zeilen, ziel, POSITION)
+        "beziehung" -> beziehung(a, zeilen, ziel)
         else -> null
     }
 
@@ -215,6 +217,33 @@ object Korrigieren {
             else -> listOf(Schritt.Weg(z.id))
         }
     }
+
+    /**
+     * A relation (owner 2026-11-09): on this contact the person named nachher is its nachherArt, rows matched by
+     * name, case aside. Android has no sibling type: that and the kinds it lacks are TYPE_CUSTOM with a German label.
+     */
+    private fun beziehung(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? {
+        fun von(n: String) = zeilen.firstOrNull { it.mime == Relation.CONTENT_ITEM_TYPE && it.wert(Relation.NAME).equals(n.trim(), ignoreCase = true) }
+        val z = a.vorher.takeIf { it.isNotBlank() }?.let(::von)
+        val neu = a.nachher.trim()
+        if (neu.isEmpty()) return z?.let { listOf(Schritt.Weg(it.id)) } ?: emptyList<Schritt>().takeIf { a.vorher.isNotBlank() } // gone already
+        val typ = BEZIEHUNG[a.nachherArt] ?: Relation.TYPE_CUSTOM.takeIf { a.nachherArt in LABEL } ?: return null
+        val art = mapOf(Relation.TYPE to typ, Relation.LABEL to LABEL[a.nachherArt])
+        val da = von(neu)
+        return when {
+            da != null && (z == null || z === da) && art.all { (k, v) -> v == null || da.wert(k) == v.toString() } -> emptyList() // written already
+            z != null -> listOf(Schritt.Aendern(z.id, mapOf(Relation.NAME to neu) + art))
+            da != null && a.vorher.isBlank() -> listOf(Schritt.Aendern(da.id, art))
+            else -> listOf(Schritt.Neu(ziel, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to neu) + art))
+        }
+    }
+
+    private val BEZIEHUNG = mapOf("partner" to Relation.TYPE_PARTNER, "eltern" to Relation.TYPE_PARENT, "kind" to Relation.TYPE_CHILD, "freund" to Relation.TYPE_FRIEND, "verwandt" to Relation.TYPE_RELATIVE)
+    private val LABEL = mapOf(
+        "geschwister" to "Geschwister", "grosseltern" to "Großeltern", "enkel" to "Enkel/in", "onkel" to "Onkel/Tante", "neffe" to "Neffe/Nichte",
+        "cousin" to "Cousin/Cousine", "schwiegereltern" to "Schwiegereltern", "schwiegerkind" to "Schwiegersohn/-tochter",
+        "schwager" to "Schwager/Schwägerin", "kollege" to "Kollege/Kollegin", "nachbar" to "Nachbar/in", "bekannt" to "Bekannte/r",
+    )
 
     /** [zeilen] as [s] leaves them, for the next change of the same correction. */
     private fun nachher(zeilen: List<Zeile>, s: Schritt?): List<Zeile> = when (s) {
