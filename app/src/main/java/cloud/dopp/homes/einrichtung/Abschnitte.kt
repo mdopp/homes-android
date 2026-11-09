@@ -30,9 +30,11 @@ import java.util.Locale
  *
  * **Öffnen** lists the modules Homes marks `oeffnen` ([Einrichtung.oeffnen], owner
  * 2026-11-07), each with its address, opened in a Custom Tab, where the person's
- * login is, and below them „Homes“, Homes' own start page. A module with its
- * own app is a task while the app is missing, and then the phone's own app
- * icon is the way in.
+ * login is, and below them „Homes“, Homes' own start page. A row says under its
+ * title where it stands (`stand`) and opens `ziel` where Homes names one — the
+ * timeline itself, not the page about it (owner 2026-11-08: „direkter bauen“).
+ * A module with its own app is a task while the app is missing, and then the
+ * phone's own app icon is the way in.
  *
  * **Deine Aufgaben** lists the open tasks with the number open beside the
  * title, as Homes' pages show it: a tap gets the app from its store while it
@@ -70,7 +72,7 @@ object Abschnitte {
         // below the modules, Homes' own start page (owner, 2026-11-04), whenever the box answered
         val homes = ServerStore.baseUrl(a)?.takeIf { e != null }?.let { HomesPages.url(it, HomesPages.START) }
         fuellen(a, R.id.oeffnen_section, R.id.oeffnen_group, grau, oeffnen.map { m ->
-            zeile(a, Bilder.fuer(m.icon), m.titel, null) { m.web?.let { oeffnen(a, it.toUri()) } }
+            zeile(a, Bilder.fuer(m.icon), m.titel, m.stand) { m.tippen?.let { oeffnen(a, it.toUri()) } }
         } + listOfNotNull(homes?.let { zeile(a, R.drawable.ic_stat_homes, a.getString(R.string.oeffnen_homes), null) { oeffnen(a, it.toUri()) } }))
         val aufgaben = e?.aufgaben.orEmpty()
         val offen = if (e != null && e.offen > 0) e.offen else aufgaben.size

@@ -78,7 +78,6 @@ class LiveServiceTest {
         TokenStore.backend = ctx().getSharedPreferences("test_tokens", Context.MODE_PRIVATE)
         TokenStore.save(ctx(), "homes_device_T1")
         screen(true)
-        runCatching { Reach.call(live, "setEnabled", ctx(), true) }
         runCatching {
             Reach.set(live, "open", { req: Request, l: EventSourceListener ->
                 listeners += l
@@ -241,29 +240,14 @@ class LiveServiceTest {
         assertEquals(HomeActivity::class.java.name, tap.component?.className)
     }
 
+    /** The „Live-Widgets“ switch is gone (owner, 2026-11-08): live is the one way, and an old install's stored off is ignored. */
     @Test
-    fun theSwitchTurnsItOff() {
+    fun anOldInstallsSwitchOffIsIgnored() {
         place(fed.first())
-        Reach.call(live, "setEnabled", ctx(), false)
-        assertEquals(false, Reach.call(live, "isEnabled", ctx()))
-        val c = start()
-        assertEquals("connected although switched off", 0, opened.size)
-        assertTrue(shadowOf(c.get()).isStoppedBySelf)
-    }
-
-    @Test
-    fun theSwitchInTheAppStopsTheService() {
-        place(fed.first())
-        val a = Robolectric.buildActivity(HomeActivity::class.java).setup().get()
-        val id = ctx().resources.getIdentifier("live_switch", "id", ctx().packageName)
-        assertTrue("no live_switch in the app", id != 0)
-        val sw = a.findViewById<android.widget.CompoundButton>(id)
-        assertTrue("on by default once paired", sw.isChecked)
-        sw.performClick()
-        idle()
-        assertEquals(false, Reach.call(live, "isEnabled", ctx()))
-        val stopped = shadowOf(ctx() as android.app.Application).nextStoppedService
-        assertEquals(serviceClass, stopped?.component?.className)
+        ctx().getSharedPreferences("homes_live", Context.MODE_PRIVATE).edit().putBoolean("on", false).commit()
+        start()
+        assertEquals("not connected: something still reads the old switch", 1, opened.size)
+        assertEquals("a live_switch in the app", 0, ctx().resources.getIdentifier("live_switch", "id", ctx().packageName))
     }
 
     @Test

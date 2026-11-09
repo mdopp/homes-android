@@ -90,9 +90,9 @@ class EnergyWidgetTest {
     private fun View.picture(name: Int): android.graphics.Bitmap? =
         (findViewById<ImageView>(name).drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
 
-    /** Owner, 2026-11-03: a picture like the Energie page, the battery's charge in it, Heute beside it. */
+    /** Owner, 2026-11-03: a picture like the Energie page, the battery's charge in it, today's kWh beside it; no „Heute“ heading (owner, 2026-11-08). */
     @Test
-    fun itShowsThePictureAndHeuteBesideIt() {
+    fun itShowsThePictureAndTodaysTotalsBesideIt() {
         val v = drawn(300, 150)
         val bmp = v.picture(R.id.e_flow)
         assertTrue("the flow is a picture", bmp != null && bmp.width > 100)
@@ -107,7 +107,8 @@ class EnergyWidgetTest {
         assertNull("„In den Akku“ is gone", v.findViewById<View?>(ctx.resources.getIdentifier("e_today_v3", "id", ctx.packageName)))
         assertEquals("Autarkie", v.text("e_autarkie_l"))
         assertEquals("100\u00a0%", v.text("e_autarkie_v"))
-        assertEquals("Heute", v.text("e_today_label"))
+        assertEquals("a „Heute“ heading", 0, ctx.resources.getIdentifier("e_today_label", "id", ctx.packageName))
+        assertTrue("„Jetzt“ as a label", "Jetzt" !in said)
     }
 
     /** Heute in the picture's colours: the sun's, feeding in, drawing. */

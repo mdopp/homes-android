@@ -3,9 +3,8 @@
     <string name="widget_refresh">Aktualisieren</string>
     <string name="widget_load_error">konnte nicht laden</string>
 
-    <!-- The one energy widget (owner, 2026-11-02). -->
+    <!-- The one energy widget (owner, 2026-11-02; 2026-11-08: no „Jetzt“ and „Heute“ labels). -->
     <string name="energy_widget_label">Haus-Energie</string>
-    <string name="energy_widget_description">Jetzt und heute: Strom von PV, Haus, Netz und Akku. Tippen öffnet die Energie-Seite.</string>
-    <string name="energy_today">Heute</string>
+    <string name="energy_widget_description">Strom von PV, Haus, Netz und Akku. Tippen öffnet die Energie-Seite.</string>
     <string name="energy_autarkie">Autarkie</string>
 </resources>

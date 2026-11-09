@@ -24,7 +24,7 @@ object HomesPages {
     /** Every device, by room: the start screen's „Alle Geräte“. */
     const val RAEUME = "/raeume"
 
-    /** The house's power, jetzt and heute: the energy widget's tap. */
+    /** The house's power: the energy widget's tap. */
     const val ENERGIE = "/energie"
 
     /** Standortverlauf: where the person connects their Reitti once. */

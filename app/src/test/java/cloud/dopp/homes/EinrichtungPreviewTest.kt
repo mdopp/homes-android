@@ -149,7 +149,12 @@ class EinrichtungPreviewTest {
         assertEquals("the three, then Homes", 4, oeffnen.childCount)
         val titel = (0 until oeffnen.childCount).map { oeffnen.getChildAt(it).findViewById<TextView>(R.id.einr_titel).text.toString() }
         assertEquals(listOf("Dokumente", "Zeitleiste", "Musik verwalten", "Homes"), titel)
+        val unter = (0 until oeffnen.childCount).map { oeffnen.getChildAt(it).findViewById<TextView>(R.id.einr_unter) }
+        assertEquals("the row says where it stands", "Zuletzt aufgezeichnet heute 08:40", unter[1].text.toString())
+        assertEquals(listOf(View.GONE, View.VISIBLE, View.GONE, View.GONE), unter.map { it.visibility })
         if (!offline) {
+            oeffnen.getChildAt(1).performClick()
+            assertEquals("the timeline itself, not Homes' page about it", "https://reitti.example", shadowOf(a).nextStartedActivity?.dataString)
             oeffnen.getChildAt(3).performClick()
             assertEquals("Homes' start page", "https://homes.example/start", shadowOf(a).nextStartedActivity?.dataString)
         }
@@ -211,7 +216,7 @@ class EinrichtungPreviewTest {
              "nur_web":false,"aufgabe":{"titel":"Filme und Musik auf dem Handy einrichten","erledigt":true,"am":"2026-11-04","wie":"app","einrichten":"https://homes.example/einrichten/filme"}},
             {"name":"einkauf","titel":"Einkauf","icon":"einkauf","oeffnen":false,"web":"https://homes.example/einkauf","nur_web":true},
             {"name":"dokumente","titel":"Dokumente","icon":"dokumente","oeffnen":true,"web":"https://homes.example/dokumente","nur_web":true},
-            {"name":"standort","titel":"Zeitleiste","icon":"standort","oeffnen":true,"web":"https://reitti.example","nur_web":true},
+            {"name":"standort","titel":"Zeitleiste","icon":"standort","oeffnen":true,"web":"https://homes.example/standort","ziel":"https://reitti.example","stand":"Zuletzt aufgezeichnet heute 08:40","nur_web":true},
             {"name":"musik","titel":"Musik verwalten","icon":"musik","oeffnen":true,"web":"https://homes.example/musik","nur_web":true}],
            "ziele":{"einkauf":"https://homes.example/einkauf","zeitleiste":"https://reitti.example","scannen":"https://homes.example/napi/upload"}}"""
     }

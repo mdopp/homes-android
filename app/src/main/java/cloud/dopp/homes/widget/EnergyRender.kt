@@ -160,7 +160,7 @@ object EnergyRender {
         // the ring as high as the cell less its padding
         v.setImageViewBitmap(R.id.e_ring, EnergyPicture.single(f, (h - 12).coerceIn(28, 120), density(ctx)))
         if (e == null || f == null) {
-            small(v, "Jetzt", "…", "Wird geladen")
+            small(v, "Energie", "…", "Wird geladen")
             return v
         }
         val sub: String
@@ -221,7 +221,7 @@ object EnergyRender {
         val gw = (w - 24 - todayW).toInt().coerceAtLeast(80)
         val gh = (h - 16).coerceAtLeast(60)
         v.setImageViewBitmap(R.id.e_flow, EnergyPicture.flow(f, gw, gh, density(ctx)))
-        v.setContentDescription(R.id.e_flow, f?.let { "Jetzt: " + it.words() } ?: "Energie, wird geladen")
+        v.setContentDescription(R.id.e_flow, f?.words() ?: "Energie, wird geladen")
         if (!withToday) return v
         val totals = EnergyStyle.orderedTotals(e?.totals.orEmpty())
         // three rows (owner, 2026-11-03: „In den Akku“ goes): erzeugt, ins Netz, Netzbezug

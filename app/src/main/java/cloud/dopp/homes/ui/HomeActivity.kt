@@ -18,7 +18,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import cloud.dopp.homes.HomesConfig
 import cloud.dopp.homes.R
@@ -81,9 +80,10 @@ import kotlin.concurrent.thread
  * switches one, each with the fine controls Homes' devices page has
  * ([DeviceControls], owner 2026-11-03), and „Alle →“ in the head, Homes'
  * devices page ([StartDevices], owner 2026-11-02); then one list of
- * widgets to add, the live switch under its hint
- * (owner, 2026-11-03: no groups) — one device, the energy, the tools from
- * Homes' catalog —, each one tap from the home screen; under Mehr, Daten
+ * widgets to add (owner, 2026-11-03: no groups) — one device, the energy, the
+ * tools from Homes' catalog —, each one tap from the home screen, and under
+ * them, only while the battery exemption is missing, the row that asks for it
+ * (owner 2026-11-08: live is the one way, no switch); under Mehr, Daten
  * sichern (#194); and where the app is paired, beside the way to unpair.
  */
 class HomeActivity : AppCompatActivity() {
@@ -127,13 +127,8 @@ class HomeActivity : AppCompatActivity() {
         findViewById<Button>(R.id.connect_btn).setOnClickListener { onConnect() }
         findViewById<Button>(R.id.qr_scan_btn).setOnClickListener { startScan() }
         findViewById<Button>(R.id.logout_btn).setOnClickListener { unpair() }
-        findViewById<SwitchCompat>(R.id.live_switch).setOnCheckedChangeListener { _, on ->
-            if (on != Live.isEnabled(this)) Live.setEnabled(applicationContext, on)
-        }
-        // The live row (owner, 2026-11-03): while the exemption is missing a tap asks for it, else it switches.
-        val onLiveRow = View.OnClickListener {
-            if (!Live.exempt(this)) requestExemption() else findViewById<SwitchCompat>(R.id.live_switch).toggle()
-        }
+        // The live row (owner 2026-11-03; no switch since 2026-11-08): there while the exemption is missing, a tap asks for it.
+        val onLiveRow = View.OnClickListener { requestExemption() }
         findViewById<View>(R.id.live_row).setOnClickListener(onLiveRow)
         findViewById<TextView>(R.id.live_battery).setOnClickListener(onLiveRow)
         findViewById<TextView>(R.id.app_version).text = getString(R.string.app_version_fmt, appVersionName())
@@ -191,10 +186,7 @@ class HomeActivity : AppCompatActivity() {
         renderAssistent()
         if (!connected) return
         findViewById<TextView>(R.id.status).text = getString(R.string.home_connected, ServerStore.host(this) ?: "")
-        findViewById<SwitchCompat>(R.id.live_switch).isChecked = Live.isEnabled(this)
-        findViewById<TextView>(R.id.live_battery).setText(
-            if (Live.exempt(this)) R.string.live_battery_on else R.string.live_battery_off,
-        )
+        findViewById<View>(R.id.live_row).visibility = if (Live.exempt(this)) View.GONE else View.VISIBLE
         renderDevices()
         renderWidgetTypes()
         renderTools()
