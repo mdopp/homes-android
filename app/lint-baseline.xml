@@ -874,17 +874,6 @@
 
     <issue
         id="UseKtx"
-        message="Use the KTX extension function `SharedPreferences.edit` instead?"
-        errorLine1="        p(ctx).edit().putBoolean(KEY_ON, on).apply()"
-        errorLine2="        ~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/cloud/dopp/homes/realtime/LiveService.kt"
-            line="93"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="UseKtx"
         message="Use the KTX extension function `String.toUri` instead?"
         errorLine1="        val uri = runCatching { Uri.parse(text.trim()) }.getOrNull() ?: return null"
         errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~">
