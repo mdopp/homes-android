@@ -223,18 +223,28 @@ object Korrigieren {
      * name, case aside. Android has no sibling type: that and the kinds it lacks are TYPE_CUSTOM with a German label.
      */
     private fun beziehung(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? {
-        val z = a.vorher.takeIf { it.isNotBlank() }?.let { relation(zeilen, it) }
+        val z = if (a.vorher.isBlank()) null else relation(zeilen, a.vorher)
         val neu = a.nachher.trim()
-        if (neu.isEmpty()) return z?.let { listOf(Schritt.Weg(it.id)) } ?: emptyList<Schritt>().takeIf { a.vorher.isNotBlank() } // gone already
-        val art = beziehungsArt(a.nachherArt) ?: return null
-        val da = relation(zeilen, neu)
+        if (neu.isNotEmpty()) return beziehungSetzen(a, z, relation(zeilen, neu), neu, ziel)
         return when {
-            da != null && (z == null || z === da) && art.all { (k, v) -> v == null || da.wert(k) == v.toString() } -> emptyList() // written already
+            z != null -> listOf(Schritt.Weg(z.id))
+            a.vorher.isNotBlank() -> emptyList() // gone already
+            else -> null
+        }
+    }
+
+    /** The steps that make the relation [neu] of [a]'s kind; [z] is the row it was, [da] a row already named [neu]. */
+    private fun beziehungSetzen(a: Korrektur.Aenderung, z: Zeile?, da: Zeile?, neu: String, ziel: Long): List<Schritt>? {
+        val art = beziehungsArt(a.nachherArt) ?: return null
+        if (da != null && (z == null || z === da) && gleich(da, art)) return emptyList() // written already
+        return when {
             z != null -> listOf(Schritt.Aendern(z.id, mapOf(Relation.NAME to neu) + art))
             da != null && a.vorher.isBlank() -> listOf(Schritt.Aendern(da.id, art))
             else -> listOf(Schritt.Neu(ziel, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to neu) + art))
         }
     }
+
+    private fun gleich(z: Zeile, art: Map<String, Any?>): Boolean = art.all { (k, v) -> v == null || z.wert(k) == v.toString() }
 
     private fun relation(zeilen: List<Zeile>, name: String): Zeile? =
         zeilen.firstOrNull { it.mime == Relation.CONTENT_ITEM_TYPE && it.wert(Relation.NAME).equals(name.trim(), ignoreCase = true) }
