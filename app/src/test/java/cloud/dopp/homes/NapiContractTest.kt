@@ -316,7 +316,8 @@ class NapiContractTest {
             // registered napi.go:226-227, the entry internal/modul/modul.go:222-248, a refused device napi.go:236.
             Route(
                 "GET", "/napi/kann", "internal/napi/kann.go:30-62 (ETag :43-49), not_found without modules :31-34 and napi.go:275-277",
-                sends = setOf("version", "module", "app") + KANN_MODUL + setOf("ok", "reason"),
+                // dokumente_adresse, the device's person's own (owner 2026-11-10): mdopp/homes#338, kann.go:36-38 and modul.go's Kann
+                sends = setOf("version", "module", "app", "dokumente_adresse") + KANN_MODUL + setOf("ok", "reason"),
                 headers = setOf("If-None-Match", "ETag"),
             ),
             Route(

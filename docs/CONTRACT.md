@@ -519,7 +519,12 @@ the app, in the app's keys; `module` is every module, on or off, with its
 title, why it is off (`grund`), what it would bring (`bietet`), its trace
 (`spur_id`: `fehlt`, `aus`, `angefordert`, `wartet`, `abgelehnt`,
 `eingerichtet`; `spur` the German words) and whether it offers „Hier
-anfordern“ (`anfordern`).
+anfordern“ (`anfordern`). To a device whose person has one, it also gives
+`dokumente_adresse`, `<login>+doc+@<domain>` (owner 2026-11-10,
+mdopp/homes#338): Mehr's row „Dokumente-Adresse kopieren“ and the app
+icon's entry of that name copy `<login>+doc+`, and the person types the
+sender after the `+` (`widget/DokumenteAdresse.kt`). Without it, neither is
+there.
 
 - **When the app reads:** at start and resume, at most once a minute; when
   the live stream connects (a restarted Homes may offer something else);

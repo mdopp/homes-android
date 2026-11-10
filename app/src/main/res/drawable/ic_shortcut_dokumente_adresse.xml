@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launcher shortcut „Dokumente-Adresse kopieren“ below API 26, without a mask: the brand-blue
+     rounded square with the white glyph inset by half its size (#99). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <item>
+        <aapt:attr name="android:drawable">
+            <shape android:shape="rectangle">
+                <solid android:color="@color/homes_brand_blue" />
+                <corners android:radius="10dp" />
+                <size android:width="48dp" android:height="48dp" />
+            </shape>
+        </aapt:attr>
+    </item>
+    <item
+        android:drawable="@drawable/ic_modul_dokumente"
+        android:left="12dp" android:top="12dp" android:right="12dp" android:bottom="12dp" />
+</layer-list>

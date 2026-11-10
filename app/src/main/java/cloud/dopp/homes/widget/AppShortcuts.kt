@@ -15,13 +15,15 @@ import cloud.dopp.homes.einrichtung.Kurz
 import cloud.dopp.homes.einrichtung.Verknuepfung
 import cloud.dopp.homes.einrichtung.VerknuepfungActivity
 import cloud.dopp.homes.einrichtung.Verknuepfungen
+import cloud.dopp.homes.kann.KannStore
 import cloud.dopp.homes.ui.StartDevices
 import kotlin.concurrent.thread
 
 /**
  * Publishes the app-icon long-press menu (owner, 2026-11-04): Garagentor,
  * Einkaufsliste, Zeitleiste and Dokument scannen ([Verknuepfungen], pure and
- * JVM-tested), each only where the box has it, as **dynamic** shortcuts —
+ * JVM-tested), then „Dokumente-Adresse kopieren“ ([DokumenteAdresse], owner
+ * 2026-11-10), each only where the box has it, as **dynamic** shortcuts —
  * built from Homes' answer, so a missing target hides its shortcut, and each
  * one pinnable to the home screen like any shortcut.
  *
@@ -65,7 +67,11 @@ object AppShortcuts {
         }
         val paired = ServerStore.isConfigured(app) && TokenStore.isPaired(app)
         val entries = if (!paired) emptyList() else Verknuepfungen.liste(EinrichtungStore.einrichtung(app)?.ziele.orEmpty(), garage(app))
-        val infos = entries.take(maxOf(0, if (share == null) cap else cap - 1)).mapIndexed { i, v -> info(app, v, i) } + listOfNotNull(share)
+        // „Dokumente-Adresse kopieren“ after the four, before the share target (owner 2026-11-10)
+        val frei = maxOf(0, if (share == null) cap else cap - 1)
+        val adresse = KannStore.kann(app)?.dokumenteAdresse?.takeIf { paired && frei > 0 && DokumenteAdresse.kopie(it) != null }
+        val vier = entries.take(if (adresse == null) frei else frei - 1).mapIndexed { i, v -> info(app, v, i) }
+        val infos = vier + listOfNotNull(adresse?.let { DokumenteAdresse.shortcut(app, it, vier.size) }, share)
         if (infos.isEmpty()) {
             runCatching { ShortcutManagerCompat.removeAllDynamicShortcuts(app) }
             return

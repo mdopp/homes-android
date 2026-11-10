@@ -167,6 +167,15 @@
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <!-- „Dokumente-Adresse kopieren“ from the app icon's menu (owner 2026-11-10): copies the person's
+             <login>+doc+ and is gone. No screen of its own; not exported, only the app's shortcut starts it. -->
+        <activity
+            android:name=".widget.DokumenteAdresseActivity"
+            android:exported="false"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!-- Dokument scannen: the camera app writes the photo into cache/scan/ (res/xml/scan_pfade.xml),
              the one place this provider shares, each time by a grant for that one photo. -->
         <provider
