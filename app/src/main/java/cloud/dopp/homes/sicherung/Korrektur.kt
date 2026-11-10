@@ -258,7 +258,7 @@ object Korrigieren {
 
     private val BEZIEHUNG = mapOf("partner" to Relation.TYPE_PARTNER, "eltern" to Relation.TYPE_PARENT, "kind" to Relation.TYPE_CHILD, "freund" to Relation.TYPE_FRIEND, "verwandt" to Relation.TYPE_RELATIVE)
     private val LABEL = mapOf(
-        "geschwister" to "Geschwister", "grosseltern" to "Großeltern", "enkel" to "Enkel/in", "onkel" to "Onkel/Tante", "neffe" to "Neffe/Nichte",
+        "expartner" to "Ex-Partner/in", "geschwister" to "Geschwister", "grosseltern" to "Großeltern", "enkel" to "Enkel/in", "onkel" to "Onkel/Tante", "neffe" to "Neffe/Nichte",
         "cousin" to "Cousin/Cousine", "schwiegereltern" to "Schwiegereltern", "schwiegerkind" to "Schwiegersohn/-tochter",
         "schwager" to "Schwager/Schwägerin", "kollege" to "Kollege/Kollegin", "nachbar" to "Nachbar/in", "bekannt" to "Bekannte/r",
     )
