@@ -119,6 +119,7 @@ class HandyKorrektur(private val ctx: Context) : Kontaktbuch {
             ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE,
             ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE,
             ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE,
+            ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE, // owner 2026-11-09: relations, Korrigieren.beziehung
         )
     }
 }

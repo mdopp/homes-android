@@ -7,6 +7,7 @@ import android.provider.ContactsContract.CommonDataKinds.Note
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.CommonDataKinds.Photo
+import android.provider.ContactsContract.CommonDataKinds.Relation
 import android.provider.ContactsContract.CommonDataKinds.StructuredName
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import cloud.dopp.homes.data.SicherungClient
@@ -100,6 +101,7 @@ object Korrigieren {
         "geburtstag" -> einzeln(a, zeilen, ziel, GEBURTSTAG)
         "firma" -> einzeln(a, zeilen, ziel, FIRMA)
         "position" -> einzeln(a, zeilen, ziel, POSITION)
+        "beziehung" -> beziehung(a, zeilen, ziel)
         else -> null
     }
 
@@ -215,6 +217,51 @@ object Korrigieren {
             else -> listOf(Schritt.Weg(z.id))
         }
     }
+
+    /**
+     * A relation (owner 2026-11-09): on this contact the person named nachher is its nachherArt, rows matched by
+     * name, case aside. Android has no sibling type: that and the kinds it lacks are TYPE_CUSTOM with a German label.
+     */
+    private fun beziehung(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? {
+        val z = if (a.vorher.isBlank()) null else relation(zeilen, a.vorher)
+        val neu = a.nachher.trim()
+        if (neu.isNotEmpty()) return beziehungSetzen(a, z, relation(zeilen, neu), neu, ziel)
+        return when {
+            z != null -> listOf(Schritt.Weg(z.id))
+            a.vorher.isNotBlank() -> emptyList() // gone already
+            else -> null
+        }
+    }
+
+    /** The steps that make the relation [neu] of [a]'s kind; [z] is the row it was, [da] a row already named [neu]. */
+    private fun beziehungSetzen(a: Korrektur.Aenderung, z: Zeile?, da: Zeile?, neu: String, ziel: Long): List<Schritt>? {
+        val art = beziehungsArt(a.nachherArt) ?: return null
+        val selbe = z == null || z === da
+        if (da != null && selbe && gleich(da, art)) return emptyList() // written already
+        return when {
+            z != null -> listOf(Schritt.Aendern(z.id, mapOf(Relation.NAME to neu) + art))
+            da != null && a.vorher.isBlank() -> listOf(Schritt.Aendern(da.id, art))
+            else -> listOf(Schritt.Neu(ziel, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to neu) + art))
+        }
+    }
+
+    private fun gleich(z: Zeile, art: Map<String, Any?>): Boolean = art.all { (k, v) -> v == null || z.wert(k) == v.toString() }
+
+    private fun relation(zeilen: List<Zeile>, name: String): Zeile? =
+        zeilen.firstOrNull { it.mime == Relation.CONTENT_ITEM_TYPE && it.wert(Relation.NAME).equals(name.trim(), ignoreCase = true) }
+
+    /** The Relation row's TYPE and LABEL for a Homes kind; null for a kind Android cannot hold. */
+    private fun beziehungsArt(art: String): Map<String, Any?>? {
+        val typ = BEZIEHUNG[art] ?: Relation.TYPE_CUSTOM.takeIf { art in LABEL } ?: return null
+        return mapOf(Relation.TYPE to typ, Relation.LABEL to LABEL[art])
+    }
+
+    private val BEZIEHUNG = mapOf("partner" to Relation.TYPE_PARTNER, "eltern" to Relation.TYPE_PARENT, "kind" to Relation.TYPE_CHILD, "freund" to Relation.TYPE_FRIEND, "verwandt" to Relation.TYPE_RELATIVE)
+    private val LABEL = mapOf(
+        "geschwister" to "Geschwister", "grosseltern" to "Großeltern", "enkel" to "Enkel/in", "onkel" to "Onkel/Tante", "neffe" to "Neffe/Nichte",
+        "cousin" to "Cousin/Cousine", "schwiegereltern" to "Schwiegereltern", "schwiegerkind" to "Schwiegersohn/-tochter",
+        "schwager" to "Schwager/Schwägerin", "kollege" to "Kollege/Kollegin", "nachbar" to "Nachbar/in", "bekannt" to "Bekannte/r",
+    )
 
     /** [zeilen] as [s] leaves them, for the next change of the same correction. */
     private fun nachher(zeilen: List<Zeile>, s: Schritt?): List<Zeile> = when (s) {

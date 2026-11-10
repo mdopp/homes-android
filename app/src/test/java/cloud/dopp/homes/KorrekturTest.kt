@@ -8,6 +8,7 @@ import android.provider.ContactsContract.CommonDataKinds.Note
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.CommonDataKinds.Photo
+import android.provider.ContactsContract.CommonDataKinds.Relation
 import android.provider.ContactsContract.CommonDataKinds.StructuredName
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import cloud.dopp.homes.data.SicherungClient
@@ -131,6 +132,37 @@ class KorrekturTest {
         assertEquals(Schritt.Neu(10, Note.CONTENT_ITEM_TYPE, mapOf(Note.NOTE to "Bin umgezogen.")), neu[1])
         val schon = zeilen + Zeile(7, 10, Note.CONTENT_ITEM_TYPE, mapOf(Note.NOTE to "Kennt Anna\n\nBin umgezogen."))
         assertEquals(Pair(emptyList<Schritt>(), listOf(4)), Korrigieren.plan(k.copy(aenderungen = k.aenderungen.drop(4)), schon))
+    }
+
+    /**
+     * owner 2026-11-09: a relation Homes asks for, on the contact's Relation rows matched by
+     * name: new, its kind changed, removed, one there already said written with nothing to
+     * write; Android has no sibling type, so geschwister is a custom row with a German label;
+     * an unknown kind cannot be written.
+     */
+    @Test
+    fun aRelationIsWrittenByTheOtherPersonsName() {
+        val mit = zeilen + Zeile(8, 10, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to "Karl Beispiel", Relation.TYPE to Relation.TYPE_FRIEND.toString()))
+        fun b(nr: Int, vorher: String, nachher: String, va: String, na: String) = Korrektur.Aenderung(nr, "beziehung", vorher, nachher, vorherArt = va, nachherArt = na)
+        fun plan(vararg x: Korrektur.Aenderung) = Korrigieren.plan(Korrektur("f", "u", "Hilde Oma", x.toList()), mit)
+        assertEquals(
+            Pair(listOf(Schritt.Neu(10, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to "Anna Beispiel", Relation.TYPE to Relation.TYPE_PARENT, Relation.LABEL to null))), listOf(0)),
+            plan(b(0, "", "Anna Beispiel", "", "eltern")),
+        )
+        assertEquals(
+            listOf(Schritt.Aendern(8, mapOf(Relation.NAME to "Karl Beispiel", Relation.TYPE to Relation.TYPE_PARTNER, Relation.LABEL to null))),
+            plan(b(1, "Karl Beispiel", "Karl Beispiel", "freund", "partner")).first,
+        )
+        assertEquals(listOf(Schritt.Aendern(8, mapOf(Relation.TYPE to Relation.TYPE_PARTNER, Relation.LABEL to null))), plan(b(1, "", "karl beispiel", "", "partner")).first)
+        assertEquals(Pair(listOf(Schritt.Weg(8)), listOf(2)), plan(b(2, "Karl Beispiel", "", "freund", "")))
+        assertEquals(Pair(emptyList<Schritt>(), listOf(3, 4)), plan(b(3, "", "Karl Beispiel", "", "freund"), b(4, "Otto", "", "kollege", ""))) // there already, gone already
+        assertEquals(
+            listOf(Schritt.Neu(10, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to "Eva Oma", Relation.TYPE to Relation.TYPE_CUSTOM, Relation.LABEL to "Geschwister"))),
+            plan(b(5, "", "Eva Oma", "", "geschwister")).first,
+        )
+        val geschwister = mit + Zeile(9, 10, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to "Eva Oma", Relation.TYPE to Relation.TYPE_CUSTOM.toString(), Relation.LABEL to "Geschwister"))
+        assertEquals(Pair(emptyList<Schritt>(), listOf(5)), Korrigieren.plan(Korrektur("f", "u", "Hilde Oma", listOf(b(5, "", "Eva Oma", "", "geschwister"))), geschwister))
+        assertEquals(Pair(emptyList<Schritt>(), emptyList<Int>()), plan(b(6, "", "Eva Oma", "", "patenkind"), b(7, "", "", "", "")))
     }
 
     /** The other way: the phone's main number and e-mail go to Homes' mirror as TYPE=PREF. */
