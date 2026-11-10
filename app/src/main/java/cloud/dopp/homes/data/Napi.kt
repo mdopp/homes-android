@@ -527,14 +527,14 @@ object Napi {
     const val IMPORT_FEHLER = "fehler"
 
     /**
-     * `GET /napi/kann` (homes ADR 0001 §2, §10): what this box can do,
-     * `{version, module: [ModulJson], app: AngebotJson}`. Fields are only ever
-     * added (version 1); a Homes without the path answers 404 `not_found`.
+     * `GET /napi/kann` (homes ADR 0001 §2, §10): what this box can do, `{version, module: [ModulJson], app: AngebotJson,
+     * dokumente_adresse}`. Fields are only ever added (version 1); a Homes without the path answers 404 `not_found`.
      */
     object KannJson {
         const val VERSION = "version"
         const val MODULE = "module"
         const val APP = "app"
+        const val DOKUMENTE_ADRESSE = "dokumente_adresse" // the device's person's own, <login>+doc+@<domain> (homes#338)
     }
 
     /**

@@ -71,7 +71,7 @@ class Kann(val module: List<Modul>, private val app: Map<Liste, Set<String>>, va
             return Kann(
                 (0 until module.length()).mapNotNull { modul(module.optJSONObject(it)) },
                 angebot(o.optJSONObject(KannJson.APP)),
-                HomesHttp.text(o, "dokumente_adresse"), // the person's own, <login>+doc+@<domain> (homes#338)
+                HomesHttp.text(o, KannJson.DOKUMENTE_ADRESSE),
             )
         }
 
