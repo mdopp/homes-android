@@ -616,6 +616,7 @@ object Napi {
         const val MUSIK = "musik"
         const val DATEN_SICHERN = "daten-sichern"
         const val STANDORTVERLAUF = "standortverlauf"
+        const val ARCHIV = "archiv"
     }
 
     // --- the calls -------------------------------------------------------------

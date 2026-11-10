@@ -38,4 +38,5 @@
     <string name="sicherung_schluessel">Schlüssel im Archiv eintragen</string>
     <string name="sicherung_anleitung_signal">1. In Signal: Einstellungen → Chats → Chat-Backups einschalten und einen Ordner wählen.\n2. Die 30-stellige Passphrase in Bitwarden ablegen und im Archiv eintragen.\n3. Hier „Ordner freigeben“ und denselben Ordner wählen.</string>
     <string name="sicherung_anleitung_whatsapp">1. In WhatsApp: Einstellungen → Chats → Chat-Backup → „Ende-zu-Ende-verschlüsseltes Backup“ mit dem 64-stelligen Schlüssel einschalten, nicht mit Passwort oder Passkey.\n2. Den Schlüssel in Bitwarden ablegen und im Archiv eintragen.\n3. Hier „Ordner freigeben“: Android → media → com.whatsapp → WhatsApp.</string>
+    <string name="archiv_title">Dein Archiv</string>
 </resources>
