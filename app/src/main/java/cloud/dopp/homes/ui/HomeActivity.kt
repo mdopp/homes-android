@@ -10,6 +10,9 @@ import androidx.core.net.toUri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -45,6 +48,7 @@ import cloud.dopp.homes.realtime.Live
 import cloud.dopp.homes.widget.ActionDialog
 import cloud.dopp.homes.widget.ActionItem
 import cloud.dopp.homes.widget.ActionSheet
+import cloud.dopp.homes.widget.DokumenteAdresse
 import cloud.dopp.homes.widget.ActionTone
 import cloud.dopp.homes.widget.AppShortcuts
 import cloud.dopp.homes.widget.DeviceLook
@@ -315,7 +319,7 @@ class HomeActivity : AppCompatActivity() {
 
     /**
      * Mehr: Daten sichern (#194) and Standortverlauf (owner 2026-11-02) as the
-     * box offers them, Dein Archiv for whom Homes says has one, Homes auf dem Handy (#206); below, quiet, what the box
+     * box offers them, Dein Archiv for whom Homes says has one, Dokumente-Adresse kopieren for whom it gives one, Homes auf dem Handy (#206); below, quiet, what the box
      * lacks, each with „Hier anfordern“ (homes ADR 0001 §10).
      */
     private fun renderMehr() {
@@ -334,6 +338,16 @@ class HomeActivity : AppCompatActivity() {
         angebot.fuellen(group, Liste.MEHR, zeilen, { row(group, it.icon, it.label, it.tap) }, inSpuren = true)
         StartAngebot.archiv(kann, ServerStore.baseUrl(this))?.let { url ->
             group.addView(row(group, R.drawable.ic_archiv, getString(R.string.archiv_title)) { open(url.toUri()) })
+        }
+        val dok = kann?.dokumenteAdresse.orEmpty()
+        DokumenteAdresse.muster(dok)?.let { muster -> // owner 2026-11-10: only when Homes gives this person one
+            val r = row(group, R.drawable.ic_modul_dokumente, getString(R.string.dokumente_adresse)) { DokumenteAdresse.kopieren(this, dok) }
+            val hinweis = SpannableString(getString(R.string.dokumente_adresse_hinweis, muster)).apply {
+                setSpan(RelativeSizeSpan(HINWEIS_GROESSE), 0, length, 0)
+                setSpan(ForegroundColorSpan(getColor(R.color.homes_text_muted)), 0, length, 0)
+            }
+            r.findViewById<TextView>(R.id.type_label).apply { maxLines = 3; append("\n"); append(hinweis) }
+            group.addView(r)
         }
         group.addView(
             row(group, R.drawable.ic_konto, getString(R.string.konto_title)) {
@@ -613,6 +627,7 @@ class HomeActivity : AppCompatActivity() {
     private companion object {
         const val PREFS_ASKED = "homes_asked"
         const val KEY_EXEMPTION = "battery_exemption"
+        const val HINWEIS_GROESSE = 0.8f // the Dokumente-Adresse row's hint, below its label
     }
 
     private fun appVersionName(): String = runCatching {

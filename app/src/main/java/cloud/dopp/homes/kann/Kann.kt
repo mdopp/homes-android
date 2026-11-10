@@ -43,9 +43,9 @@ data class Modul(
  * Nothing is taken on a guess: an unknown key or field is ignored, and a
  * list Homes did not send says nothing, so its features stay as they are.
  * A Homes without `/napi/kann`, or none read yet, is no [Kann] at all:
- * everything is offered as before ([hat] on null).
+ * everything is offered as before ([hat] on null). [dokumenteAdresse]: the person's own, null without one.
  */
-class Kann(val module: List<Modul>, private val app: Map<Liste, Set<String>>) {
+class Kann(val module: List<Modul>, private val app: Map<Liste, Set<String>>, val dokumenteAdresse: String? = null) {
 
     /** Does the box offer [key] in [liste]? A list Homes did not send: yes. */
     fun hat(liste: Liste, key: String): Boolean = app[liste]?.contains(key) ?: true
@@ -71,6 +71,7 @@ class Kann(val module: List<Modul>, private val app: Map<Liste, Set<String>>) {
             return Kann(
                 (0 until module.length()).mapNotNull { modul(module.optJSONObject(it)) },
                 angebot(o.optJSONObject(KannJson.APP)),
+                HomesHttp.text(o, "dokumente_adresse"), // the person's own, <login>+doc+@<domain> (homes#338)
             )
         }
 
