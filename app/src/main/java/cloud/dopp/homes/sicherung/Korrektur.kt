@@ -223,19 +223,26 @@ object Korrigieren {
      * name, case aside. Android has no sibling type: that and the kinds it lacks are TYPE_CUSTOM with a German label.
      */
     private fun beziehung(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? {
-        fun von(n: String) = zeilen.firstOrNull { it.mime == Relation.CONTENT_ITEM_TYPE && it.wert(Relation.NAME).equals(n.trim(), ignoreCase = true) }
-        val z = a.vorher.takeIf { it.isNotBlank() }?.let(::von)
+        val z = a.vorher.takeIf { it.isNotBlank() }?.let { relation(zeilen, it) }
         val neu = a.nachher.trim()
         if (neu.isEmpty()) return z?.let { listOf(Schritt.Weg(it.id)) } ?: emptyList<Schritt>().takeIf { a.vorher.isNotBlank() } // gone already
-        val typ = BEZIEHUNG[a.nachherArt] ?: Relation.TYPE_CUSTOM.takeIf { a.nachherArt in LABEL } ?: return null
-        val art = mapOf(Relation.TYPE to typ, Relation.LABEL to LABEL[a.nachherArt])
-        val da = von(neu)
+        val art = beziehungsArt(a.nachherArt) ?: return null
+        val da = relation(zeilen, neu)
         return when {
             da != null && (z == null || z === da) && art.all { (k, v) -> v == null || da.wert(k) == v.toString() } -> emptyList() // written already
             z != null -> listOf(Schritt.Aendern(z.id, mapOf(Relation.NAME to neu) + art))
             da != null && a.vorher.isBlank() -> listOf(Schritt.Aendern(da.id, art))
             else -> listOf(Schritt.Neu(ziel, Relation.CONTENT_ITEM_TYPE, mapOf(Relation.NAME to neu) + art))
         }
+    }
+
+    private fun relation(zeilen: List<Zeile>, name: String): Zeile? =
+        zeilen.firstOrNull { it.mime == Relation.CONTENT_ITEM_TYPE && it.wert(Relation.NAME).equals(name.trim(), ignoreCase = true) }
+
+    /** The Relation row's TYPE and LABEL for a Homes kind; null for a kind Android cannot hold. */
+    private fun beziehungsArt(art: String): Map<String, Any?>? {
+        val typ = BEZIEHUNG[art] ?: Relation.TYPE_CUSTOM.takeIf { art in LABEL } ?: return null
+        return mapOf(Relation.TYPE to typ, Relation.LABEL to LABEL[art])
     }
 
     private val BEZIEHUNG = mapOf("partner" to Relation.TYPE_PARTNER, "eltern" to Relation.TYPE_PARENT, "kind" to Relation.TYPE_CHILD, "freund" to Relation.TYPE_FRIEND, "verwandt" to Relation.TYPE_RELATIVE)
