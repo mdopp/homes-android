@@ -2,6 +2,7 @@ package cloud.dopp.homes.kann
 
 import cloud.dopp.homes.data.HomesHttp
 import cloud.dopp.homes.data.Napi.AngebotJson
+import cloud.dopp.homes.data.Napi.KannEigenJson
 import cloud.dopp.homes.data.Napi.KannJson
 import cloud.dopp.homes.data.Napi.ModulJson
 import org.json.JSONArray
@@ -71,7 +72,7 @@ class Kann(val module: List<Modul>, private val app: Map<Liste, Set<String>>, va
             return Kann(
                 (0 until module.length()).mapNotNull { modul(module.optJSONObject(it)) },
                 angebot(o.optJSONObject(KannJson.APP)),
-                HomesHttp.text(o, KannJson.DOKUMENTE_ADRESSE),
+                HomesHttp.text(o, KannEigenJson.DOKUMENTE_ADRESSE),
             )
         }
 

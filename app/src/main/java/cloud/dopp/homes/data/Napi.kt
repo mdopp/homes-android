@@ -528,14 +528,14 @@ object Napi {
 
     /**
      * `GET /napi/kann` (homes ADR 0001 §2, §10): what this box can do, `{version, module: [ModulJson], app: AngebotJson,
-     * dokumente_adresse}`. Fields are only ever added (version 1); a Homes without the path answers 404 `not_found`.
+     * [KannEigenJson]}`. Fields are only ever added (version 1); a Homes without the path answers 404 `not_found`.
      */
     object KannJson {
         const val VERSION = "version"
         const val MODULE = "module"
         const val APP = "app"
-        const val DOKUMENTE_ADRESSE = "dokumente_adresse" // the device's person's own, <login>+doc+@<domain> (homes#338)
     }
+    object KannEigenJson { const val DOKUMENTE_ADRESSE = "dokumente_adresse" } // `/napi/kann`'s, the device's person's own: <login>+doc+@<domain> (homes#338)
 
     /**
      * One module of `/napi/kann`, and the answer of `POST /napi/kann/anfordern`:
@@ -818,7 +818,7 @@ object Napi {
      * 304 when [IF_NONE_MATCH] names it.
      */
     val KANN = Endpoint(
-        Method.GET, "/napi/kann", reply = listOf(KannJson, ModulJson, AngebotJson),
+        Method.GET, "/napi/kann", reply = listOf(KannJson, ModulJson, AngebotJson, KannEigenJson),
         headers = listOf(IF_NONE_MATCH), replyHeaders = listOf(ETAG),
     )
 
