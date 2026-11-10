@@ -11,6 +11,7 @@ import cloud.dopp.homes.kann.Kann
 import cloud.dopp.homes.kann.Liste
 import cloud.dopp.homes.kann.Modul
 import cloud.dopp.homes.kann.hat
+import cloud.dopp.homes.sicherung.Rueckholung
 
 /**
  * The start screen's lists as the box offers them (homes ADR 0001 §3, §10):
@@ -73,6 +74,14 @@ internal class StartAngebot(
     }
 
     companion object {
+        /**
+         * „Dein Archiv“ (owner 2026-11-10): the person's archive beside Homes at
+         * [base], when Homes says they have one (`mehr` "archiv", per person);
+         * null otherwise, and while Homes has said nothing yet.
+         */
+        fun archiv(kann: Kann?, base: String?): String? =
+            if (kann?.hat(Liste.MEHR, KannKey.ARCHIV) == true) base?.let(Rueckholung::archivAdresse) else null
+
         /** A widget key the picker can offer: the device, the energy, a tool the app offers. */
         fun widget(key: String): Boolean = key == KannKey.GERAET || key == KannKey.ENERGIE ||
             (key.startsWith(KannKey.TOOL) && key.removePrefix(KannKey.TOOL) !in ToolDefs.NOT_OFFERED)

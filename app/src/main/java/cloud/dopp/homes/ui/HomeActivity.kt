@@ -314,7 +314,7 @@ class HomeActivity : AppCompatActivity() {
 
     /**
      * Mehr: Daten sichern (#194) and Standortverlauf (owner 2026-11-02) as the
-     * box offers them, Homes auf dem Handy (#206); below, quiet, what the box
+     * box offers them, Dein Archiv for whom Homes says has one, Homes auf dem Handy (#206); below, quiet, what the box
      * lacks, each with „Hier anfordern“ (homes ADR 0001 §10).
      */
     private fun renderMehr() {
@@ -331,6 +331,9 @@ class HomeActivity : AppCompatActivity() {
         )
         val angebot = StartAngebot(this, kann, ::renderWidgetTypes)
         angebot.fuellen(group, Liste.MEHR, zeilen, { row(group, it.icon, it.label, it.tap) }, inSpuren = true)
+        StartAngebot.archiv(kann, ServerStore.baseUrl(this))?.let { url ->
+            group.addView(row(group, R.drawable.ic_archiv, getString(R.string.archiv_title)) { open(Uri.parse(url)) })
+        }
         group.addView(
             row(group, R.drawable.ic_konto, getString(R.string.konto_title)) {
                 startActivity(Intent(this, HomesKontoActivity::class.java))
