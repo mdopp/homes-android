@@ -236,7 +236,8 @@ object Korrigieren {
     /** The steps that make the relation [neu] of [a]'s kind; [z] is the row it was, [da] a row already named [neu]. */
     private fun beziehungSetzen(a: Korrektur.Aenderung, z: Zeile?, da: Zeile?, neu: String, ziel: Long): List<Schritt>? {
         val art = beziehungsArt(a.nachherArt) ?: return null
-        if (da != null && (z == null || z === da) && gleich(da, art)) return emptyList() // written already
+        val selbe = z == null || z === da
+        if (da != null && selbe && gleich(da, art)) return emptyList() // written already
         return when {
             z != null -> listOf(Schritt.Aendern(z.id, mapOf(Relation.NAME to neu) + art))
             da != null && a.vorher.isBlank() -> listOf(Schritt.Aendern(da.id, art))
