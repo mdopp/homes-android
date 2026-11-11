@@ -185,6 +185,32 @@ class HomesKontoAusschlussTest {
         assertFalse(text, text.contains("Schule"))
     }
 
+    /**
+     * Android joins Google's, WhatsApp's and Signal's raw contacts into one contact, each with its
+     * own row of the same number (homes#359: 394 of 530 cards carried one twice): the export sends
+     * each number once, compared as Homes does (0171 … is +49 171 …), the line that says most; red before.
+     */
+    @Test
+    fun aNumberGoesOncePerContact() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        shadowOf(app).grantPermissions(Manifest.permission.READ_CONTACTS)
+        Robolectric.setupContentProvider(FakeKontakte::class.java, ContactsContract.AUTHORITY)
+        val mobil = Phone.TYPE_MOBILE.toString()
+        roh = listOf(Roh(5, "com.google", "ben"), Roh(5, "com.whatsapp", "w"), Roh(5, "org.thoughtcrime.securesms", "s"))
+        reihen = listOf(
+            Reihe(5, "1473iben", "Ben Bauer", "com.google", StructuredName.CONTENT_ITEM_TYPE, "Ben Bauer"),
+            Reihe(5, "1473iben", "Ben Bauer", "com.google", Phone.CONTENT_ITEM_TYPE, "0171 1234567", mobil),
+            Reihe(5, "1473iben", "Ben Bauer", "com.google", Phone.CONTENT_ITEM_TYPE, "0711 123", Phone.TYPE_HOME.toString()),
+            Reihe(5, "1473iben", "Ben Bauer", "com.whatsapp", Phone.CONTENT_ITEM_TYPE, "+49 171 1234567", mobil),
+            Reihe(5, "1473iben", "Ben Bauer", "org.thoughtcrime.securesms", Phone.CONTENT_ITEM_TYPE, "+491711234567"),
+            Reihe(5, "1473iben", "Ben Bauer", "org.thoughtcrime.securesms", Phone.CONTENT_ITEM_TYPE, "+43 171 1234567"),
+        )
+        val datei = tmp.newFile("kontakte.vcf")
+        assertEquals(1, HandyKontakte(app).exportieren(datei))
+        val tel = datei.readText().split("\r\n").filter { it.startsWith("TEL") }
+        assertEquals(listOf("TEL;TYPE=HOME,VOICE:0711 123", "TEL;TYPE=CELL,VOICE:+49 171 1234567", "TEL;TYPE=VOICE:+43 171 1234567"), tel)
+    }
+
     private fun jpeg(farbe: Int): ByteArray {
         val b = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply { eraseColor(farbe) }
         return ByteArrayOutputStream().use { out ->

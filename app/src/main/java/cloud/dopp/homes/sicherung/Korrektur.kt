@@ -93,7 +93,7 @@ object Korrigieren {
     /** The write for [a]: a list of one, empty when nothing is to write (there already), null when it cannot be. */
     private fun schritt(a: Korrektur.Aenderung, zeilen: List<Zeile>, ziel: Long): List<Schritt>? = when (a.art) {
         "vorname", "nachname" -> name(a, zeilen, ziel)
-        "telefon" -> wert(a, zeilen, ziel, Feld(Phone.CONTENT_ITEM_TYPE, Phone.NUMBER, gleich = ::ziffern) { n -> mapOf(Phone.NUMBER to n, Phone.TYPE to telefonTyp(a.nachherArt)) + haupt(a) })
+        "telefon" -> wert(a, zeilen, ziel, Feld(Phone.CONTENT_ITEM_TYPE, Phone.NUMBER, gleich = { Vcard.telSchluessel(it) }) { n -> mapOf(Phone.NUMBER to n, Phone.TYPE to telefonTyp(a.nachherArt)) + haupt(a) })
         "mail" -> wert(a, zeilen, ziel, Feld(Email.CONTENT_ITEM_TYPE, Email.ADDRESS, gleich = { it.lowercase() }) { n -> mapOf(Email.ADDRESS to n, Email.TYPE to mailTyp(a.nachherArt)) + haupt(a) })
         "foto" -> foto(a, zeilen, ziel)
         "notiz" -> notiz(a, zeilen, ziel)
@@ -270,8 +270,6 @@ object Korrigieren {
         is Schritt.Neu -> zeilen + Zeile(-1L - zeilen.size, s.roh, s.mime, s.werte.mapValues { (_, v) -> v?.toString() })
         null -> zeilen
     }
-
-    private fun ziffern(s: String): String = s.trim().filterIndexed { i, c -> c.isDigit() || (c == '+' && i == 0) }
 
     /** A number's kind as Android's Phone.TYPE. */
     fun telefonTyp(art: String): Int = when (art) {

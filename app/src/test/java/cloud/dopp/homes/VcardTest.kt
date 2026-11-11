@@ -95,4 +95,27 @@ class VcardTest {
         assertEquals("exactly 75 octets stay one line", genau, Vcard.falte(genau))
         assertEquals("N:" + "x".repeat(73) + "\r\n y", Vcard.falte(genau + "y"))
     }
+
+    /** One number however written, as Homes' caldav.TelSchluessel (its TestTelSchluessel). */
+    @Test
+    fun aNumberIsComparedAsHomesDoes() {
+        listOf("0171 1234567", "+49 171 1234567", "+49171-1234567", "0049 171 1234567", "+49 (0)171 1234567", "tel:+491711234567")
+            .forEach { assertEquals(it, "491711234567", Vcard.telSchluessel(it)) }
+        assertFalse("another country's", Vcard.telSchluessel("+43 660 1234567") == Vcard.telSchluessel("0660 1234567"))
+        assertEquals(Vcard.telSchluessel("+43 660 1234567", "43"), Vcard.telSchluessel("0660 1234567", "43"))
+        assertEquals("", Vcard.telSchluessel(""))
+    }
+
+    /** Each number once, the line Homes ranks first where it is (its TestOhneDoppelteNummern): main, kinds, +…. */
+    @Test
+    fun eachNumberOnceTheLineThatSaysMost() {
+        val haupt = Eintrag("0171 1234567", listOf("cell", "voice", "pref"))
+        val t = listOf(
+            Eintrag("+49 171 1234567", listOf("cell")), haupt, Eintrag("+49 171 1234567"),
+            Eintrag("0711 123", listOf("home")), Eintrag("0711 123", listOf("home")), Eintrag("+43 711 123"),
+        )
+        assertEquals(listOf(haupt, t[3], t[5]), Vcard.einmalJeNummer(t))
+        assertEquals(listOf(Eintrag("+49 171 1", listOf("cell"))), Vcard.einmalJeNummer(listOf(Eintrag("0171 1", listOf("cell")), Eintrag("+49 171 1", listOf("cell")))))
+        assertEquals("each once: as it was", listOf(haupt, t[3], t[5]), Vcard.einmalJeNummer(listOf(haupt, t[3], t[5])))
+    }
 }

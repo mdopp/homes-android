@@ -96,6 +96,18 @@ class KorrekturTest {
     }
 
     /**
+     * A number is the same however written, as Homes compares it (caldav.TelSchluessel): the phone's
+     * „0711 44 55 66“ is Homes' „+49 711 445566“, and „+49 171 1“ is the „0171 1“ the phone has; red before.
+     */
+    @Test
+    fun aNumberIsFoundInTheOtherForm() {
+        val k = Korrektur("f", "u", "Hilde Oma", listOf(a(0, "telefon", "+49 711 445566", "+49 711 445577"), a(1, "telefon", "", "+49 171 1")))
+        val (schritte, geschrieben) = Korrigieren.plan(k, zeilen)
+        assertEquals(listOf(0, 1), geschrieben)
+        assertEquals(listOf(Schritt.Aendern(2, mapOf(Phone.NUMBER to "+49 711 445577"))), schritte)
+    }
+
+    /**
      * owner 2026-11-08: a kind is written only when it changed, the main number
      * and e-mail address as Android's primary flags, the contact's own photo
      * into the raw contact's picture, the message below the note (once).

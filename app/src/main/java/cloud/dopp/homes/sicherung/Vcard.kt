@@ -103,9 +103,38 @@ object Vcard {
             ?: "Ohne Namen"
 
     /** `;TYPE=cell,voice`, or nothing; types are tokens the app chose, upper case as RFC 2426 writes them. */
-    private fun typen(t: List<String>): String {
-        val sauber = t.map { it.trim().uppercase() }.filter { TYP.matches(it) }.distinct()
-        return if (sauber.isEmpty()) "" else ";TYPE=" + sauber.joinToString(",")
+    private fun typen(t: List<String>): String = sauber(t).let { if (it.isEmpty()) "" else ";TYPE=" + it.joinToString(",") }
+
+    private fun sauber(t: List<String>) = t.map { it.trim().uppercase() }.filter { TYP.matches(it) }.distinct()
+
+    /**
+     * A number as Homes compares two (homes `caldav.TelSchluessel`, exactly): its international
+     * digits; a national one (0171 …) in the calling code [land], a trunk 0 after the code dropped
+     * (+49 (0)171 …); "" without digits.
+     */
+    fun telSchluessel(v: String, land: String = LAND): String {
+        val s = v.trim().removePrefix("tel:").trim()
+        var d = s.filter { it in '0'..'9' }
+        var intl = s.startsWith("+")
+        if (!intl && d.startsWith("00")) d = d.substring(2).also { intl = true }
+        return when {
+            intl && d.startsWith(land) -> land + d.substring(land.length).trimStart('0')
+            intl || d.isEmpty() -> d
+            else -> land + d.trimStart('0')
+        }
+    }
+
+    /**
+     * [t] with each number ([telSchluessel]) once (Android joins Google's, WhatsApp's, Signal's
+     * rows into one contact): the line that says most stays where it is, as Homes ranks it — the
+     * main one, then the more kinds, then the one written +…; the first of equals.
+     */
+    fun einmalJeNummer(t: List<Eintrag>, land: String = LAND): List<Eintrag> {
+        fun rang(e: Eintrag) = sauber(e.typen).let { 2 * it.size + (if ("PREF" in it) 100 else 0) } + (if (e.wert.trim().startsWith("+")) 1 else 0)
+        val schluessel = t.map { telSchluessel(it.wert, land) }
+        val best = HashMap<String, Int>()
+        schluessel.forEachIndexed { i, k -> if (k.isNotEmpty() && best[k].let { it == null || rang(t[i]) > rang(t[it]) }) best[k] = i }
+        return t.filterIndexed { i, _ -> schluessel[i].isEmpty() || best[schluessel[i]] == i }
     }
 
     /** A text value: backslash, comma and semicolon escaped, any line break as `\n`. */
@@ -145,6 +174,9 @@ object Vcard {
     fun anzahl(text: String): Int = Regex("(?im)^BEGIN:VCARD\\s*$").findAll(text).count()
 
     private const val MAX = 75
+
+    /** The calling code a national number is read in: Homes' default (its mirror compares in it too). */
+    private const val LAND = "49"
     private val DATUM = Regex("""\d{4}-\d{2}-\d{2}""")
     private val HOMES_LINK = Regex("""/kontakte/[^/?#]+/(dokumente|nachrichten|fotos)/?""")
     private val TYP = Regex("""[A-Z][A-Z0-9-]*""")
