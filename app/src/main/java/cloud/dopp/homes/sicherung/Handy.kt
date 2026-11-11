@@ -77,7 +77,7 @@ class HandyKontakte(private val ctx: Context) : Adressbuch {
                 fun fertig() {
                     val karte = k ?: return
                     if (!mitHomes || eigen) {
-                        w.write(Vcard.karte(karte))
+                        w.write(Vcard.karte(karte.copy(telefone = Vcard.einmalJeNummer(karte.telefone))))
                         n++
                     }
                 }
