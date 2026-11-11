@@ -130,8 +130,8 @@ class Lauf(
                 when (q) {
                     Quelle.WHATSAPP -> whatsapp(o)
                     Quelle.SIGNAL -> signal(o)
-                    // SMS and calls have their own run (NachrichtenLauf)
-                    Quelle.SMS -> Ergebnis.FERTIG
+                    // SMS and calls have their own run (NachrichtenLauf), an export its share (archiv/InsArchiv)
+                    Quelle.SMS, Quelle.SOZIAL -> Ergebnis.FERTIG
                 }
             } catch (e: Ende) {
                 schluss(q, 0, e.ergebnis)

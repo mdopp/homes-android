@@ -222,6 +222,8 @@ app/src/main/java/cloud/dopp/homes/
   konto/       the Homes account: two sync adapters, vCard and iCal readers
   kann/        what the box can do (/napi/kann, homes ADR 0001): kept, read, „Hier anfordern“
   hochladen/   the Hochladen job (WorkManager, dataSync while it uploads): music, Takeout ZIPs
+  archiv/      Share → „Ins Archiv“: a Facebook or LinkedIn export told by its structure, its one
+               file age-encrypted to the person's archive and uploaded while the share's dialog is open
   einrichtung/ the person's modules and tasks (/napi/einrichtung): „Öffnen“, „Deine Aufgaben“,
                the installed-apps report, the launcher's four shortcuts and their trampoline
 app/src/test/  JVM tests with Robolectric, including the preview renders

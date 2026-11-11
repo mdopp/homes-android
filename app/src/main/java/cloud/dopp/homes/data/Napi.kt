@@ -47,7 +47,7 @@ object Napi {
      * Where a backup comes from, as Homes names it (`quelle`, #194). `sms` is
      * the phone's SMS, MMS and call log, age-encrypted on the phone (laib ADR 0029).
      */
-    enum class Quelle(val wire: String) { WHATSAPP("whatsapp"), SIGNAL("signal"), SMS("sms") }
+    enum class Quelle(val wire: String) { WHATSAPP("whatsapp"), SIGNAL("signal"), SMS("sms"), SOZIAL("sozial") }
 
     /** The body of `POST /napi/kontakte`: the contacts as concatenated vCards. */
     const val VCARD = "text/vcard"

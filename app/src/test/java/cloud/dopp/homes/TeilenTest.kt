@@ -81,9 +81,23 @@ class TeilenTest {
         assertTrue("no music: ${ziele("audio/mpeg")}", ziele("audio/mpeg").isEmpty())
         Teilen.schalten(ctx(), null)
         assertEquals(
-            setOf("cloud.dopp.homes.hochladen.MusikTeilenActivity", "cloud.dopp.homes.ui.StandortImportActivity"),
+            setOf("cloud.dopp.homes.hochladen.MusikTeilenActivity", "cloud.dopp.homes.ui.StandortImportActivity", "cloud.dopp.homes.archiv.ArchivTeilenActivity"),
             ziele("application/zip").toSet(),
         )
+    }
+
+    /** „Ins Archiv“ follows the box's `archiv` (owner, 2026-11-11): a ZIP, a JSON or a LinkedIn CSV. */
+    @Test
+    fun theArchiveTargetFollowsTheBox() {
+        val archiv = "cloud.dopp.homes.archiv.ArchivTeilenActivity"
+        Teilen.schalten(ctx(), kann("\"archiv\""))
+        assertEquals(listOf(archiv), ziele("application/zip"))
+        assertEquals(listOf(archiv), ziele("text/csv"))
+        assertEquals(listOf(archiv), ziele("application/zip", Intent.ACTION_SEND_MULTIPLE))
+        assertTrue(Teilen.an(ctx(), KannKey.ARCHIV))
+        Teilen.schalten(ctx(), kann("\"musik\""))
+        assertFalse(Teilen.an(ctx(), KannKey.ARCHIV))
+        assertTrue("no archive: ${ziele("text/csv")}", ziele("text/csv").isEmpty())
     }
 
     @Test

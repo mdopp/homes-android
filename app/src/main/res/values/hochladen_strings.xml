@@ -42,4 +42,16 @@
     <string name="musik_noch_nicht">Die Box kann das noch nicht – kommt mit dem nächsten Update.</string>
     <string name="musik_abgelehnt">Homes hat die Datei nicht angenommen.</string>
     <string name="standort_import_job">Die ZIP wird im Hintergrund auf die Box geladen, auch bei ausgeschaltetem Bildschirm. Wie weit es ist und was daraus wurde, steht in der Benachrichtigung „Hochladen“.</string>
+    <!-- Share → „Ins Archiv“ (owner, 2026-11-11): a Facebook or LinkedIn export into the person's archive -->
+    <string name="archiv_label">Ins Archiv</string>
+    <string name="archiv_titel">Ins Archiv</string>
+    <string name="archiv_laeuft">Verschlüsselt die Datei für dein Archiv und schickt sie zur Box …</string>
+    <string name="archiv_facebook">Facebook-Freunde</string>
+    <string name="archiv_linkedin">LinkedIn-Kontakte</string>
+    <string name="archiv_und">" und "</string>
+    <string name="archiv_fertig">%1$s gehen in dein Archiv. Es liest sie, wenn du es das nächste Mal öffnest; sie bleiben dort und kommen in kein Adressbuch.</string>
+    <string name="archiv_fremd">Das ist kein Facebook- oder LinkedIn-Export. Lade bei Facebook „Deine Informationen“ (Format JSON) oder bei LinkedIn eine Kopie deiner Daten herunter und teile die Datei dann hierher.</string>
+    <string name="archiv_html">Dieser Facebook-Export ist im Format HTML. Lade ihn bei Facebook noch einmal im Format JSON herunter und teile ihn dann.</string>
+    <string name="archiv_nein">Homes hat die Datei nicht angenommen. Versuch es später noch einmal.</string>
+    <string name="archiv_unerreichbar">Die Box ist gerade nicht erreichbar. Teile die Datei später noch einmal.</string>
 </resources>

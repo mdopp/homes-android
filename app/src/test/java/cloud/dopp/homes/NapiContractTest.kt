@@ -192,8 +192,8 @@ class NapiContractTest {
             ),
             // Daten sichern (homes#208 at ad8c269, routes sicherung.go:112-118; errors {fehler} :121-124).
             Route(
-                "GET", "/napi/sicherung/stand", "internal/napi/sicherung.go:283-291, the shape :208-220",
-                sends = setOf("quellen", "whatsapp", "signal", "sms", "zuletzt", "dateien", "bytes", "wartend", "frei_bytes", "fehler"),
+                "GET", "/napi/sicherung/stand", "internal/napi/sicherung.go:283-291, the shape :208-220; sozial since homes#341",
+                sends = setOf("quellen", "whatsapp", "signal", "sms", "sozial", "zuletzt", "dateien", "bytes", "wartend", "frei_bytes", "fehler"),
             ),
             Route(
                 "POST", "/napi/sicherung/fehlend", "internal/napi/sicherung.go:301-339, an entry :294-297",

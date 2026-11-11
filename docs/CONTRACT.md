@@ -348,6 +348,25 @@ On Android 13+ an app installed outside a store cannot even ask for SMS and
 the call log ("restricted settings"): the screen then says to open App-Info →
 ⋮ → „Eingeschränkte Einstellungen zulassen“ and turn the switch on again.
 
+### Ins Archiv: a Facebook or LinkedIn export
+
+(The owner's call, 2026-11-11.) The share target „Ins Archiv“
+(`archiv/ArchivTeilenActivity`, switched by the box's `teilen` key
+`archiv`) takes `ACTION_SEND` and `SEND_MULTIPLE` of a ZIP, JSON or CSV
+(and `octet-stream`). The app copies each file into its cache and tells it
+by its structure (`archiv/Export.kt`): a ZIP by its entries' names —
+Facebook's `connections/friends/your_friends.json`,
+`friends_and_followers/friends.json` or `friends/friends.json`, LinkedIn's
+`Connections.csv` — a single file by its first bytes (`{` with
+`"friends_v2"`, or LinkedIn's header). Only that one file leaves the phone:
+it is age-encrypted, streamed, to the key of `GET /napi/sicherung/schluessel`
+and uploaded with `quelle` `sozial` as `facebook-<UTC>.json.age` or
+`linkedin-<UTC>.csv.age` (the resumable upload above; `archiv/InsArchiv.kt`).
+The person's archive reads it when it is opened (archiv `sozial.go`);
+neither the app nor Homes reads it. Facebook's HTML format and any other
+file are refused in the dialog with the next step. The file is small,
+so this runs while the share's dialog is open, not in a job.
+
 ## (f) Standortverlauf
 
 The owner's call, 2026-11-02. Off until the person turns its switch on
@@ -543,9 +562,9 @@ there.
   A placed widget whose type went shows the module's `grund`; a tap opens
   the app.
 - **Share targets** (`teilen`: `merken` text, `dokument` images,
-  `standort-import` history files): one component each — the share
-  activity's aliases `.ui.TeilenMerken` and `.ui.TeilenDokument`, and
-  `.ui.StandortImportActivity` — enabled while the key is there, disabled
+  `standort-import` history files, `musik`, `archiv` a social export): one component each — the share
+  activity's aliases `.ui.TeilenMerken` and `.ui.TeilenDokument`,
+  `.ui.StandortImportActivity`, `.hochladen.MusikTeilenActivity` and `.archiv.ArchivTeilenActivity` — enabled while the key is there, disabled
   while it is missing (`PackageManager.setComponentEnabledSetting`,
   DONT_KILL_APP; `kann/Teilen.kt`), all enabled while unknown. The Direct
   Share target names the category of each enabled one and is gone with

@@ -370,6 +370,31 @@
             </intent-filter>
         </activity>
 
+        <!-- Share → „Ins Archiv“ (owner, 2026-11-11): a Facebook or LinkedIn export,
+             told by its structure (archiv/Export.kt), only its friends list or
+             Connections.csv encrypted on the phone to the person's archive and
+             uploaded (archiv/InsArchiv.kt). Switched by the box's `teilen` `archiv`. -->
+        <activity
+            android:name=".archiv.ArchivTeilenActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="@string/archiv_label"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/zip" />
+                <data android:mimeType="application/x-zip-compressed" />
+                <data android:mimeType="application/x-zip" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="text/csv" />
+                <data android:mimeType="text/comma-separated-values" />
+                <data android:mimeType="application/octet-stream" />
+            </intent-filter>
+        </activity>
+
         <!-- Generic schema-driven .tool widget (#70): ONE provider that renders any
              tool from the catalog's tool-cell-schema — a new .tool plugin becomes a
              widget with no native code (#72 lists them in the in-app picker). -->
