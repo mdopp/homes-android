@@ -64,6 +64,8 @@ budget einrichtung 603 #   574 on 2026-11-04, a new package (owner): /napi/einri
                        # on the start screen, the launcher's four shortcuts and their trampoline
 budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochladen job — music and Takeout ZIPs, with the screen off;
                        # 583 -> 741 (owner, 2026-11-04: what shows as a notification shows in the open app): hochladen/Stand.kt, the row
+budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
+                       # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
 budget realtime   667  #   635: the live stream and its foreground service
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)
