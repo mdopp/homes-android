@@ -5,7 +5,7 @@
 <resources>
     <string name="home_mehr">Mehr</string>
     <string name="sicherung_title">Daten sichern</string>
-    <string name="sicherung_ueberblick">Alles im Überblick ›</string>
+    <string name="sicherung_ueberblick">Meine Daten: was wann ankam ›</string>
 
     <string name="sicherung_whatsapp">WhatsApp</string>
     <string name="sicherung_signal">Signal</string>

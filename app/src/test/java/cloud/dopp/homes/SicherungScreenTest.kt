@@ -133,15 +133,15 @@ class SicherungScreenTest {
         assertEquals(View.GONE, k.findViewById<View>(R.id.quelle_anleitung).visibility)
     }
 
-    /** „Alles im Überblick“ is Homes' page; the key goes to the archive's /tresor, or that page when the archive's address cannot be told. */
+    /** „Meine Daten“ is Homes' page of that name (homes#342); the key goes to the archive's /tresor, or that page when the archive's address cannot be told. */
     @Test
     fun theOverviewAndTheKeyOpenTheirPages() {
         ServerStore.setBaseUrl(ctx(), "https://www.box.test")
         var a = Robolectric.buildActivity(SicherungActivity::class.java).setup().get()
         val ueberblick = a.findViewById<TextView>(R.id.sicherung_ueberblick)
-        assertEquals("Alles im Überblick ›", ueberblick.text.toString())
+        assertEquals("Meine Daten: was wann ankam ›", ueberblick.text.toString())
         ueberblick.performClick()
-        assertEquals("https://www.box.test/daten-sichern", shadowOf(a).nextStartedActivity.dataString)
+        assertEquals("https://www.box.test/meine-daten", shadowOf(a).nextStartedActivity.dataString)
         a.findViewById<View>(R.id.sicherung_signal).findViewById<View>(R.id.quelle_schluessel).performClick()
         assertEquals("https://archiv.box.test/tresor", shadowOf(a).nextStartedActivity.dataString)
         ServerStore.setBaseUrl(ctx(), "https://127.0.0.1:1")

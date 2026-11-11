@@ -362,7 +362,7 @@ class NapiContractTest {
          * and every path Homes does not serve land on Start (main.go:77), so a
          * wrong page would never fail loudly — only this list catches it.
          */
-        val PAGES = setOf("/start", "/raeume", "/energie", "/kalender", "/notizen", "/box", "/box/geraete", "/pair-device", "/standort", "/daten-sichern")
+        val PAGES = setOf("/start", "/raeume", "/energie", "/kalender", "/notizen", "/box", "/box/geraete", "/pair-device", "/standort", "/daten-sichern", "/meine-daten")
 
         /** What the widgets and the pairing need: each must be declared. */
         val NEEDED = setOf(

@@ -49,8 +49,8 @@ import kotlin.concurrent.thread
  * need a folder granted through the system picker; while one is not set
  * up, its short guide is folded below, with the way to the key in the
  * person's archive (no key is asked for or stored here, laib#986).
- * „Alles im Überblick“ opens Homes' page „Daten sichern“, the one
- * overview with E-Mail, Kalender and what arrived on the box.
+ * „Meine Daten“ opens Homes' page of that name (homes#342): every source,
+ * E-Mail and the scans too, with when it last arrived on the box.
  *
  * Kontakte and SMS und Anrufe are switches (laib ADR 0029), off until the
  * person turns one on: READ_CONTACTS, and READ_SMS with READ_CALL_LOG.
@@ -121,7 +121,7 @@ class SicherungActivity : AppCompatActivity() {
             k.findViewById<Button>(R.id.quelle_schluessel).setOnClickListener { zeigeSeite(archivTresor()) }
         }
         findViewById<View>(R.id.sicherung_ueberblick).setOnClickListener {
-            runCatching { startActivity(HomesPages.intent(this, HomesPages.DATEN)) }
+            runCatching { startActivity(HomesPages.intent(this, HomesPages.MEINE_DATEN)) }
         }
         Schalter.entries.forEach { art ->
             schalterView(art).setOnCheckedChangeListener { _, an -> if (!setzt) schalte(art, an) }
