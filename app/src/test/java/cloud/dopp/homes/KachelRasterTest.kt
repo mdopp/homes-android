@@ -1,6 +1,5 @@
 package cloud.dopp.homes
 
-import cloud.dopp.homes.data.ApiClient
 import cloud.dopp.homes.ui.FavoritenAnsicht
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -29,15 +28,5 @@ class KachelRasterTest {
         assertEquals(2, FavoritenAnsicht.spalten(632))
         assertEquals(2, FavoritenAnsicht.spalten(852))
         assertEquals(3, FavoritenAnsicht.spalten(1232))
-    }
-
-    private companion object {
-        const val FAVORITES = """{"ok":true,"favorites":[
-            {"entity_id":"light.buero","name":"Bürolicht","domain":"light","state":"off"},
-            {"entity_id":"cover.esszimmer","name":"Esszimmerjalousien","domain":"cover","state":"open"},
-            {"entity_id":"cover.wohnzimmer","name":"Wohnzimmerjalousien","domain":"cover","state":"open"},
-            {"entity_id":"cover.garage","name":"Garagentor Garage","domain":"cover","state":"closed"},
-            {"entity_id":"light.kueche","name":"Küchenlicht","domain":"light","state":"on"},
-            {"entity_id":"lock.haustuer","name":"Haustür","domain":"lock","state":"locked"}]}"""
     }
 }
