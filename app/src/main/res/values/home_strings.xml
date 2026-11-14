@@ -76,6 +76,11 @@
         <item quantity="one">%d Aufgabe offen</item>
         <item quantity="other">%d Aufgaben offen</item>
     </plurals>
+    <!-- After the first three tasks, the way to all of them on Homes (owner, 2026-11-14). -->
+    <plurals name="aufgaben_alle">
+        <item quantity="one">Alle %d Aufgaben</item>
+        <item quantity="other">Alle %d Aufgaben</item>
+    </plurals>
     <!-- A task whose app the phone lacks: the tap opens its store page. -->
     <string name="aufgabe_holen">%1$s installieren</string>
     <!-- A task whose app is on the phone: the tap opens its steps on Homes. -->

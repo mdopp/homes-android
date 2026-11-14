@@ -36,15 +36,23 @@ import java.util.Locale
  * A module with its own app is a task while the app is missing, and then the
  * phone's own app icon is the way in.
  *
- * **Deine Aufgaben** lists the open tasks with the number open beside the
- * title, as Homes' pages show it: a tap gets the app from its store while it
- * is missing, else opens the task's steps on Homes.
+ * **Deine Aufgaben** lists the first [ERSTE] open tasks with the number open
+ * beside the title, as Homes' pages show it: a tap gets the app from its store
+ * while it is missing, else opens the task's steps on Homes. With more, a last
+ * row „Alle N Aufgaben“ opens Homes' list of all (owner 2026-11-14: „zu viele
+ * Aufgaben … immer nur die ersten mit Verweis auf alle“).
  *
  * Without an answer — never read, or an older Homes (404) — both sections are
  * gone, quietly. While the box is not reached (Verbindung) they show what was
  * read last, greyed, and say nothing of their own.
  */
 object Abschnitte {
+
+    /** How many tasks the start screen shows before „Alle N Aufgaben“. */
+    const val ERSTE = 3
+
+    /** The tasks shown, and whether a row to all of them follows. */
+    fun <T> kurz(alle: List<T>, offen: Int): Pair<List<T>, Boolean> = alle.take(ERSTE) to (maxOf(offen, alle.size) > ERSTE)
 
     /** Draw on each resume and on each change, and ask Homes (at most every five minutes) while [a] is in front. */
     fun zeigen(a: ComponentActivity) {
@@ -81,14 +89,18 @@ object Abschnitte {
             alpha = if (grau) GRAU else 1f // the number is the last one known too
             contentDescription = a.resources.getQuantityString(R.plurals.aufgaben_offen, offen, offen)
         }
-        fuellen(a, R.id.aufgaben_section, R.id.aufgaben_group, grau, aufgaben.map { m ->
+        val (erste, mehr) = kurz(aufgaben, offen)
+        val alle = ServerStore.baseUrl(a)?.takeIf { mehr }?.let { HomesPages.url(it, HomesPages.AUFGABEN) }
+        fuellen(a, R.id.aufgaben_section, R.id.aufgaben_group, grau, erste.map { m ->
             val app = m.app
             val fehlt = app != null && app.store != null && !EinrichtungLeser.installiert(a, app.paket)
             val unter = if (fehlt) a.getString(R.string.aufgabe_holen, app?.name) else a.getString(R.string.aufgabe_weiter)
             zeile(a, Bilder.fuer(m.icon), m.aufgabe?.titel ?: m.titel, unter) {
                 if (fehlt) ansehen(a, app?.store) else m.aufgabe?.einrichten?.let { oeffnen(a, it.toUri()) }
             }
-        })
+        } + listOfNotNull(alle?.let {
+            zeile(a, R.drawable.ic_stat_homes, a.resources.getQuantityString(R.plurals.aufgaben_alle, offen, offen), null) { oeffnen(a, it.toUri()) }
+        }))
     }
 
     private fun fuellen(a: Activity, section: Int, group: Int, grau: Boolean, zeilen: List<(ViewGroup) -> View>) {
