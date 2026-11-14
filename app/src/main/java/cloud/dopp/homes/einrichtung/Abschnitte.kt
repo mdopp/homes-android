@@ -82,6 +82,11 @@ object Abschnitte {
         fuellen(a, R.id.oeffnen_section, R.id.oeffnen_group, grau, oeffnen.map { m ->
             zeile(a, Bilder.fuer(m.icon), m.titel, m.stand) { m.tippen?.let { oeffnen(a, it.toUri()) } }
         } + listOfNotNull(homes?.let { zeile(a, R.drawable.ic_stat_homes, a.getString(R.string.oeffnen_homes), null) { oeffnen(a, it.toUri()) } }))
+        aufgabenZeichnen(a, e, grau)
+    }
+
+    /** „Deine Aufgaben“: the first [ERSTE], then „Alle N Aufgaben“ to Homes' list. */
+    private fun aufgabenZeichnen(a: Activity, e: Einrichtung?, grau: Boolean) {
         val aufgaben = e?.aufgaben.orEmpty()
         val offen = if (e != null && e.offen > 0) e.offen else aufgaben.size
         a.findViewById<TextView>(R.id.aufgaben_zahl)?.apply {
