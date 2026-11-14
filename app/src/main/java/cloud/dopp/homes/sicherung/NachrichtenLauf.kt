@@ -200,7 +200,7 @@ class NachrichtenLauf(
                 gesendet++
                 null
             }
-            Uploader.Ausgang.Angehalten, Uploader.Ausgang.Veraendert -> spaeter(Lauf.SPAETER, Lauf.Ergebnis.WEITER)
+            Uploader.Ausgang.Angehalten, Uploader.Ausgang.Veraendert, Uploader.Ausgang.Rest -> spaeter(Lauf.SPAETER, Lauf.Ergebnis.WEITER)
             is Uploader.Ausgang.Voll -> homes(a.satz)
             is Uploader.Ausgang.Fehler -> when {
                 a.code in Lauf.HOMES_NEIN -> homes(Lauf.satzFuer(a.code, a.satz))
