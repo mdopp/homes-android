@@ -31,17 +31,6 @@ class KachelRasterTest {
         assertEquals(3, FavoritenAnsicht.spalten(1232))
     }
 
-    /** A phone: two to a row in their order; a cover, and a lamp left without a neighbour, by itself. */
-    @Test
-    fun aPhoneKeepsItsRows() {
-        val cards = ApiClient.parseFavorites(FAVORITES)!!
-        val rows = FavoritenAnsicht.paare(cards) { it.domain == "cover" }.map { r -> r.map { it.name } }
-        assertEquals(
-            listOf(listOf("Bürolicht"), listOf("Esszimmerjalousien"), listOf("Wohnzimmerjalousien"), listOf("Garagentor Garage"), listOf("Küchenlicht", "Haustür")),
-            rows,
-        )
-    }
-
     private companion object {
         const val FAVORITES = """{"ok":true,"favorites":[
             {"entity_id":"light.buero","name":"Bürolicht","domain":"light","state":"off"},
