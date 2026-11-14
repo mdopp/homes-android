@@ -70,6 +70,13 @@ class FakeHomes : Dispatcher() {
     /** What `POST /napi/kontakte` received, each body as text with its content type. */
     val kontakte = ArrayList<Pair<String?, String>>()
 
+    /**
+     * archiv#64: Homes takes only what the phone encrypted for the archive —
+     * a name ending in `.age` (400 otherwise) and bytes that begin as age
+     * does (415). Off for the tests of the upload's mechanics alone.
+     */
+    @Volatile var nurAge = true
+
     @Volatile var voll = false
     @Volatile var keinArchiv = false
     @Volatile var fehlendAntworten = 0
@@ -131,6 +138,7 @@ class FakeHomes : Dispatcher() {
         if (dateien.length() > 5000) return fehler(400, "Höchstens 5000 Dateien je Frage.")
         for (i in 0 until dateien.length()) {
             if (versteckt(dateien.getJSONObject(i).getString("pfad"))) return fehler(400, "Der Pfad geht nicht: nichts Verstecktes.")
+            if (nurAge && !dateien.getJSONObject(i).getString("pfad").endsWith(".age")) return fehler(400, NUR_AGE)
         }
         val out = JSONArray()
         for (i in 0 until dateien.length()) {
@@ -146,6 +154,7 @@ class FakeHomes : Dispatcher() {
         val groesse = o.getLong("groesse")
         val geaendert = o.optLong("geaendert", 0)
         if (versteckt(pfad)) return fehler(400, "Der Pfad geht nicht: nichts Verstecktes.")
+        if (nurAge && (!pfad.endsWith(".age") || groesse < AGE_ANFANG.size)) return fehler(400, NUR_AGE)
         val id = "%032x".format((quelle + "\u0000" + pfad + "\u0000" + groesse + "\u0000" + geaendert).hashCode().toLong() and 0xffffffffL)
         val alt = uploads[id]
         // a file put in place before is sent again from the start
@@ -183,6 +192,10 @@ class FakeHomes : Dispatcher() {
         if (body.size > 16 * 1024 * 1024) return fehler(413, "Zu groß.")
         val offset = offsetHeader?.toLongOrNull()
         if (offset != u.offset) return json(409, JSONObject().put("fehler", "Versatz passt nicht.").put("offset", u.offset))
+        if (nurAge && offset < AGE_ANFANG.size) {
+            val n = minOf(body.size, AGE_ANFANG.size - offset.toInt())
+            if (!body.copyOf(n).contentEquals(AGE_ANFANG.copyOfRange(offset.toInt(), offset.toInt() + n))) return fehler(415, NUR_AGE)
+        }
         val schnitt = schneideNach
         if (schnitt != null) {
             schneideNach = null
@@ -215,6 +228,11 @@ class FakeHomes : Dispatcher() {
             MockResponse().setResponseCode(code).setHeader("Content-Type", "application/json").setBody(o.toString())
 
         fun fehler(code: Int, satz: String): MockResponse = json(code, JSONObject().put("fehler", satz))
+
+        /** How every file Homes takes begins: age v1 to one X25519 recipient. */
+        val AGE_ANFANG = "age-encryption.org/v1\n-> X25519 ".toByteArray()
+        const val NUR_AGE =
+            "Homes nimmt nur Sicherungen an, die die Homes-App schon auf dem Handy für dein Archiv verschlüsselt hat. Aktualisiere die Homes-App."
 
         /** [n] bytes that differ from piece to piece, so a piece in the wrong place shows. */
         fun bytes(n: Int, saat: Int = 7): ByteArray = ByteArray(n) { i -> ((i * 31 + saat + i / 1024) and 0xff).toByte() }

@@ -16,9 +16,13 @@ import java.security.SecureRandom
 
 /**
  * age v1 (https://age-encryption.org/v1) to one X25519 recipient, encrypt
- * only: the SMS and the call log are encrypted on the phone for the person's
- * archive Briefkasten (laib ADR 0029) before a byte leaves it. Streaming: the
- * payload goes in 64 KiB chunks, never the whole file in memory.
+ * only: everything Daten sichern sends — WhatsApp's and Signal's backups
+ * (archiv#64), the SMS and the call log, a shared export — is encrypted on
+ * the phone for the person's archive Briefkasten (laib ADR 0029) before a
+ * byte leaves it. Streaming: the payload goes in 64 KiB chunks, never the
+ * whole file in memory. [ab] gives the encrypted bytes from any offset for a
+ * kept [Umschlag], so a backup of several GB goes up encrypted, resumably,
+ * without a copy on the phone.
  *
  * The primitives are BouncyCastle's lightweight classes (X25519, HKDF-SHA256,
  * HMAC-SHA256, ChaCha20-Poly1305), the same provider kage builds on; the app
@@ -37,6 +41,113 @@ object Age {
     private const val VERSION = "age-encryption.org/v1"
     private const val X25519_INFO = "age-encryption.org/v1/X25519"
     private const val TAG = 16
+    private const val NONCE = 16
+
+    /**
+     * The header's length to one X25519 recipient: the version line, the
+     * stanza (its share and its body in unpadded base64) and the MAC line.
+     */
+    private const val KOPF = 22 + 54 + 44 + 48
+
+    /**
+     * What makes one encryption the same every time: the file key, the
+     * ephemeral X25519 secret and the payload's nonce. Kept with an unfinished
+     * upload ([Uploader]) and forgotten with it, so a piece sent after a cut is
+     * the same bytes as the one before; it opens only what lies on the phone
+     * anyway.
+     */
+    class Umschlag internal constructor(
+        internal val dateiSchluessel: ByteArray,
+        internal val ephemer: ByteArray,
+        internal val nonce: ByteArray,
+    ) {
+        fun text(): String = Base64.toBase64String(dateiSchluessel + ephemer + nonce)
+
+        companion object {
+            fun neu(zufall: SecureRandom = SecureRandom()) =
+                Umschlag(ByteArray(16).also(zufall::nextBytes), ByteArray(32).also(zufall::nextBytes), ByteArray(NONCE).also(zufall::nextBytes))
+
+            /** A kept [text], or null when it does not read. */
+            fun aus(text: String): Umschlag? {
+                val b = runCatching { Base64.decode(text) }.getOrNull()?.takeIf { it.size == 64 } ?: return null
+                return Umschlag(b.copyOfRange(0, 16), b.copyOfRange(16, 48), b.copyOfRange(48, 64))
+            }
+        }
+    }
+
+    /** The chunks of [klar] bytes: one at least (an empty plaintext has an empty one). */
+    private fun stuecke(klar: Long): Long = if (klar == 0L) 1 else (klar + STUECK - 1) / STUECK
+
+    /** The size of [klar] bytes as age to one X25519 recipient: what the box gets. */
+    fun groesse(klar: Long): Long = KOPF + NONCE + klar + TAG * stuecke(klar)
+
+    /**
+     * The bytes from [ab] on of [klar] bytes encrypted to [empfaenger] with [u]:
+     * from 0 the same as [verschluesseln] writes with that randomness. [oeffnen]
+     * gives the plaintext from an offset; it is opened at the chunk [ab] lies
+     * in. A plaintext shorter than [klar] ends the stream early.
+     */
+    fun ab(empfaenger: ByteArray, u: Umschlag, klar: Long, ab: Long, oeffnen: (Long) -> InputStream): InputStream =
+        Strom(kopf(empfaenger, u.dateiSchluessel, u.ephemer) + u.nonce, hkdf(u.dateiSchluessel, u.nonce, "payload"), klar, ab, oeffnen)
+
+    /** [ab]'s stream: the header and nonce, then each chunk encrypted as it is read. */
+    private class Strom(
+        private val vorn: ByteArray,
+        private val schluessel: ByteArray,
+        private val klar: Long,
+        ab: Long,
+        private val oeffnen: (Long) -> InputStream,
+    ) : InputStream() {
+        private val letztes = stuecke(klar) - 1
+        private var puffer = vorn
+        private var pos = 0
+        private var laenge = vorn.size
+        private var naechstes = 0L
+        private var ein: InputStream? = null
+        private val roh = ByteArray(STUECK)
+
+        init {
+            if (ab < vorn.size) {
+                pos = ab.toInt()
+            } else {
+                val rest = ab - vorn.size
+                naechstes = rest / (STUECK + TAG)
+                laenge = 0
+                if (fuellen()) pos = minOf((rest % (STUECK + TAG)).toInt(), laenge)
+            }
+        }
+
+        /** The next chunk into [puffer]; false at the end (or when the plaintext ran short). */
+        private fun fuellen(): Boolean {
+            if (naechstes > letztes) return false
+            val n = if (naechstes == letztes) (klar - naechstes * STUECK).toInt() else STUECK
+            val quelle = ein ?: oeffnen(naechstes * STUECK).also { ein = it }
+            if (lies(quelle, roh, n) < n) return false
+            puffer = ByteArray(n + TAG)
+            laenge = stueck(schluessel, naechstes, naechstes == letztes, roh, n, puffer)
+            pos = 0
+            naechstes++
+            return true
+        }
+
+        override fun read(): Int {
+            val b = ByteArray(1)
+            return if (read(b, 0, 1) < 0) -1 else b[0].toInt() and 0xff
+        }
+
+        override fun read(b: ByteArray, off: Int, len: Int): Int {
+            if (len == 0) return 0
+            if (pos >= laenge && !fuellen()) return -1
+            val k = minOf(len, laenge - pos)
+            System.arraycopy(puffer, pos, b, off, k)
+            pos += k
+            return k
+        }
+
+        override fun close() {
+            ein?.close()
+        }
+    }
 
     /** An `age1…` recipient as its 32 raw bytes; [IllegalArgumentException] when it is none. */
     fun empfaenger(text: String): ByteArray {
@@ -97,19 +208,15 @@ object Age {
     internal fun nutzlast(dateiSchluessel: ByteArray, nonce: ByteArray, ein: InputStream, aus: OutputStream) {
         aus.write(nonce)
         val schluessel = hkdf(dateiSchluessel, nonce, "payload")
-        val aead = ChaCha20Poly1305()
         var jetzt = ByteArray(STUECK)
         var naechstes = ByteArray(STUECK)
         val raus = ByteArray(STUECK + TAG)
-        var n = lies(ein, jetzt)
+        var n = lies(ein, jetzt, STUECK)
         var zaehler = 0L
         while (true) {
             var m = 0
-            val letztes = if (n < STUECK) true else lies(ein, naechstes).also { m = it } == 0
-            aead.init(true, AEADParameters(KeyParameter(schluessel), TAG * 8, stromNonce(zaehler, letztes)))
-            var k = aead.processBytes(jetzt, 0, n, raus, 0)
-            k += aead.doFinal(raus, k)
-            aus.write(raus, 0, k)
+            val letztes = if (n < STUECK) true else lies(ein, naechstes, STUECK).also { m = it } == 0
+            aus.write(raus, 0, stueck(schluessel, zaehler, letztes, jetzt, n, raus))
             if (letztes) return
             zaehler++
             val t = jetzt
@@ -117,6 +224,14 @@ object Age {
             naechstes = t
             n = m
         }
+    }
+
+    /** Chunk [zaehler] of the payload: [n] bytes of [klar] sealed into [raus]; its length. */
+    private fun stueck(schluessel: ByteArray, zaehler: Long, letztes: Boolean, klar: ByteArray, n: Int, raus: ByteArray): Int {
+        val aead = ChaCha20Poly1305()
+        aead.init(true, AEADParameters(KeyParameter(schluessel), TAG * 8, stromNonce(zaehler, letztes)))
+        val k = aead.processBytes(klar, 0, n, raus, 0)
+        return k + aead.doFinal(raus, k)
     }
 
     private fun stromNonce(zaehler: Long, letztes: Boolean): ByteArray {
@@ -145,11 +260,11 @@ object Age {
     /** Base64 without padding, as age writes it. */
     internal fun b64(b: ByteArray): String = Base64.toBase64String(b).trimEnd('=')
 
-    /** Fill [puffer] from [ein]; fewer bytes only at its end. */
-    private fun lies(ein: InputStream, puffer: ByteArray): Int {
+    /** [bis] bytes from [ein] into [puffer]; fewer only at its end. */
+    private fun lies(ein: InputStream, puffer: ByteArray, bis: Int): Int {
         var n = 0
-        while (n < puffer.size) {
-            val r = ein.read(puffer, n, puffer.size - n)
+        while (n < bis) {
+            val r = ein.read(puffer, n, bis - n)
             if (r < 0) break
             n += r
         }

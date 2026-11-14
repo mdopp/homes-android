@@ -2,6 +2,7 @@ package cloud.dopp.homes
 
 import cloud.dopp.homes.data.Napi.Quelle
 import cloud.dopp.homes.data.SicherungClient
+import cloud.dopp.homes.sicherung.Age
 import cloud.dopp.homes.sicherung.Datei
 import cloud.dopp.homes.sicherung.Uploader
 import cloud.dopp.homes.sicherung.Uploader.Ausgang
@@ -41,7 +42,7 @@ class SicherungUploadTest {
 
     @Before
     fun auf() {
-        homes = FakeHomes()
+        homes = FakeHomes().apply { nurAge = false } // the mechanics alone; encrypted: SicherungLaufTest
         ordner = DateiOrdner(tmp.root)
     }
 
@@ -100,6 +101,41 @@ class SicherungUploadTest {
         assertEquals((TEIL / 2).toString(), danach[1].offset)
         assertTrue("no new upload", danach.none { it.method == "POST" })
         assertArrayEquals(inhalt, homes.fertig.getValue("signal|${d.pfad}"))
+    }
+
+    /**
+     * archiv#64: encrypted to the archive as it is read, a backup survives the
+     * same cuts — mid-piece, a lost write (409), an upload Homes forgot (404,
+     * a new encryption from the start) — and the archive reads it whole.
+     */
+    @Test
+    fun anEncryptedFileSurvivesCutsAndArrivesReadable() {
+        homes.nurAge = true
+        val an = Age.empfaenger(AgeTest.EMPFAENGER)
+        val zumArchiv = { Uploader(client(), merker, TEIL, an) }
+        val lesen = { b: ByteArray -> AgeLeser.entschluesseln(AgeLeser.identitaet(AgeTest.IDENTITAET), b.inputStream()) }
+
+        val (d, inhalt) = datei(6 * TEIL + 5)
+        homes.schneideNach = TEIL / 2 + 3
+        assertEquals(Ausgang.Fehler(0, null), zumArchiv().hochladen(Quelle.SIGNAL, ordner, d, "${d.pfad}.age"))
+        var stueck = 0
+        assertEquals(
+            Ausgang.Fertig,
+            zumArchiv().hochladen(Quelle.SIGNAL, ordner, d, "${d.pfad}.age", halt = {
+                if (++stueck == 3) homes.verliere = TEIL / 3
+                false
+            }),
+        )
+        assertEquals(Age.groesse(d.groesse), homes.fertig.getValue("signal|${d.pfad}.age").size.toLong())
+        assertArrayEquals(inhalt, lesen(homes.fertig.getValue("signal|${d.pfad}.age")))
+        assertNull("the randomness goes with the finished upload", merker.upload(Quelle.SIGNAL, "${d.pfad}.age"))
+
+        val (d2, inhalt2) = datei(3 * TEIL, "signal-2026-11-02-03-00-00.backup")
+        val bisher = homes.patches().size
+        assertEquals(Ausgang.Angehalten, zumArchiv().hochladen(Quelle.SIGNAL, ordner, d2, "${d2.pfad}.age", halt = { homes.patches().size >= bisher + 2 }))
+        homes.vergiss()
+        assertEquals(Ausgang.Fertig, zumArchiv().hochladen(Quelle.SIGNAL, ordner, d2, "${d2.pfad}.age"))
+        assertArrayEquals(inhalt2, lesen(homes.fertig.getValue("signal|${d2.pfad}.age")))
     }
 
     /** Homes lost the last write: the PATCH gets 409 and the upload goes on from Homes' offset, in the same run. */

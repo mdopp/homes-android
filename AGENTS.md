@@ -20,7 +20,8 @@ no network while the screen is off. The widgets stay live through one
 `specialUse` foreground service (`realtime/LiveService.kt`) that holds the
 stream only while the screen is on. The one thing beyond the widgets is
 Daten sichern (#194, laib ADR 0029; renamed 2026-11-03): it picks up the phone's WhatsApp
-and Signal backups and uploads them to Homes, and, each behind its own switch
+and Signal backups and uploads them through Homes, age-encrypted on the phone for the
+person's archive (archiv#64: Homes relays only bytes it cannot read), and, each behind its own switch
 and permission, mirrors the contacts and sends the SMS and call log
 age-encrypted. And Hochladen (the owner's call, 2026-11-04): songs and
 albums shared „Zur Musik hinzufügen“ and Google Takeout ZIPs for the
@@ -217,7 +218,7 @@ app/src/main/java/cloud/dopp/homes/
   realtime/    LiveService, the live widgets' foreground service, and the stream protocol
   verbindung/  the one answer about the line to Homes (live, paused, box not
                reachable, no network, not paired) for notification, start, widgets
-  sicherung/   the backup job (SicherungWorker), restore, age, SMS/vCard
+  sicherung/   the backup job (SicherungWorker), restore, age (Age.ab: encrypted from any offset), SMS/vCard
   standort/    location recording (Plan, Ruhe, Puffer) and the history import
   konto/       the Homes account: two sync adapters, vCard and iCal readers
   kann/        what the box can do (/napi/kann, homes ADR 0001): kept, read, „Hier anfordern“
