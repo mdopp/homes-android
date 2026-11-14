@@ -90,7 +90,7 @@ class Lauf(
     private val melde: (Fortschritt) -> Unit = {},
     private val uhr: () -> Long = System::currentTimeMillis,
     frist: Long = FRIST_MS,
-    private val teil: Int = Uploader.TEIL,
+    teil: Int = Uploader.TEIL,
 ) {
     enum class Ergebnis {
         /** Nothing granted: nothing done, nothing asked. */
@@ -123,6 +123,7 @@ class Lauf(
 
     /** The uploader to the person's archive key, made once a run when there is something to send. */
     private var uploader: Uploader? = null
+    private val teilGroesse = teil
 
     /** A source's run ends early with [ergebnis]. */
     private class Ende(val ergebnis: Ergebnis) : Exception()
@@ -230,16 +231,19 @@ class Lauf(
             Uploader.Ausgang.Veraendert -> Versand.SPAETER
             Uploader.Ausgang.Rest -> Versand.SPAETER.also { abgelehnt = Uploader.REST }
             is Uploader.Ausgang.Voll -> throw homes(q, a.satz)
-            is Uploader.Ausgang.Fehler -> when {
-                a.code in HOMES_NEIN -> throw homes(q, satzFuer(a.code, a.satz))
-                a.code == 429 -> Versand.BESCHAEFTIGT
-                a.code == 0 || a.code >= 500 -> Versand.UNERREICHBAR
-                a.code == 404 || a.code == 409 -> Versand.SPAETER // no progress on this upload: a fresh start next run
-                else -> {
-                    abgelehnt = a.satz ?: "Homes hat „${d.name}“ nicht angenommen (${a.code}); die App versucht es beim nächsten Mal wieder."
-                    Versand.SPAETER
-                }
-            }
+            is Uploader.Ausgang.Fehler -> nachFehler(q, d, a)
+        }
+    }
+
+    /** Homes refused one file ([a]): the run, or only this file, waits. */
+    private fun nachFehler(q: Quelle, d: Datei, a: Uploader.Ausgang.Fehler): Versand = when {
+        a.code in HOMES_NEIN -> throw homes(q, satzFuer(a.code, a.satz))
+        a.code == 429 -> Versand.BESCHAEFTIGT
+        a.code == 0 || a.code >= 500 -> Versand.UNERREICHBAR
+        a.code == 404 || a.code == 409 -> Versand.SPAETER // no progress on this upload: a fresh start next run
+        else -> {
+            abgelehnt = a.satz ?: "Homes hat „${d.name}“ nicht angenommen (${a.code}); die App versucht es beim nächsten Mal wieder."
+            Versand.SPAETER
         }
     }
 
@@ -281,7 +285,7 @@ class Lauf(
         uploader?.let { return it }
         val text = frage(q, HOMES_NEIN + 507 + HTTP_404) { client.schluessel() }
         val an = runCatching { Age.empfaenger(text) }.getOrNull() ?: throw homes(q, NachrichtenLauf.KEIN_SCHLUESSEL)
-        return Uploader(client, gedaechtnis, teil, an).also { uploader = it }
+        return Uploader(client, gedaechtnis, teilGroesse, an).also { uploader = it }
     }
 
     private fun homes(q: Quelle, satz: String): Ende {

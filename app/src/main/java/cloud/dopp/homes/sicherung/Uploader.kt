@@ -122,7 +122,7 @@ class Uploader(
         }
     } catch (e: SicherungClient.Abgelehnt) {
         if (e.code == 507) Ausgang.Voll(e.satz ?: "Auf der Box ist kein Platz mehr für die Sicherung.") else Ausgang.Fehler(e.code, e.satz)
-    } catch (e: FremderRest) {
+    } catch (ignored: FremderRest) {
         Ausgang.Rest
     } catch (e: IOException) {
         if (halt()) Ausgang.Angehalten else Ausgang.Fehler(0, null)
