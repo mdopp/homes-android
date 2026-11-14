@@ -1,6 +1,7 @@
 package cloud.dopp.homes
 
 import cloud.dopp.homes.data.ApiClient
+import cloud.dopp.homes.ui.StartDevices
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -43,5 +44,27 @@ class ApiClientFavoritesTest {
         val one = ApiClient.parseFavorites("""{"favorites": [ {"state": "on"}, {"entity_id": "light.flur", "state": "on"} ]}""")!!
         assertEquals("a row without an entity id is skipped", listOf("light.flur"), one.map { it.entityId })
         assertEquals("the domain falls back to the id's prefix", "light", one[0].domain)
+    }
+
+    /**
+     * A printer (owner, 2026-11-14: „Bitte in der App und auf der Webseite gleich“): Homes sends its
+     * words in `text` (mdopp/homes#370), and the tile says them, not HA's raw `idle`; without `text`
+     * the app's own words stay, so a sensor still says its value.
+     */
+    @Test
+    fun aPrinterSaysHomesWords() {
+        val cards = ApiClient.parseFavorites(
+            """{"ok": true, "favorites": [
+              {"entity_id": "sensor.epson", "name": "EPSON WF-3540 Series", "domain": "sensor", "device_class": "enum", "state": "printing",
+               "text": "druckt · Schwarz 42\u00a0%"},
+              {"entity_id": "sensor.epson2", "name": "Drucker", "domain": "sensor", "state": "unavailable", "text": "nicht erreichbar"},
+              {"entity_id": "sensor.temp", "name": "Temperatur", "domain": "sensor", "state": "21.5", "unit": "°C", "text": "  "}
+            ]}""",
+        )!!
+        assertEquals("druckt · Schwarz 42\u00a0%", cards[0].text)
+        assertEquals("druckt · Schwarz 42\u00a0%", StartDevices.stateText(cards[0]))
+        assertEquals("nicht erreichbar", StartDevices.stateText(cards[1]))
+        assertNull("a blank text is none", cards[2].text)
+        assertEquals("21,5 °C", StartDevices.stateText(cards[2]))
     }
 }

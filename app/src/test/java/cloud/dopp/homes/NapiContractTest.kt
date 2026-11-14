@@ -51,9 +51,12 @@ class NapiContractTest {
     }
 
     companion object {
-        /** A card: internal/napi/home.go:164-193, its control attributes home.go:43-45, its page :177. */
+        /**
+         * A card: internal/napi/home.go:164-193, its control attributes home.go:43-45, its page :177; its
+         * `text`, a printer's words, `withText` at home.go:145-150 (mdopp/homes#370 at 53532d1).
+         */
         val CARD = setOf(
-            "entity_id", "name", "domain", "state", "page", "device_class", "unit", "updated_at_ms",
+            "entity_id", "name", "domain", "state", "page", "text", "device_class", "unit", "updated_at_ms",
             "supported_features", "brightness", "color_temp", "rgb_color", "color_mode", "supported_color_modes",
             "current_position", "temperature", "current_temperature", "hvac_action", "target_temp_step", "min_temp",
             "max_temp", "hvac_modes", "volume_level", "media_title", "media_artist",

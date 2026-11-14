@@ -175,6 +175,13 @@ object Napi {
 
         /** The thing's own page on Homes, a path (`/raeume/<entity_id>`): what a tap opens. */
         const val PAGE = "page"
+
+        /**
+         * The thing in the family's words where Homes has its own, as its web page says them
+         * (owner, 2026-11-14: „Bitte in der App und auf der Webseite gleich“): today a printer's,
+         * „druckt · Schwarz 42 %“. Absent for everything else; shown instead of [STATE].
+         */
+        const val TEXT = "text"
     }
 
     /** `GET /napi/portal/state`: `{ok, card}`. */

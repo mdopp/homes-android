@@ -327,6 +327,7 @@ class ApiClient(private val ctx: Context) {
             maxTemp = o.optDouble(CardJson.MAX_TEMP, Double.NaN).takeIf { !it.isNaN() },
             tempStep = o.optDouble(CardJson.TARGET_TEMP_STEP, Double.NaN).takeIf { !it.isNaN() && it > 0 },
             colorModes = stringList(o.optJSONArray(CardJson.SUPPORTED_COLOR_MODES)),
+            text = o.optString(CardJson.TEXT).trim().ifBlank { null },
         )
 
         /**
