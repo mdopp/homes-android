@@ -133,7 +133,7 @@ class HomeScreenTest {
         assertTrue("the devices come before the live switch", order.indexOf(group) < order.indexOf(a.findViewById(R.id.widgets_card)))
         // the picture says on and locked; the level beside it, the name below; a sensor keeps its reading
         val rows = deviceRows(a).map { texts(it) }
-        assertEquals(listOf(listOf("60 %", "Küche"), listOf("Haustür"), listOf("Bad", "21,5 °C")), rows)
+        assertEquals(listOf(listOf("Küche", "60 %"), listOf("Haustür"), listOf("Bad", "21,5 °C")), rows)
         assertEquals(listOf("Küche, an · 60 %", "Haustür, abgeschlossen", "Bad, 21,5 °C"), deviceRows(a).map { it.contentDescription })
         // „Alle Geräte“ is the head's „Alle →“, no row of its own
         val all = a.findViewById<TextView>(R.id.devices_all)

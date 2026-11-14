@@ -33,6 +33,9 @@ object HomesPages {
     /** Daten sichern: the way to the keys (Homes' internal/pages/nachrichten.go). */
     const val DATEN = "/daten-sichern"
 
+    /** Deine Aufgaben, all of them: the start screen's „Alle … Aufgaben“ (Homes' internal/pages/einrichtung.go). */
+    const val AUFGABEN = "/aufgaben"
+
     /** Meine Daten: every source with its last arrival (homes#342, Homes' internal/pages/meine_daten.go). */
     const val MEINE_DATEN = "/meine-daten"
 

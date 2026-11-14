@@ -22,10 +22,9 @@ import cloud.dopp.homes.widget.DeviceLook
  * ask first, one that does not answer says so, and offline all are greyed.
  * The widgets' look ([DeviceLook]): the picture in its state's colour says
  * the state, words only where it cannot; the name without the room; no outlines.
- * A phone: two to a row, the level right of the picture, the name below; a
- * cover across the row with ▲ ■ ▼ (three 40 dp buttons do not fit half of a
- * 360 dp phone), its tap opening the sheet, and so a tile left alone. Wider
- * (a foldable, a tablet): a grid of equal cells, each tile one line.
+ * A phone: one tile to a row, each one line like the rest (owner 2026-11-14:
+ * „Die Zeilen sollten alle gleich sein. Diese halben stören das Design.“).
+ * Wider (a foldable, a tablet): a grid of equal cells, each tile one line.
  */
 class FavoritenAnsicht(
     private val ctx: Context,
@@ -41,14 +40,13 @@ class FavoritenAnsicht(
     private val density = ctx.resources.displayMetrics.density
     private fun dp(v: Int) = (v * density).toInt()
 
-    /** The favourites as tiles in their order: a phone's rows ([paare]), or wider a grid of equal one-line cells. */
+    /** The favourites as tiles in their order: a phone's one-line rows, or wider a grid of equal one-line cells. */
     fun kacheln(group: ViewGroup, cards: List<Card>) {
         val gap = dp(GAP_DP)
         // the window's width: a fold opened or a tablet turned makes the screen anew; slots keep the cells in line
         val n = spalten(ctx.resources.configuration.screenWidthDp - 2 * GUTTER_DP)
-        val rows = if (n < 2) paare(cards) { DeviceControls.coverButtons(it).isNotEmpty() } else cards.chunked(n)
+        val rows = cards.chunked(n)
         rows.forEachIndexed { i, reihe ->
-            val zeile = n >= 2 || reihe.size == 1
             val row = LinearLayout(ctx).apply {
                 orientation = LinearLayout.HORIZONTAL
                 isBaselineAligned = false
@@ -56,8 +54,7 @@ class FavoritenAnsicht(
             }
             reihe.forEach { card ->
                 val slot = android.widget.FrameLayout(ctx).apply { setPadding(gap / 2, 0, gap / 2, 0) }
-                val layout = if (zeile) R.layout.item_device_tile_wide else R.layout.item_device_tile
-                slot.addView(kachel(slot, card, layout), ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                slot.addView(kachel(slot, card, R.layout.item_device_tile_wide), ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                 row.addView(slot, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f))
             }
             group.addView(
@@ -197,16 +194,6 @@ class FavoritenAnsicht(
 
         /** Cells of at least [ZELLE_DP] in [breiteDp] of room; fewer than two is a phone. */
         fun spalten(breiteDp: Int) = maxOf(1, (breiteDp + GAP_DP) / (ZELLE_DP + GAP_DP))
-
-        /** A phone's rows (as approved 2026-11-04): two to a row in their order, a [breit] one or one left alone by itself. Pure. */
-        fun paare(cards: List<Card>, breit: (Card) -> Boolean): List<List<Card>> = buildList {
-            var i = 0
-            while (i < cards.size) {
-                val neben = cards.getOrNull(i + 1)?.takeIf { !breit(cards[i]) && !breit(it) }
-                add(listOfNotNull(cards[i], neben))
-                i += if (neben == null) 1 else 2
-            }
-        }
 
         private const val TOUCH_DP = 48
         private const val SEG_W_DP = 40
