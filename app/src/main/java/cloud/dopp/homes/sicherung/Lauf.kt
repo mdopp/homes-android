@@ -74,6 +74,11 @@ data class Fortschritt(
  * one sent last. Only reads the folders. Stops cleanly between two pieces
  * when [halt] says so or [frist] is up; the next run goes on.
  *
+ * Every file goes up age-encrypted to the person's archive (archiv#64, `GET
+ * /napi/sicherung/schluessel`, as the SMS): as `<its path>.age`, encrypted
+ * while it is read ([Uploader]), so Homes relays only bytes it cannot read
+ * and no copy is made on the phone. The archive opens it when it is open.
+ *
  * Without a granted folder it makes no request at all.
  */
 class Lauf(
@@ -85,7 +90,7 @@ class Lauf(
     private val melde: (Fortschritt) -> Unit = {},
     private val uhr: () -> Long = System::currentTimeMillis,
     frist: Long = FRIST_MS,
-    teil: Int = Uploader.TEIL,
+    private val teil: Int = Uploader.TEIL,
 ) {
     enum class Ergebnis {
         /** Nothing granted: nothing done, nothing asked. */
@@ -112,10 +117,12 @@ class Lauf(
 
     private val start = uhr()
     private val halt: () -> Boolean = { halt() || uhr() - start > frist }
-    private val uploader = Uploader(client, gedaechtnis, teil)
 
     /** Homes' sentence for a file it refused in this run, shown instead of the plain "later". */
     private var abgelehnt: String? = null
+
+    /** The uploader to the person's archive key, made once a run when there is something to send. */
+    private var uploader: Uploader? = null
 
     /** A source's run ends early with [ergebnis]. */
     private class Ende(val ergebnis: Ergebnis) : Exception()
@@ -154,18 +161,20 @@ class Lauf(
         val wahl = Auswahl.msgstore(db, gedaechtnis.gesendet(q), jetzt)
         // Auswahl leaves out every path with a dot-name at any level: Homes refuses a whole `fehlend` for one.
         val medien = Auswahl.medien(alle, jetzt)
+        // Homes knows them as they go up: <path>.age, the size encrypted
         val fehlend = medien.chunked(Napi.FEHLEND_MAX).flatMap { stapel ->
-            Auswahl.fehlende(stapel, frage(q) { client.fehlend(q, stapel.map { it.pfad to it.groesse }) })
+            val aufDerBox = frage(q) { client.fehlend(q, stapel.map { alsAge(it.pfad) to Age.groesse(it.groesse) }) }
+            Auswahl.fehlende(stapel, aufDerBox.map { it.removeSuffix(AGE) }.toSet())
         }
         val datenbank = (wahl as? Auswahl.Wahl.Senden)?.datei
         val liste = listOfNotNull(datenbank) + fehlend
         var gesendet = 0
         var spaeter = wahl is Auswahl.Wahl.Wartet
-        val summe = Summe(liste.size, liste.sumOf { it.groesse })
+        val summe = Summe(liste.size, liste.sumOf { Age.groesse(it.groesse) })
         liste.forEachIndexed { i, d ->
             val pfad = if (d === datenbank) Auswahl.MSGSTORE_PFAD else d.pfad
             val v = sende(q, o, d, pfad, summe)
-            summe.weiter(i + 1, d.groesse)
+            summe.weiter(i + 1, Age.groesse(d.groesse))
             when (v) {
                 Versand.JA -> {
                     gesendet++
@@ -196,7 +205,7 @@ class Lauf(
             }
             Auswahl.Wahl.Schon -> schluss(q, 0, Ergebnis.FERTIG)
             is Auswahl.Wahl.Wartet -> schluss(q, 0, Ergebnis.WEITER)
-            is Auswahl.Wahl.Senden -> when (sende(q, o, wahl.datei, wahl.datei.name, Summe(1, wahl.datei.groesse))) {
+            is Auswahl.Wahl.Senden -> when (sende(q, o, wahl.datei, wahl.datei.name, Summe(1, Age.groesse(wahl.datei.groesse)))) {
                 Versand.JA -> {
                     gedaechtnis.merkeGesendet(q, Gesendet.von(wahl.datei))
                     schluss(q, 1, Ergebnis.FERTIG)
@@ -209,16 +218,17 @@ class Lauf(
     }
 
     /**
-     * One file. Homes' "no" for every file (full, no archive, not paired)
-     * ends the run; a "no" for this one file (a 4xx) leaves it to a later run
-     * while the others go.
+     * One file, as [pfad]`.age` encrypted to the archive. Homes' "no" for every
+     * file (full, no archive, not paired) ends the run; a "no" for this one
+     * file (a 4xx) leaves it to a later run while the others go.
      */
     private fun sende(q: Quelle, o: Ordner, d: Datei, pfad: String, summe: Summe): Versand {
-        val a = uploader.hochladen(q, o, d, pfad, halt) { n -> melde(summe.fortschritt(q, d.name, n)) }
+        val a = zumArchiv(q).hochladen(q, o, d, alsAge(pfad), halt) { n -> melde(summe.fortschritt(q, d.name, n)) }
         return when (a) {
             Uploader.Ausgang.Fertig -> Versand.JA
             Uploader.Ausgang.Angehalten -> Versand.ANGEHALTEN
             Uploader.Ausgang.Veraendert -> Versand.SPAETER
+            Uploader.Ausgang.Rest -> Versand.SPAETER.also { abgelehnt = Uploader.REST }
             is Uploader.Ausgang.Voll -> throw homes(q, a.satz)
             is Uploader.Ausgang.Fehler -> when {
                 a.code in HOMES_NEIN -> throw homes(q, satzFuer(a.code, a.satz))
@@ -251,15 +261,27 @@ class Lauf(
     }
 
     /** A call outside an upload: Homes' "no" ends the run, no answer waits for the next one. */
-    private fun <T> frage(q: Quelle, f: () -> T): T = try {
+    private fun <T> frage(q: Quelle, nein: Set<Int> = HOMES_NEIN + 507, f: () -> T): T = try {
         f()
     } catch (e: SicherungClient.Abgelehnt) {
-        if (e.code in HOMES_NEIN || e.code == 507) throw homes(q, satzFuer(e.code, e.satz))
+        if (e.code in nein) throw homes(q, satzFuer(e.code, e.satz))
         if (e.code == 429) throw Ende(Ergebnis.BESCHAEFTIGT)
         if (e.code in 400..499) abgelehnt = e.satz
         throw Ende(if (e.code in 400..499) Ergebnis.WEITER else Ergebnis.UNERREICHBAR)
     } catch (e: IOException) {
         throw Ende(Ergebnis.UNERREICHBAR)
+    }
+
+    /**
+     * The uploader that encrypts to the person's archive key (`GET
+     * /napi/sicherung/schluessel`): without a key (no archive set up yet, 404)
+     * the run stops with Homes' sentence.
+     */
+    private fun zumArchiv(q: Quelle): Uploader {
+        uploader?.let { return it }
+        val text = frage(q, HOMES_NEIN + 507 + HTTP_404) { client.schluessel() }
+        val an = runCatching { Age.empfaenger(text) }.getOrNull() ?: throw homes(q, NachrichtenLauf.KEIN_SCHLUESSEL)
+        return Uploader(client, gedaechtnis, teil, an).also { uploader = it }
     }
 
     private fun homes(q: Quelle, satz: String): Ende {
@@ -289,6 +311,12 @@ class Lauf(
     companion object {
         /** The sources the phone backs up, in this order. */
         val QUELLEN = listOf(Quelle.WHATSAPP, Quelle.SIGNAL)
+
+        private const val AGE = ".age"
+        private const val HTTP_404 = 404
+
+        /** A file's name on the box: encrypted for the archive. */
+        private fun alsAge(pfad: String) = pfad + AGE
 
         /**
          * Homes' "no" for every file of this device: not paired (401), a device

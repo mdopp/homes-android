@@ -30,7 +30,7 @@ import java.util.zip.InflaterInputStream
 class AgeTest {
 
     /** The testkit's identity; its recipient is [EMPFAENGER]. */
-    private val identitaet = AgeLeser.identitaet("AGE-SECRET-KEY-1EGTZVFFV20835NWYV6270LXYVK2VKNX2MMDKWYKLMGR48UAWX40Q2P2LM0")
+    private val identitaet = AgeLeser.identitaet(IDENTITAET)
 
     private fun klartext(n: Int) = ByteArray(n) { i -> ((i * 31 + 7 + i / 1024) and 0xff).toByte() }
 
@@ -154,7 +154,57 @@ class AgeTest {
         }
     }
 
+    /** archiv#64: the box gets the size before the bytes; for the fixtures it is their length. */
+    @Test
+    fun theSizeIsKnownBeforeEncrypting() {
+        FIXTURES.forEach { (n, laenge, _) -> assertEquals("size for $n bytes", laenge.toLong(), Age.groesse(n.toLong())) }
+        listOf(0, 5, Age.STUECK - 1, Age.STUECK, Age.STUECK + 1, 3 * Age.STUECK, 300_000).forEach { n ->
+            val out = ByteArrayOutputStream()
+            Age.verschluesseln(Age.empfaenger(EMPFAENGER), ByteArrayInputStream(klartext(n)), out)
+            assertEquals("size for $n bytes", out.size().toLong(), Age.groesse(n.toLong()))
+        }
+    }
+
+    /**
+     * archiv#64: a backup of several GB goes up encrypted as it is read, and
+     * after a cut goes on from any offset: with the same [Age.Umschlag] the
+     * bytes from there are those [Age.verschluesseln] writes — the fixtures'
+     * bytes, which the age CLI decrypts — and the plaintext is opened at the
+     * chunk the offset lies in, never from the start.
+     */
+    @Test
+    fun fromAnyOffsetTheStreamIsTheSameBytes() {
+        val dateiSchluessel = hex("000102030405060708090a0b0c0d0e0f")
+        val ephemer = ByteArray(32) { (0x40 + it).toByte() }
+        val nonce = ByteArray(16) { (0xa0 + it).toByte() }
+        val u = Age.Umschlag.aus(java.util.Base64.getEncoder().encodeToString(dateiSchluessel + ephemer + nonce))!!
+        val an = Age.empfaenger(EMPFAENGER)
+        FIXTURES.forEach { (n, laenge, hash) ->
+            val klar = klartext(n)
+            val geoeffnet = ArrayList<Long>()
+            val oeffnen: (Long) -> InputStream = { ab ->
+                geoeffnet += ab
+                ByteArrayInputStream(klar, ab.toInt(), klar.size - ab.toInt())
+            }
+            val ganz = Age.ab(an, u, n.toLong(), 0, oeffnen).readBytes()
+            assertEquals("bytes for $n bytes", hash, sha(ganz))
+            listOf(1, 150, 199, 200, 201, 4000, 65_000, 65_736, 65_737, 131_000, laenge - 1, laenge).filter { it <= laenge }.forEach { ab ->
+                geoeffnet.clear()
+                assertArrayEquals("from $ab of $n bytes", ganz.copyOfRange(ab, laenge), Age.ab(an, u, n.toLong(), ab.toLong(), oeffnen).readBytes())
+                assertTrue("opened at a chunk: $geoeffnet", geoeffnet.all { it % Age.STUECK == 0L })
+            }
+        }
+        // a plaintext shorter than said (the file changed): the stream ends, no made-up bytes
+        val kurz = Age.ab(an, u, 200_000, 0) { ByteArrayInputStream(klartext(70_000)) }.readBytes()
+        assertTrue(kurz.size < Age.groesse(200_000))
+        assertTrue(Age.Umschlag.aus(Age.Umschlag.neu().text()) != null)
+        assertTrue(Age.Umschlag.aus("kaputt") == null)
+    }
+
     companion object {
+        /** The C2SP testkit's identity; its recipient is [EMPFAENGER]. */
+        const val IDENTITAET = "AGE-SECRET-KEY-1EGTZVFFV20835NWYV6270LXYVK2VKNX2MMDKWYKLMGR48UAWX40Q2P2LM0"
+
         /** The testkit identity's recipient (`age-keygen -y`). */
         const val EMPFAENGER = "age1xmwwc06ly3ee5rytxm9mflaz2u56jjj36s0mypdrwsvlul66mv4q47ryef"
 

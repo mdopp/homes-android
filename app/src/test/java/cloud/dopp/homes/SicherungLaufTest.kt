@@ -2,11 +2,13 @@ package cloud.dopp.homes
 
 import cloud.dopp.homes.data.Napi.Quelle
 import cloud.dopp.homes.data.SicherungClient
+import cloud.dopp.homes.sicherung.Age
 import cloud.dopp.homes.sicherung.Gedaechtnis
 import cloud.dopp.homes.sicherung.Gesendet
 import cloud.dopp.homes.sicherung.Lauf
 import cloud.dopp.homes.sicherung.Meldung
 import cloud.dopp.homes.sicherung.Ordner
+import cloud.dopp.homes.sicherung.Uploader
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -35,6 +37,7 @@ class MapGedaechtnis : Gedaechtnis {
     override fun upload(quelle: Quelle, pfad: String) = uploads["${quelle.wire}|$pfad"]
     override fun merkeUpload(quelle: Quelle, pfad: String, zeile: String) { uploads["${quelle.wire}|$pfad"] = zeile }
     override fun vergissUpload(quelle: Quelle, pfad: String) { uploads.remove("${quelle.wire}|$pfad") }
+    fun vergissAlleUploads() = uploads.clear()
 }
 
 /**
@@ -64,6 +67,10 @@ class SicherungLaufTest {
     @After
     fun zu() = homes.schliessen()
 
+    /** What the person's archive reads of a file on the box: it decrypts with its own key. */
+    private fun imArchiv(schluessel: String): ByteArray? =
+        homes.fertig[schluessel]?.let { AgeLeser.entschluesseln(AgeLeser.identitaet(AgeTest.IDENTITAET), it.inputStream()) }
+
     private fun lauf(ordner: (Quelle) -> Ordner? = { q -> if (q == Quelle.SIGNAL) signal else whatsapp }, halt: () -> Boolean = { false }) =
         Lauf(SicherungClient(homes.base, FakeHomes.TOKEN, homes.http), g, ordner, halt = halt, teil = 1024)
 
@@ -90,17 +97,20 @@ class SicherungLaufTest {
     @Test
     fun whatsappSendsTheDatabaseAndTheMissingMediaOnly() {
         val dateien = legeWhatsapp()
-        homes.vorhanden += "whatsapp|Media/WhatsApp Video/VID-20261101-WA0003.mp4"
+        homes.vorhanden += "whatsapp|Media/WhatsApp Video/VID-20261101-WA0003.mp4.age"
         assertEquals(Lauf.Ergebnis.FERTIG, lauf(ordner = { q -> if (q == Quelle.WHATSAPP) whatsapp else null }).laufen())
         assertEquals(
             setOf(
-                "whatsapp|Databases/msgstore.db.crypt15",
-                "whatsapp|Media/WhatsApp Images/IMG-20261101-WA0001.jpg",
-                "whatsapp|Media/WhatsApp Images/Sent/IMG-20261101-WA0002.jpg",
+                "whatsapp|Databases/msgstore.db.crypt15.age",
+                "whatsapp|Media/WhatsApp Images/IMG-20261101-WA0001.jpg.age",
+                "whatsapp|Media/WhatsApp Images/Sent/IMG-20261101-WA0002.jpg.age",
             ),
             homes.fertig.keys,
         )
-        assertArrayEquals(dateien["Databases/msgstore.db.crypt15"], homes.fertig["whatsapp|Databases/msgstore.db.crypt15"])
+        // archiv#64: on the box only age to the person's archive, which reads the phone's very file
+        assertArrayEquals(dateien["Databases/msgstore.db.crypt15"], imArchiv("whatsapp|Databases/msgstore.db.crypt15.age"))
+        assertArrayEquals(dateien["Media/WhatsApp Images/IMG-20261101-WA0001.jpg"], imArchiv("whatsapp|Media/WhatsApp Images/IMG-20261101-WA0001.jpg.age"))
+        homes.fertig.forEach { (k, b) -> assertTrue("$k is no age file", b.copyOf(FakeHomes.AGE_ANFANG.size).contentEquals(FakeHomes.AGE_ANFANG)) }
         assertEquals(Meldung.Art.OK, g.meldungen[Quelle.WHATSAPP]?.art)
         assertEquals(3, g.uebertragen[Quelle.WHATSAPP]?.second)
 
@@ -121,10 +131,11 @@ class SicherungLaufTest {
             melde = { gemeldet += it }, teil = 1024,
         )
         assertEquals(Lauf.Ergebnis.FERTIG, l.laufen())
-        // the database and three media: 5000 + 3000 + 2000 + 2500 bytes
+        // the database and three media: 5000 + 3000 + 2000 + 2500 bytes, as they go up encrypted
+        val gesamt = listOf(5000L, 3000L, 2000L, 2500L).sumOf { Age.groesse(it) }
         assertTrue(gemeldet.isNotEmpty())
-        assertTrue(gemeldet.all { it.von == 4 && it.gesamt == 12_500L })
-        assertEquals(12_500L, gemeldet.last().bytes)
+        assertTrue(gemeldet.all { it.von == 4 && it.gesamt == gesamt })
+        assertEquals(gesamt, gemeldet.last().bytes)
         assertEquals(3, gemeldet.last().fertig) // the last file under way: three behind it
         assertTrue("bytes only grow", gemeldet.zipWithNext().all { (a, b) -> b.bytes >= a.bytes && b.fertig >= a.fertig })
         assertEquals(listOf(0, 1, 2, 3), gemeldet.map { it.fertig }.distinct())
@@ -139,8 +150,8 @@ class SicherungLaufTest {
         val nurSignal: (Quelle) -> Ordner? = { q -> if (q == Quelle.SIGNAL) signal else null }
 
         assertEquals(Lauf.Ergebnis.FERTIG, lauf(nurSignal).laufen())
-        assertEquals(setOf("signal|signal-2026-11-01-03-00-00.backup"), homes.fertig.keys)
-        assertArrayEquals(heute, homes.fertig.values.single())
+        assertEquals(setOf("signal|signal-2026-11-01-03-00-00.backup.age"), homes.fertig.keys)
+        assertArrayEquals(heute, imArchiv("signal|signal-2026-11-01-03-00-00.backup.age"))
 
         val vorher = homes.anfragen.size
         assertEquals(Lauf.Ergebnis.FERTIG, lauf(nurSignal).laufen())
@@ -148,7 +159,7 @@ class SicherungLaufTest {
 
         signal.lege("signal-2026-11-02-03-00-00.backup", FakeHomes.bytes(3600, 3), alterMs = stunde)
         assertEquals(Lauf.Ergebnis.FERTIG, lauf(nurSignal).laufen())
-        assertTrue("signal|signal-2026-11-02-03-00-00.backup" in homes.fertig.keys)
+        assertTrue("signal|signal-2026-11-02-03-00-00.backup.age" in homes.fertig.keys)
         assertEquals(2, homes.fertig.size)
     }
 
@@ -202,14 +213,16 @@ class SicherungLaufTest {
         assertEquals(Meldung.Art.SPAETER, g.meldungen[Quelle.WHATSAPP]?.art)
         stop = false
         assertEquals(Lauf.Ergebnis.FERTIG, lauf().laufen())
-        assertArrayEquals(dateien["Databases/msgstore.db.crypt15"], homes.fertig["whatsapp|Databases/msgstore.db.crypt15"])
+        // resumed in the middle of an encrypted file: the archive still reads it whole
+        assertArrayEquals(dateien["Databases/msgstore.db.crypt15"], imArchiv("whatsapp|Databases/msgstore.db.crypt15.age"))
+        dateien.filterKeys { it.startsWith("Media/WhatsApp ") && "/." !in it }.forEach { (p, b) -> assertArrayEquals(p, b, imArchiv("whatsapp|$p.age")) }
         val gesendet = homes.patches().sumOf { it.laenge }
         val noetig = listOf(
             "Databases/msgstore.db.crypt15",
             "Media/WhatsApp Images/IMG-20261101-WA0001.jpg",
             "Media/WhatsApp Images/Sent/IMG-20261101-WA0002.jpg",
             "Media/WhatsApp Video/VID-20261101-WA0003.mp4",
-        ).sumOf { dateien.getValue(it).size.toLong() }
+        ).sumOf { Age.groesse(dateien.getValue(it).size.toLong()) }
         assertEquals("every byte once", noetig, gesendet)
     }
 
@@ -239,6 +252,38 @@ class SicherungLaufTest {
         assertEquals(Lauf.BESCHAEFTIGT, g.meldungen[Quelle.WHATSAPP]?.satz)
         assertEquals(Lauf.Ergebnis.FERTIG, lauf().laufen())
         assertEquals(4, homes.fertig.count { it.key.startsWith("whatsapp|") })
+    }
+
+    /** archiv#64: without the archive's key nothing leaves the phone, and the screen says why. */
+    @Test
+    fun withoutTheArchivesKeyNothingIsSent() {
+        legeWhatsapp()
+        signal.lege("signal-2026-11-01-03-00-00.backup", FakeHomes.bytes(3500, 2))
+        homes.empfaenger = null
+        assertEquals(Lauf.Ergebnis.HALT, lauf().laufen())
+        assertEquals(Meldung.Art.HOMES, g.meldungen[Quelle.WHATSAPP]?.art)
+        assertTrue(g.meldungen[Quelle.WHATSAPP]?.satz.orEmpty().contains("Archiv"))
+        assertTrue(homes.patches().isEmpty())
+        assertTrue(homes.anfragen.none { it.path == "/napi/sicherung/uploads" })
+    }
+
+    /**
+     * Homes holds part of a file encrypted with randomness this phone has
+     * forgotten (its data was cleared mid-upload): never gone on with — the
+     * bytes would not fit together — but left for later, said in German.
+     */
+    @Test
+    fun aPartOfAForgottenEncryptionIsNotGoneOn() {
+        signal.lege("signal-2026-11-01-03-00-00.backup", FakeHomes.bytes(3500, 2))
+        val nurSignal: (Quelle) -> Ordner? = { q -> if (q == Quelle.SIGNAL) signal else null }
+        assertEquals(Lauf.Ergebnis.WEITER, lauf(nurSignal, halt = { homes.patches().size >= 1 }).laufen())
+        g.vergissAlleUploads()
+        assertEquals(Lauf.Ergebnis.WEITER, lauf(nurSignal).laufen())
+        assertEquals(Uploader.REST, g.meldungen[Quelle.SIGNAL]?.satz)
+        assertTrue(homes.fertig.isEmpty())
+        homes.vergiss() // Homes dropped the part after seven days
+        assertEquals(Lauf.Ergebnis.FERTIG, lauf(nurSignal).laufen())
+        assertTrue(imArchiv("signal|signal-2026-11-01-03-00-00.backup.age") != null)
     }
 
     @Test

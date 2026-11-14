@@ -73,6 +73,9 @@ class FakeLetzte : Dispatcher() {
     val anfragen = ArrayList<Pair<String, String?>>() // path, Range
 
     @Volatile var archivZu = false
+
+    /** archiv#64: the box keeps every file encrypted for the archive, so a closed one gives nothing. */
+    @Volatile var allesImArchiv = false
     @Volatile var schneide = false
 
     override fun dispatch(request: RecordedRequest): MockResponse {
@@ -82,7 +85,7 @@ class FakeLetzte : Dispatcher() {
         val rest = path.removePrefix("/napi/sicherung/letzte/")
         val quelle = rest.substringBefore('/')
         val pfad = rest.substringAfter('/').split('/').joinToString("/") { URLDecoder.decode(it, "UTF-8") }
-        if (archivZu && quelle == "whatsapp" && pfad.startsWith("Media/")) {
+        if (archivZu && (allesImArchiv || quelle == "whatsapp" && pfad.startsWith("Media/"))) {
             return fehler(423, Rueckholung.MEDIEN_ZU)
         }
         val (b, etag) = dateien["$quelle|$pfad"] ?: return fehler(404, "Diese Sicherung gibt es auf der Box nicht (mehr).")
@@ -248,6 +251,26 @@ class RueckholungTest {
         assertEquals(listOf("Databases/msgstore.db.crypt15"), plan.schon.map { it.ziel })
         assertEquals(Rueckholung.Art.FERTIG, r().laufen(plan, ziel).art)
         assertEquals(3000L, ziel.groesse("Media/WhatsApp Images/IMG 1.jpg"))
+    }
+
+    /**
+     * archiv#64: Signal's backup and WhatsApp's database too lie encrypted for
+     * the archive: while it is closed nothing comes, the run stops with Homes'
+     * sentence (and the screen's „Archiv öffnen“), and nothing is written.
+     */
+    @Test
+    fun aClosedArchiveSinceArchiv64GivesNothing() {
+        val e = whatsapp()
+        homes.archivZu = true
+        homes.allesImArchiv = true
+        val a = r().laufen(r().planen(e, ziel), ziel)
+        assertEquals(Rueckholung.Art.HOMES, a.art)
+        assertEquals(Rueckholung.MEDIEN_ZU, a.medienSatz)
+        assertNull(a.satz)
+        assertNull(ziel.groesse("Databases/msgstore.db.crypt15"))
+        val s = homes.lege(Quelle.SIGNAL, "signal-1.backup", FakeHomes.bytes(10, 4))
+        val b = r().laufen(r().planen(Rueckholung.eintraege(Quelle.SIGNAL, listOf(s)), ziel), ziel)
+        assertEquals(Rueckholung.Art.HOMES to Rueckholung.MEDIEN_ZU, b.art to b.medienSatz)
     }
 
     @Test

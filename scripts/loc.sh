@@ -26,7 +26,7 @@ budget() { # budget <package> <cap>  — "." is the files beside the packages
 known=""
 # package    cap     size on 2026-11-03, and what it is
 budget widget    4938  # 4,703: the home-screen widgets, their rendering and pinning
-budget sicherung 3680  # 3,031: Daten sichern — backups, contacts, SMS and calls, age;
+budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and calls, age;
                        # 3183 -> 3199 (owner approved 2026-11-06): „Kontakte übertragen“
                        #   sends each contact's own picture as its PHOTO, ≤256 px, for Homes' „Ist das …?“ in Immich (homes#298);
                        # 3199 -> 3517 (owner approved 2026-11-07: Kontakt prüfen lassen) — the accepted
@@ -38,6 +38,9 @@ budget sicherung 3680  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3600 -> 3660 (owner approved 2026-11-09: Beziehungen aufs Handy, homes#330): a relation Homes asks for written as a ContactsContract Relation row
                        # 3660 -> 3680 (owner approved 2026-11-11: each number once, homes#359): the export sends a number once per contact,
                        #   compared as Homes' caldav.TelSchluessel (Vcard.telSchluessel, einmalJeNummer), and Kontakt prüfen lassen compares the same way
+                       # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
+                       #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
+                       #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
 budget ui        3500  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;

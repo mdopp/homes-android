@@ -218,6 +218,25 @@ foreground. It sends:
 - **Signal:** the newest `signal-….backup` directly in its folder, only when
   it is newer than the one sent last. Its `pfad` is its file name.
 
+**Every file goes up encrypted for the person's archive** (archiv#64, the
+owner: messages live in the person's sealed archive, Homes only relays bytes
+it cannot read). The app age-encrypts it (age v1, one X25519 recipient: `GET
+/napi/sicherung/schluessel`, as the SMS below) while it reads it, and names it
+`<pfad>.age` with the encrypted size (known beforehand: the header, the
+nonce, the plaintext and 16 bytes a 64 KiB chunk) — in `/fehlend` too, whose
+answer names the `.age` paths. No copy is made on the phone: `Age.ab` gives
+the encrypted bytes from any offset, and the encryption's randomness (file
+key, ephemeral secret, nonce) is kept with the upload's id until the file is
+whole, so a piece after a cut is the same bytes (`sicherung/Uploader.kt`). A
+part on the box the phone has no randomness for any more (its data was
+cleared mid-upload) is never gone on with: the screen says it waits until
+Homes drops it (seven days). Without the archive's key (404 with Homes'
+sentence) nothing is sent and the run stops with that sentence. Homes refuses
+anything not age: a name without `.age` (400), a first piece whose bytes do
+not begin as age (415), with its sentence. The person's archive opens the
+files only while it is open, with its own key, then the messenger's backup
+with the key or passphrase the person entered there.
+
 A file changed in the last ten minutes waits for the next run (it may still
 be being written).
 
@@ -255,8 +274,8 @@ file's bytes (owner, 2026-11-01).
 (homes-android#197; Homes' side is homes#209, laib ADR 0029 amendment
 2026-11-01.) On a new phone where the app is paired: `GET
 /napi/sicherung/letzte` → `{quellen: {signal|whatsapp: [{pfad, groesse,
-geaendert}]}}` (epoch ms; a WhatsApp medium as `Media/…`, its plaintext
-size) is what the box keeps. Each file comes with `GET
+geaendert}]}}` (epoch ms; each as the phone names it, without `.age`, with
+its plaintext size; a WhatsApp medium as `Media/…`) is what the box keeps. Each file comes with `GET
 /napi/sicherung/letzte/{quelle}/{pfad...}` (every segment URL-encoded, the
 `/` kept), `Range: bytes=<n>-` → 206 with `Content-Range` (200: whole) and
 an `ETag`. The person grants a folder per source with write access
@@ -274,11 +293,14 @@ to their `pfad` below it, the media first and the database last.
   whose ETag changed on the box (the next night's backup) starts over.
   „Anhalten“ stops after the piece being written. The run is a thread of the
   app while its screen stays on (`FLAG_KEEP_SCREEN_ON`), no job.
-- **Media** come only while the person's archive is open: 423 with Homes'
-  sentence, then no further medium is asked for, the database still comes,
-  and the screen offers „Archiv öffnen“ (`archiv.<domain>` beside
-  `homes.<domain>`). 404 is a backup gone from the box: the list is loaded
-  again.
+- **Everything comes only while the person's archive is open** (archiv#64:
+  the box keeps each file as it came, encrypted for the archive; the archive
+  decrypts it to the messenger's own file). 423 with Homes' sentence: on a
+  medium no further medium is asked for; on Signal's backup or WhatsApp's
+  database the run stops; either way the screen offers „Archiv öffnen“
+  (`archiv.<domain>` beside `homes.<domain>`). A backup the box kept before
+  archiv#64 without `.age` still comes while the archive is closed. 404 is a
+  backup gone from the box: the list is loaded again.
 - `sicherung/SafZiel.kt` is the one file that writes a document: it makes
   folders and files and writes into them, never deletes, renames, moves or
   copies one (`ManifestTest`).

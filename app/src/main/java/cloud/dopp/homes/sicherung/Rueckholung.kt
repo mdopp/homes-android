@@ -47,9 +47,12 @@ interface Rueckgedaechtnis {
  *   box's ETag changed meanwhile (the next night's backup), it starts over.
  * - **WhatsApp's media first, its database last**: the database is what
  *   WhatsApp looks for, so it lies there only once the rest does.
- * - The media come only while the person's archive is open (423): then the
- *   other media are not asked for one by one, the database still comes, and
- *   [Ausgang.medienSatz] carries Homes' sentence.
+ * - Everything comes only while the person's archive is open (archiv#64: the
+ *   box keeps each file encrypted for the archive). A closed archive (423) on
+ *   a medium: the other media are not asked for one by one; on Signal's backup
+ *   or WhatsApp's database (kept so since archiv#64): the run stops. Either
+ *   way [Ausgang.medienSatz] carries Homes' sentence, and the screen offers
+ *   „Archiv öffnen“.
  */
 class Rueckholung(
     private val client: SicherungClient,
@@ -146,6 +149,7 @@ class Rueckholung(
                         medienSatz = a.satz ?: MEDIEN_ZU
                         null
                     }
+                    a.code == 423 -> return Ausgang(Art.HOMES, geholt, medienSatz = a.satz ?: MEDIEN_ZU)
                     a.code == 404 -> return Ausgang(Art.VERALTET, geholt, VERALTET, medienSatz)
                     a.code == 401 -> return Ausgang(Art.HOMES, geholt, Lauf.NICHT_GEKOPPELT, medienSatz)
                     a.code == 429 || a.code >= 500 -> return Ausgang(Art.UNERREICHBAR, geholt, UNERREICHBAR, medienSatz)
