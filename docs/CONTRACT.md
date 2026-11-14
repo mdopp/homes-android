@@ -80,6 +80,12 @@ Fields the widgets read beyond a value to show:
   on every tool row with an id: the item's own page on Homes, a path
   (`/raeume/<entity_id>`, `/kalender/erinnerung/<uid>`, `/dokumente/<id>`,
   `/notizen/<file>`). See (d).
+- `text` on a card where Homes has its own words for the thing, as its web
+  page says them (owner, 2026-11-14: „Bitte in der App und auf der Webseite
+  gleich“): today an IPP printer's state sensor, „druckt · Schwarz 42 %“,
+  „bereit · Papier leer · Schwarz 40 %“, „nicht erreichbar“
+  (mdopp/homes#370). The app shows it instead of its own reading of
+  `state`; absent or blank, the app's words stay.
 - `today` on every energy total: what it added since the house's midnight,
   in kWh, by the Energie page's rule; absent when HA's history does not say,
   and then the widget shows a dash, never the lifetime count.

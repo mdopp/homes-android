@@ -45,7 +45,7 @@ budget ui        3500  # 3,026: the activities: start screen, pairing, settings 
                        #   (+12 of it is #237's level sheet, merged meanwhile);
                        # 3320 -> 3500: „Deine Geräte“ as tiles (owner, 2026-11-04): ui/FavoritenAnsicht.kt, the
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
-budget data      3132  # 2,780: Homes' calls (Napi), clients, models, the token store;
+budget data      3145  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -53,6 +53,8 @@ budget data      3132  # 2,780: Homes' calls (Napi), clients, models, the token 
                        # 3007 -> 3120 (owner approved 2026-11-07: Kontakt prüfen lassen) — GET and POST
                        #   /napi/kontakte/korrekturen, their reply shapes and parser;
                        # 3120 -> 3132 (owner approved 2026-11-08: Kontakt-Formular v2, homes#304): the main ones and the photo in that reply
+                       # 3132 -> 3145 (owner's request 2026-11-14 „Bitte in der App und auf der Webseite gleich“, to be OK'd in the PR):
+                       #   a card's text, Homes' own words for a printer (mdopp/homes#370), its key, field and parse
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader

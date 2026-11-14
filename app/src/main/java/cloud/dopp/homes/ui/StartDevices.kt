@@ -43,8 +43,9 @@ object StartDevices {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
     }
 
-    /** The state as the row says it, in plain German. */
+    /** The state as the row says it, in plain German: Homes' own words where it sends them ([Card.text], a printer's), else the app's. */
     fun stateText(card: Card): String {
+        card.text?.let { return it }
         val state = card.state?.trim()?.lowercase(Locale.ROOT)
         if (card.domain == "lock") return lockLabel(state)
         if (state == null || state == "unknown") return "—"

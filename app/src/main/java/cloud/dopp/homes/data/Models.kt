@@ -31,6 +31,9 @@ data class Card(
     val maxTemp: Double? = null,
     val tempStep: Double? = null,
     val colorModes: List<String> = emptyList(),
+    // The thing in Homes' own words, as its web page says them (a printer's „druckt · Schwarz 42 %“,
+    // owner 2026-11-14); null where Homes has none and the app says the state itself.
+    val text: String? = null,
 ) {
     /**
      * Best-effort "active" reading across the supported domains. For a lock
