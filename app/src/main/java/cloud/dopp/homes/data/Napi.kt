@@ -610,12 +610,11 @@ object Napi {
     }
 
     /**
-     * `GET|POST /napi/sprachmodell` (owner 2026-11-17): `{ok, karte}`, the card in the web page's words;
-     * a refused switch `{ok: false, error}` with the sentence to show. 404: the box has no switchable model.
+     * `GET|POST /napi/sprachmodell` (owner 2026-11-17): `{ok, karte}`, the card in the web page's words
+     * (a refused switch: [SchaltenJson]). 404: the box has no switchable model.
      */
     object SprachmodellJson {
         const val KARTE = "karte"
-        const val ERROR = MerkenJson.ERROR
         const val ZUSTAND = "zustand" // haushalt, anderes, laedt, belegt, weg
         const val TITEL = ModulJson.TITEL
         const val HINWEIS = "hinweis"
@@ -633,6 +632,8 @@ object Napi {
         const val JA = "ja"
         const val NEIN = "nein"
     }
+
+    object SchaltenJson { const val ERROR = MerkenJson.ERROR } // a refused switch: `{ok: false, error}`, the sentence to show
 
     /**
      * The app's keys in `/napi/kann`'s lists (homes ADR 0001 §2): the widget
@@ -873,6 +874,6 @@ object Napi {
     /** Switch to `preset` for `stunden` hours, or give back with `zurueck`: the new card, or Homes' sentence. */
     val SPRACHMODELL_SCHALTEN = Endpoint(
         Method.POST, "/napi/sprachmodell", body = listOf(SprachmodellJson.PRESET, SprachmodellJson.STUNDEN, SprachmodellJson.ZURUECK),
-        reply = listOf(SprachmodellJson),
+        reply = listOf(SprachmodellJson, SchaltenJson),
     )
 }

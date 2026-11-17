@@ -135,7 +135,7 @@ class SprachmodellClient(
         http.newCall(req).execute().use { resp ->
             val text = resp.body?.string()
             val karte = if (resp.isSuccessful) Karte.lesen(text) else null
-            karte?.let { Ergebnis.Neu(it) } ?: Ergebnis.Abgelehnt(HomesHttp.satz(text, SprachmodellJson.ERROR))
+            karte?.let { Ergebnis.Neu(it) } ?: Ergebnis.Abgelehnt(HomesHttp.satz(text, Napi.SchaltenJson.ERROR))
         }
     } catch (e: InterruptedIOException) {
         Ergebnis.Zeit
