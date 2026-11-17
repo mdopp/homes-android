@@ -77,7 +77,7 @@ class NapiContractTest {
             "aufgabe", "paket", "store", "erledigt", "am", "wie", "einrichten", "einkauf", "zeitleiste", "scannen",
         )
 
-        /** The language model's card: `sprachmodell.Ansicht`, `Wahl` and `Dauer`, internal/sprachmodell/sprachmodell.go:238-265, filled by `Sehen` :268-310. */
+        /** The language model's card: `sprachmodell.Ansicht`, `Wahl` and `Dauer`, internal/sprachmodell/sprachmodell.go:248-276, filled by `Sehen` :277-320. */
         val SPRACHMODELL = setOf(
             "karte", "zustand", "titel", "hinweis", "zeile", "detail", "kosten", "zurueck", "wahl",
             "preset", "name", "dauern", "stunden", "label", "bis", "frage", "ja", "nein",
@@ -354,7 +354,7 @@ class NapiContractTest {
             // The language model's card (owner 2026-11-17): mdopp/homes branch feat/sprachmodell-schalter as it stood on 2026-11-17,
             // not merged yet (lines may move); registered napi.go:336-340 only with a switchable model, not_found napi.go:361 without.
             Route(
-                "GET", "/napi/sprachmodell", "internal/napi/sprachmodell.go:26-36, the card internal/sprachmodell/sprachmodell.go:255-310",
+                "GET", "/napi/sprachmodell", "internal/napi/sprachmodell.go:26-36, the card internal/sprachmodell/sprachmodell.go:265-320",
                 sends = SPRACHMODELL + setOf("ok", "reason"),
             ),
             Route(
