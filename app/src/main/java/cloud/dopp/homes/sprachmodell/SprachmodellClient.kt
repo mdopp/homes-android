@@ -112,15 +112,15 @@ class SprachmodellClient(
     // No answer is an answer here: the card shown stays.
     @Suppress("SwallowedException")
     fun lesen(): Lesen = try {
-        http.newCall(Napi.SPRACHMODELL.request(base, token)).execute().use { resp ->
-            when {
-                resp.code == 404 -> Lesen.Keins
-                resp.isSuccessful -> Karte.lesen(resp.body?.string())?.let { Lesen.Da(it) } ?: Lesen.Nichts
-                else -> Lesen.Nichts
-            }
-        }
+        http.newCall(Napi.SPRACHMODELL.request(base, token)).execute().use { resp -> gelesen(resp.code, resp.body?.string()) }
     } catch (e: IOException) {
         Lesen.Nichts
+    }
+
+    private fun gelesen(code: Int, body: String?): Lesen = when {
+        code == 404 -> Lesen.Keins
+        code in 200..299 -> Karte.lesen(body)?.let { Lesen.Da(it) } ?: Lesen.Nichts
+        else -> Lesen.Nichts
     }
 
     /** Switch to [preset] for [stunden] hours. */
