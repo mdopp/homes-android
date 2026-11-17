@@ -48,7 +48,7 @@ budget ui        3500  # 3,026: the activities: start screen, pairing, settings 
                        #   (+12 of it is #237's level sheet, merged meanwhile);
                        # 3320 -> 3500: „Deine Geräte“ as tiles (owner, 2026-11-04): ui/FavoritenAnsicht.kt, the
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
-budget data      3145  # 2,780: Homes' calls (Napi), clients, models, the token store;
+budget data      3180  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -58,6 +58,8 @@ budget data      3145  # 2,780: Homes' calls (Napi), clients, models, the token 
                        # 3120 -> 3132 (owner approved 2026-11-08: Kontakt-Formular v2, homes#304): the main ones and the photo in that reply
                        # 3132 -> 3145 (owner's request 2026-11-14 „Bitte in der App und auf der Webseite gleich“, to be OK'd in the PR):
                        #   a card's text, Homes' own words for a printer (mdopp/homes#370), its key, field and parse
+                       # 3145 -> 3180 (owner's request 2026-11-17 „Sprachmodell“ card, to be OK'd in the PR):
+                       #   GET and POST /napi/sprachmodell and the card's keys
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
@@ -73,6 +75,8 @@ budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochlad
                        # 583 -> 741 (owner, 2026-11-04: what shows as a notification shows in the open app): hochladen/Stand.kt, the row
 budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
                        # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
+budget sprachmodell 415 # new package 2026-11-17 (owner's request, to be OK'd in the PR): the box's language model
+                       # as a card on the start screen, /napi/sprachmodell read and switched (393 lines + 5 %)
 budget realtime   667  #   635: the live stream and its foreground service
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)

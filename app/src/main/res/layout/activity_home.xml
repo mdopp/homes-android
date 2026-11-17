@@ -185,6 +185,15 @@
                 android:layout_marginBottom="@dimen/space_lg"
                 android:orientation="vertical" />
 
+            <!-- The box's language model (owner, 2026-11-17): Homes' card from /napi/sprachmodell,
+                 gone while the box has none (sprachmodell/SprachmodellKarte). -->
+            <FrameLayout
+                android:id="@+id/sprachmodell"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_lg"
+                android:visibility="gone" />
+
             <!-- Öffnen (owner, 2026-11-04): the modules without a phone app of their own,
                  each in a Custom Tab; gone without /napi/einrichtung (einrichtung/Abschnitte). -->
             <LinearLayout

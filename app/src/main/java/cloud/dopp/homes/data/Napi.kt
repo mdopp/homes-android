@@ -610,6 +610,31 @@ object Napi {
     }
 
     /**
+     * `GET|POST /napi/sprachmodell` (owner 2026-11-17): `{ok, karte}`, the card in the web page's words;
+     * a refused switch `{ok: false, error}` with the sentence to show. 404: the box has no switchable model.
+     */
+    object SprachmodellJson {
+        const val KARTE = "karte"
+        const val ERROR = MerkenJson.ERROR
+        const val ZUSTAND = "zustand" // haushalt, anderes, laedt, belegt, weg
+        const val TITEL = ModulJson.TITEL
+        const val HINWEIS = "hinweis"
+        const val ZEILE = "zeile"
+        const val DETAIL = "detail"
+        const val KOSTEN = "kosten" // the warning line, "" in the household
+        const val ZURUECK = "zurueck" // the give-back button's label, "" = none
+        const val WAHL = "wahl" // per preset: PRESET, NAME, DAUERN
+        const val PRESET = "preset"
+        const val NAME = ModulJson.NAME
+        const val DAUERN = "dauern" // per duration: STUNDEN, LABEL, FRAGE, JA, NEIN
+        const val STUNDEN = "stunden"
+        const val LABEL = EnergyJson.LABEL
+        const val FRAGE = "frage"
+        const val JA = "ja"
+        const val NEIN = "nein"
+    }
+
+    /**
      * The app's keys in `/napi/kann`'s lists (homes ADR 0001 §2): the widget
      * types (`tool:` and a tool def's id), the share targets, the Mehr rows.
      */
@@ -841,4 +866,13 @@ object Napi {
     /** The person's modules and setup tasks (owner 2026-11-04); `/apps` ticks those whose app the phone has. */
     val EINRICHTUNG = Endpoint(Method.GET, "/napi/einrichtung", reply = listOf(KannJson, EinrichtungJson, EinrichtungModulJson))
     val EINRICHTUNG_APPS = Endpoint(Method.POST, "/napi/einrichtung/apps", body = listOf("pakete"), reply = EINRICHTUNG.reply)
+
+    /** The box's language model as a card (owner 2026-11-17); 404 without a switchable one: no card. */
+    val SPRACHMODELL = Endpoint(Method.GET, "/napi/sprachmodell", reply = listOf(SprachmodellJson))
+
+    /** Switch to `preset` for `stunden` hours, or give back with `zurueck`: the new card, or Homes' sentence. */
+    val SPRACHMODELL_SCHALTEN = Endpoint(
+        Method.POST, "/napi/sprachmodell", body = listOf(SprachmodellJson.PRESET, SprachmodellJson.STUNDEN, SprachmodellJson.ZURUECK),
+        reply = listOf(SprachmodellJson),
+    )
 }

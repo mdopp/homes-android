@@ -77,6 +77,12 @@ class NapiContractTest {
             "aufgabe", "paket", "store", "erledigt", "am", "wie", "einrichten", "einkauf", "zeitleiste", "scannen",
         )
 
+        /** The language model's card: `sprachmodell.Ansicht`, `Wahl` and `Dauer`, internal/sprachmodell/sprachmodell.go:238-265, filled by `Sehen` :268-310. */
+        val SPRACHMODELL = setOf(
+            "karte", "zustand", "titel", "hinweis", "zeile", "detail", "kosten", "zurueck", "wahl",
+            "preset", "name", "dauern", "stunden", "label", "bis", "frage", "ja", "nein",
+        )
+
         /** Every /napi route Homes serves, as its handler reads and answers it. */
         val HOMES = listOf(
             Route("GET", "/napi/assistent", "internal/napi/napi.go:104-106", sends = setOf("name")),
@@ -345,6 +351,16 @@ class NapiContractTest {
                 "POST", "/napi/einrichtung/apps", "internal/napi/einrichtung.go:28-44, the GET's answer :44",
                 body = setOf("pakete"), sends = EINRICHTUNG + setOf("ok", "reason", "error"),
             ),
+            // The language model's card (owner 2026-11-17): mdopp/homes branch feat/sprachmodell-schalter as it stood on 2026-11-17,
+            // not merged yet (lines may move); registered napi.go:336-340 only with a switchable model, not_found napi.go:361 without.
+            Route(
+                "GET", "/napi/sprachmodell", "internal/napi/sprachmodell.go:26-36, the card internal/sprachmodell/sprachmodell.go:255-310",
+                sends = SPRACHMODELL + setOf("ok", "reason"),
+            ),
+            Route(
+                "POST", "/napi/sprachmodell", "internal/napi/sprachmodell.go:38-78, the card :26-33",
+                body = setOf("preset", "stunden", "zurueck"), sends = SPRACHMODELL + setOf("ok", "error", "reason"),
+            ),
         )
 
         /** Where Homes reads the token: `bearerOf`, internal/napi/napi.go:208-211. */
@@ -387,6 +403,7 @@ class NapiContractTest {
             "DELETE /napi/gemeinsam/kalender/{kalender}/{uid}", "DELETE /napi/gemeinsam/kontakte/{uid}",
             "GET /napi/kann", "POST /napi/kann/anfordern",
             "GET /napi/einrichtung", "POST /napi/einrichtung/apps", "POST /napi/musik",
+            "GET /napi/sprachmodell", "POST /napi/sprachmodell",
         )
 
         const val NAPI = "cloud.dopp.homes.data.Napi"
@@ -415,6 +432,7 @@ class NapiContractTest {
             "app/src/main/java/cloud/dopp/homes/einrichtung/Einrichtung.kt",
             "app/src/main/java/cloud/dopp/homes/einrichtung/EinrichtungLeser.kt",
             "app/src/main/java/cloud/dopp/homes/hochladen/MusikClient.kt",
+            "app/src/main/java/cloud/dopp/homes/sprachmodell/SprachmodellClient.kt",
         )
 
         private val literal = Regex(""""((?:[^"\\]|\\.)*)"""")
