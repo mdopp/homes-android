@@ -68,6 +68,7 @@ each row naming the Homes file and lines it came from.
 | Homes-Konto | `GET /napi/gemeinsam/kontakte`, `GET /napi/gemeinsam/kalender` (`?schreibbar=1`), `PUT\|DELETE /napi/gemeinsam/kalender/{kalender}/{uid}`, `PUT\|DELETE /napi/gemeinsam/kontakte/{uid}`: see (g) |
 | what the box can do | `GET /napi/kann`, `POST /napi/kann/anfordern`: see (h) |
 | Öffnen, Deine Aufgaben | `GET /napi/einrichtung`, `POST /napi/einrichtung/apps`: see (i) |
+| the start screen's Sprachmodell card | `GET /napi/sprachmodell` → `{ok, karte}`, a JSON 404 `not_found` when the box has no switchable model (then no card); `POST /napi/sprachmodell` `{preset, stunden}` to switch (stunden 1 or 4) or `{zurueck: true}` to give back → `{ok, karte}`, the new state, or `{ok: false, error}` (400, 403, 409, 502) with the sentence the app shows under the button tapped (owner, 2026-11-17; mdopp/homes feat/sprachmodell-schalter). See below |
 | Share → Musik, Hochladen | `POST /napi/musik`, multipart, one `file` part a request, streamed from the app's copy: see (j) |
 | Share → Homes, photos | `POST /napi/upload`, multipart `filename` then `file`, one photo a request → `{ok, id}`: the camera app's photos (one or several, `image/*`) into the folder Paperless consumes (owner, 2026-11-02). JPEG, PNG, WebP and GIF of at most 25 MB go as they are; HEIC/HEIF or anything larger is made a JPEG on the phone (long edge ≤ 4096). At most 20 a share. Homes' refusals are codes; the app says them in German by status (404 no folder, 413, 415, 429 busy, 503, 507 full) |
 | Share → Homes | `POST /napi/merken` `{text}`: what the share sheet sent (title and link); Homes keeps the page as a note and answers `{kurz, notiz, schon, …}` or `{error}` with a German sentence (homes#120); the share sheet's Direct Share target carries the assistant's name (#188) |
@@ -93,6 +94,17 @@ Fields the widgets read beyond a value to show:
   `state` the percent (the Energie page's Akku ring); absent without a battery
   leg or a number. Without it the widget draws the Akku node without its ring
   and the small widget shows the grid instead; its sensor joins the watch set.
+- `karte` of `/napi/sprachmodell` (`sprachmodell.Ansicht`, the web page's own
+  words; the app adds none): `titel`, `zeile` (the model and for whom), then
+  `kosten` as a warning line where it is not "" (what the window costs, until
+  when), else `detail`; `hinweis` quiet below; `zustand` (`haushalt`,
+  `anderes`, `laedt`, `belegt`, `weg`) only for the picture's colour;
+  `zurueck`, the label of the button back to the household ("" = none); and
+  `wahl`, per preset `{preset, name, dauern: [{stunden, label, frage, ja,
+  nein}]}`: a button `label` per duration, which asks `frage` with `ja` and
+  `nein` in the app's one dialog and posts `{preset, stunden}` only on `ja`.
+  Read when the start screen is shown or resumed, never polled. A switch
+  that gets no answer in time is said as such, and the card is read again.
 
 ## (c) The live stream
 

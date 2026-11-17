@@ -98,4 +98,6 @@
     <string name="dokumente_adresse_kurz">Dokumente-Adresse</string>
     <string name="dokumente_adresse_hinweis">%1$s – hinter dem + den Absender anhängen</string>
     <string name="dokumente_adresse_kopiert">Dokumente-Adresse kopiert</string>
+    <!-- The language model's card (owner, 2026-11-17): its words are Homes'; this one says a switch that got no answer. -->
+    <string name="sprachmodell_keine_antwort">Homes hat nicht rechtzeitig geantwortet. Die Karte zeigt gleich, was jetzt gilt.</string>
 </resources>
