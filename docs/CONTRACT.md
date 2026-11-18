@@ -49,7 +49,11 @@ registered by any other app on the phone and catch the token in the redirect.
 ## (b) The `/napi` paths the app calls
 
 Every request carries `Authorization: Bearer homes_device_…`; Homes answers 401
-without one and a JSON 404 for a path it does not serve. Each call is declared
+without one and a JSON 404 for a path it does not serve. Every request also
+carries the phone's languages as `Accept-Language` (`data/Sprache.kt`, the
+owner's call of 2026-11-18): Homes answers its words — `/napi/kann`'s titles
+and traces first — in de, en, es or fr by those weights, German otherwise, and
+says `Vary: Accept-Language` (mdopp/homes#380). Each call is declared
 as data in `app/src/main/java/cloud/dopp/homes/data/Napi.kt` — method, path,
 query parameters (and the values Homes takes), body fields, the reply keys the
 app reads — and `data/NapiRequest.kt` is the one place a request is built from

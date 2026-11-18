@@ -16,7 +16,7 @@ import org.json.JSONObject
  * [target] is the endpoint's path with its query ([Napi.Endpoint.target]); a
  * GET, HEAD or DELETE carries no [body], a POST, PATCH or PUT always one. [headers] are the
  * values of the endpoint's [Napi.Endpoint.headers], by name; no other header
- * is sent.
+ * is sent but the phone's language ([inSprache]).
  */
 fun Napi.Endpoint.request(
     base: String,
@@ -36,6 +36,9 @@ fun Napi.Endpoint.request(
     headers.forEach { (name, value) -> b.header(name, value) }
     return b.build()
 }
+
+/** [this] with the phone's languages as `Accept-Language` ([Sprache] puts it on every call). */
+fun Request.inSprache(acceptLanguage: String): Request = newBuilder().header("Accept-Language", acceptLanguage).build()
 
 /** A reply header the endpoint declares ([Napi.Endpoint.replyHeaders]), or null when Homes sent none. */
 fun Response.replyHeader(endpoint: Napi.Endpoint, name: String): String? {

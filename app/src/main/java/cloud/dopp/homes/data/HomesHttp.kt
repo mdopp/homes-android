@@ -8,10 +8,11 @@ import java.util.concurrent.TimeUnit
 /**
  * The one OkHttp the app has: every call shares its connection pool and
  * threads, and each caller names only its timeouts, in seconds. A client
- * from [client] is cheap; keep it in a `lazy` beside its calls.
+ * from [client] is cheap; keep it in a `lazy` beside its calls. Each call
+ * carries the phone's language ([Sprache]).
  */
 object HomesHttp {
-    private val shared: OkHttpClient by lazy { OkHttpClient() }
+    private val shared: OkHttpClient by lazy { OkHttpClient.Builder().addInterceptor(Sprache).build() }
 
     /** OkHttp's own default for a timeout not named. */
     private const val STANDARD = 10L
