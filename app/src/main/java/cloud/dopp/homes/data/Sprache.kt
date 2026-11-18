@@ -16,7 +16,7 @@ object Sprache : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val wert = acceptLanguage(systemSprachen())
         val req = chain.request()
-        return chain.proceed(if (wert.isEmpty()) req else req.newBuilder().header("Accept-Language", wert).build())
+        return chain.proceed(if (wert.isEmpty()) req else req.inSprache(wert))
     }
 
     /** The system's languages, the preferred first. */
