@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import cloud.dopp.homes.R
 import cloud.dopp.homes.ausloeser.AusloeserClient.Ausgang
@@ -59,14 +60,14 @@ internal class TagAutomationen(
 
     init {
         verbinden.setOnClickListener {
-            zeigeSuche(suche.visibility != View.VISIBLE)
-            if (suche.visibility == View.VISIBLE) suchen()
+            zeigeSuche(!suche.isVisible)
+            if (suche.isVisible) suchen()
         }
         suche.doAfterTextChanged {
             main.removeCallbacks(suchen)
             main.postDelayed(suchen, TIPPEN_MS)
         }
-        neu.setOnClickListener { zeigeSatz(satz.visibility != View.VISIBLE) }
+        neu.setOnClickListener { zeigeSatz(!satz.isVisible) }
         weiter.setOnClickListener {
             val t = tag ?: return@setOnClickListener
             val text = satz.text.toString().trim()
@@ -79,7 +80,7 @@ internal class TagAutomationen(
     fun zeige(t: AusloeserClient.Tag?) {
         val anderer = t?.tag != tag?.tag
         tag = t
-        karte.visibility = if (t == null) View.GONE else View.VISIBLE
+        karte.isVisible = t != null
         if (t == null) return
         if (anderer) {
             zeigeSuche(false)
@@ -124,14 +125,14 @@ internal class TagAutomationen(
     }
 
     private fun zeigeSuche(an: Boolean) {
-        suche.visibility = if (an) View.VISIBLE else View.GONE
-        treffer.visibility = suche.visibility
+        suche.isVisible = an
+        treffer.isVisible = an
         if (!an) treffer.removeAllViews()
     }
 
     private fun zeigeSatz(an: Boolean) {
-        satz.visibility = if (an) View.VISIBLE else View.GONE
-        weiter.visibility = satz.visibility
+        satz.isVisible = an
+        weiter.isVisible = an
     }
 
     /** While a change runs every button here waits; the line says what runs. */
@@ -151,7 +152,7 @@ internal class TagAutomationen(
 
     private fun suchen() {
         val t = tag ?: return
-        if (suche.visibility != View.VISIBLE) return // the field cleared by a new tag: nothing to look for
+        if (!suche.isVisible) return // the field cleared by a new tag: nothing to look for
         val k = kopplung() ?: return stand(Ausloeser.NICHT_GEKOPPELT)
         val q = suche.text.toString()
         treffer.removeAllViews()
