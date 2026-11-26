@@ -35,7 +35,8 @@ class Ladestation(private val service: Context) {
                 Intent.ACTION_POWER_DISCONNECTED -> false
                 else -> return
             }
-            melden(context.applicationContext, an, if (an) Ausloeser.ladeart(eingesteckt(context)) else Napi.Ladeart.UNBEKANNT)
+            val app = context.applicationContext
+            melden(app, an) { if (an) Ausloeser.ladeart(eingesteckt(app)) else Napi.Ladeart.UNBEKANNT }
         }
     }
 
@@ -67,13 +68,28 @@ class Ladestation(private val service: Context) {
         @Volatile
         var senden: (Context, () -> Unit) -> Unit = { _, lauf -> thread(name = "ladestation") { lauf() } }
 
-        /** How the phone is plugged in now: the sticky battery broadcast says it; POWER_CONNECTED does not. */
-        private fun eingesteckt(ctx: Context): Int =
-            ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) // a protected broadcast, read only
-                ?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
+        /** How long the plug's kind may take to show after POWER_CONNECTED; replaced in tests. */
+        @VisibleForTesting
+        @Volatile
+        var nachsehen: List<Long> = listOf(0L, 500L, 1000L, 1500L)
+
+        /**
+         * How the phone is plugged in: the sticky battery broadcast says it; POWER_CONNECTED does not, and right
+         * after it the sticky one may still say 0 (a wireless pad starts later than a cable). Read again for up to
+         * three seconds, on the sending thread, until it names a kind; still 0, it is sent as unknown.
+         */
+        private fun eingesteckt(ctx: Context): Int {
+            for (warte in nachsehen) {
+                if (warte > 0) Thread.sleep(warte)
+                val plugged = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) // a protected broadcast, read only
+                    ?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
+                if (plugged != 0) return plugged
+            }
+            return 0
+        }
 
         /** One request, its outcome kept as the screen's line. Unpaired: nothing goes, and the line says so. */
-        fun melden(app: Context, an: Boolean, ladeart: Napi.Ladeart) {
+        fun melden(app: Context, an: Boolean, ladeart: () -> Napi.Ladeart) {
             val base = ServerStore.baseUrl(app)
             val token = TokenStore.get(app)
             if (base == null || token.isNullOrBlank()) {
@@ -81,8 +97,9 @@ class Ladestation(private val service: Context) {
                 return
             }
             senden(app) {
-                val ausgang = AusloeserClient(base, token).laden(an, ladeart)
-                Ausloeser.merke(app, Ausloeser.ladenZeile(an, ladeart, ausgang), System.currentTimeMillis())
+                val art = ladeart() // read on the sending thread: it may wait for the plug's kind
+                val ausgang = AusloeserClient(base, token).laden(an, art)
+                Ausloeser.merke(app, Ausloeser.ladenZeile(an, art, ausgang), System.currentTimeMillis())
             }
         }
     }
