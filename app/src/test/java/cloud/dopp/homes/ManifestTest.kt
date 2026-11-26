@@ -279,9 +279,7 @@ class ManifestTest {
         assertFalse(manifest.contains("POWER_CONNECTED") || manifest.contains("POWER_DISCONNECTED"))
         val ladestation = "app/src/main/java/cloud/dopp/homes/ausloeser/Ladestation.kt"
         val hits = noneSay("ACTION_POWER_CONNECTED", "ACTION_POWER_DISCONNECTED", except = setOf(ladestation))
-        assertTrue("left in the sources:
-" + hits.joinToString("
-"), hits.isEmpty())
+        assertTrue("left in the sources:\n" + hits.joinToString("\n"), hits.isEmpty())
         val holders = sources.filter { (p, t) -> p != ladestation && t.contains("Ladestation(") }.keys
         assertEquals("who holds the receiver", setOf(serviceFile), holders)
         val service = sources.getValue(serviceFile)
