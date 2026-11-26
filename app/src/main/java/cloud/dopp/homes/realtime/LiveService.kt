@@ -29,6 +29,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import cloud.dopp.homes.R
+import cloud.dopp.homes.ausloeser.Ladestation
 import cloud.dopp.homes.kann.KannLeser
 import cloud.dopp.homes.data.Assistent
 import cloud.dopp.homes.data.Napi
@@ -138,6 +139,8 @@ object Live {
  *   needs no update.
  * - A card draws the device widgets of its entity, no read; a card of an
  *   energy sensor has the energy widget read again, coalesced.
+ * - With „Ladestation melden“ on it holds the charger's receiver ([Ladestation], homes ADR 0004): its one
+ *   request goes with the screen off too, pending the owner's yes (AGENTS.md).
  * - A 401 stops the service (the device was removed in Homes); any other loss
  *   reconnects with backoff, reset only after a healthy session.
  * - What happened goes to [Verbindung], and the notification says its answer:
@@ -160,6 +163,9 @@ class LiveService : Service() {
 
     /** When a `gemeinsam` frame syncs the Homes account (#209). */
     private val anstoss = Anstoss()
+
+    /** „Ladestation melden“ (homes ADR 0004): its receiver lives while this service does, and only with its switch on. */
+    private val ladestation = Ladestation(this)
     private var source: EventSource? = null
     private var attempt = 0
     private var connectedAtMs = 0L
@@ -221,6 +227,7 @@ class LiveService : Service() {
             stop()
             return START_NOT_STICKY
         }
+        ladestation.anpassen()
         if (interactive()) connect() else drop()
         show()
         return START_STICKY
@@ -229,6 +236,7 @@ class LiveService : Service() {
     override fun onDestroy() {
         main.removeCallbacksAndMessages(null)
         runCatching { unregisterReceiver(screen) }
+        ladestation.aus()
         runCatching { getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(netz) }
         runCatching { source?.cancel() }
         source = null

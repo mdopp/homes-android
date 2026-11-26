@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Auslöser (homes ADR 0004): the phone as a trigger for Home Assistant's automations,
+     NFC tags and the charger. Homes passes each report to HA; HA decides what follows.
+     A tag's one name lives in HA (§2); the id is never shown. -->
+<resources>
+    <string name="ausloeser_title">Auslöser</string>
+    <string name="ausloeser_intro">Ein NFC-Tag oder die Ladestation lösen in Home Assistant aus, was ihr dort festlegt – etwa: Telefon nach 23 Uhr auf den Ständer, Bürolicht aus.</string>
+
+    <string name="ausloeser_neu_titel">Neuen Tag beschreiben</string>
+    <string name="ausloeser_benennen_titel">Tag benennen</string>
+    <string name="ausloeser_umbenennen_titel">Tag umbenennen</string>
+    <string name="ausloeser_name_hinweis">Name, z. B. Bürotür</string>
+    <string name="ausloeser_schreiben">Tag beschreiben</string>
+    <string name="ausloeser_name_fehlt">Gib dem Tag zuerst einen Namen.</string>
+    <string name="ausloeser_kein_nfc">Dieses Telefon hat kein NFC.</string>
+    <string name="ausloeser_nfc_aus">NFC ist aus. Tippe hier und schalte es ein.</string>
+    <string name="ausloeser_legt_an">Legt an …</string>
+    <string name="ausloeser_legt_an_satz">Legt „%1$s“ in Home Assistant an …</string>
+    <string name="ausloeser_halte">Halte den Tag ans Telefon … („%1$s“)</string>
+    <string name="ausloeser_abbrechen">Abbrechen</string>
+    <string name="ausloeser_abgebrochen">Abgebrochen. Der Name steht schon in Home Assistant; „Noch einmal versuchen“ beschreibt einen Tag dafür.</string>
+    <string name="ausloeser_kein_tag">Kein Tag gekommen. Tippe noch einmal und halte ihn ans Telefon.</string>
+    <string name="ausloeser_nochmal">Noch einmal versuchen</string>
+    <string name="ausloeser_fertig">„%1$s“ ist fertig. Kleb ihn hin und sag in der Werkstatt, was er tun soll. Schreib den Namen auch auf den Aufkleber – der Tag selbst trägt ihn nicht.</string>
+    <string name="ausloeser_leer">Ein leerer Tag. Gib ihm oben einen Namen und tippe „Tag beschreiben“.</string>
+    <string name="ausloeser_schon_beschrieben">Dieser Tag ist schon beschrieben. Zum Melden schließe diese Seite und halte ihn noch einmal ans Telefon.</string>
+
+    <string name="ausloeser_sichern">Sichern</string>
+    <string name="ausloeser_sichert">Sichert …</string>
+    <string name="ausloeser_sichert_satz">Gibt dem Tag in Home Assistant den Namen „%1$s“ …</string>
+    <string name="ausloeser_benannt">Der Tag heißt jetzt „%1$s“. Automationen, die ihn nutzen, laufen weiter.</string>
+    <string name="ausloeser_entfernen">Entfernen</string>
+    <string name="ausloeser_entfernen_titel">„%1$s“ entfernen?</string>
+    <string name="ausloeser_entfernen_frage">Automationen, die „%1$s“ nutzen, laufen dann nicht mehr.</string>
+    <string name="ausloeser_entfernen_hinweis">Der Tag selbst lässt sich danach als neuer beschreiben.</string>
+    <string name="ausloeser_entfernt_laeuft">Entfernt …</string>
+    <string name="ausloeser_entfernt_satz">Entfernt „%1$s“ aus Home Assistant …</string>
+    <string name="ausloeser_entfernt">„%1$s“ ist entfernt.</string>
+
+    <string name="ausloeser_tags_titel">Eure Tags</string>
+    <string name="ausloeser_tags_laden">Lädt die Tags …</string>
+    <string name="ausloeser_tags_keine">Noch keine Tags.</string>
+    <string name="ausloeser_ohne_namen">ohne Namen</string>
+
+    <string name="ausloeser_laden_titel">Ladestation melden</string>
+    <string name="ausloeser_laden_was">Sagt Home Assistant, wenn das Telefon zu laden beginnt oder aufhört, und wie: kabellos, am Kabel, über USB – auch mit ausgeschaltetem Bildschirm. Welches Ladegerät, sagt Android nicht.</string>
+    <string name="ausloeser_laden_ohne_widget">Meldet nur, solange ein Homes-Widget auf dem Startbildschirm liegt.</string>
+    <string name="ausloeser_laden_zuletzt">Zuletzt: %1$s (%2$s)</string>
+
+    <!-- A touched tag: the one line, at once, before Homes answered; an unknown one is named on the Auslöser screen. -->
+    <string name="tag_label">Homes-Tag</string>
+    <string name="tag_meldet">Meldet …</string>
+    <string name="tag_benennen">Benennen</string>
+</resources>

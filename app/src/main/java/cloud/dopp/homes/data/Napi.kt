@@ -624,7 +624,47 @@ object Napi {
         const val DATEN_SICHERN = "daten-sichern"
         const val STANDORTVERLAUF = "standortverlauf"
         const val ARCHIV = "archiv"
+        const val AUSLOESER = "ausloeser" // the geraete module's Mehr row: NFC tags and the charger (homes ADR 0004)
     }
+
+    /**
+     * The `/napi/ausloeser` calls' envelope (homes ADR 0004 §1, §2): `{ok: true, …}`; a refusal `{ok: false,
+     * error}` with a German sentence (409 a name taken, 404 a tag HA lacks), a 404 `{ok: false, reason: not_found}`
+     * when the box has no Home Assistant.
+     */
+    object AusloeserJson {
+        const val OK = PhotoJson.OK
+        const val ERROR = MerkenJson.ERROR
+        const val REASON = ActionJson.REASON
+    }
+
+    /** `POST /napi/ausloeser`: `{ok, name}`, the tag's name in HA, `""` when HA does not know it. */
+    object GemeldetJson {
+        const val NAME = "name"
+    }
+
+    /** `POST /napi/ausloeser/tag`: `{ok, tag, uri}`, the new tag's id in HA and what the phone writes onto it. */
+    object NeuerTagJson {
+        const val TAG = "tag"
+        const val URI = "uri"
+    }
+
+    /** `GET /napi/ausloeser/tags`: `{ok, tags: [{tag, name}], vorschlaege}`, HA's tag registry and names to offer (§2). */
+    object TagsJson {
+        const val TAGS = "tags"
+        const val TAG = NeuerTagJson.TAG
+        const val NAME = GemeldetJson.NAME
+        const val VORSCHLAEGE = "vorschlaege"
+    }
+
+    /** A 404's `reason`: here, the box has no Home Assistant (module geraete off). */
+    const val REASON_NOT_FOUND = "not_found"
+
+    /** What a report is (`art`); of the charger whether it charges now (`zustand`) and how (`ladeart`). */
+    enum class Art(val wire: String) { NFC("nfc"), LADEN("laden") }
+    enum class Ladeart(val wire: String) { KABELLOS("kabellos"), KABEL("kabel"), USB("usb"), UNBEKANNT("") }
+    const val ZUSTAND_AN = "an"
+    const val ZUSTAND_AUS = "aus"
 
     // --- the calls -------------------------------------------------------------
 
@@ -841,4 +881,27 @@ object Napi {
     /** The person's modules and setup tasks (owner 2026-11-04); `/apps` ticks those whose app the phone has. */
     val EINRICHTUNG = Endpoint(Method.GET, "/napi/einrichtung", reply = listOf(KannJson, EinrichtungJson, EinrichtungModulJson))
     val EINRICHTUNG_APPS = Endpoint(Method.POST, "/napi/einrichtung/apps", body = listOf("pakete"), reply = EINRICHTUNG.reply)
+
+    // --- Auslöser (homes ADR 0004 §1): the phone reports, HA runs the automation ---
+
+    /** An NFC tag touched (`art`, `tag`) or the charger (`art`, `zustand`, `ladeart`); Homes fires HA's event. */
+    val AUSLOESER = Endpoint(
+        Method.POST, "/napi/ausloeser", body = listOf("art", "tag", "zustand", "ladeart"), reply = listOf(AusloeserJson, GemeldetJson),
+    )
+
+    /**
+     * A tag named in HA's registry (§2): without `tag` a new id, with it that id named or renamed (the tag
+     * itself is not written again); its id and the URI the phone writes onto a new one.
+     */
+    val AUSLOESER_TAG = Endpoint(
+        Method.POST, "/napi/ausloeser/tag", body = listOf("name", "tag"), reply = listOf(AusloeserJson, NeuerTagJson),
+    )
+
+    /** A tag removed from HA, name and id: automations that use it no longer run. */
+    val AUSLOESER_TAG_WEG = Endpoint(Method.DELETE, "/napi/ausloeser/tag/{tag}", reply = listOf(AusloeserJson))
+
+    /** HA's tags, each `{tag, name}`, and the names to offer, for the Auslöser screen. */
+    val AUSLOESER_TAGS = Endpoint(
+        Method.GET, "/napi/ausloeser/tags", reply = listOf(AusloeserJson, TagsJson),
+    )
 }

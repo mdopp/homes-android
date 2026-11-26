@@ -46,6 +46,11 @@ import java.io.File
  * the account's own entries, as the sync adapter, and send back what the
  * phone changed there (supportsUploading, owner 2026-11-05); each part behind its own switch and
  * permission (WRITE_CONTACTS; READ_ and WRITE_CALENDAR).
+ *
+ * Auslöser (homes ADR 0004, owner 2026-11-26): the NFC permission, NFC not
+ * required; one activity a touched tag opens (NDEF_DISCOVERED only, Homes' own
+ * form and HA's app's), and the charger heard by a receiver the live service
+ * registers while it runs — never in the manifest, no job, no alarm.
  */
 class ManifestTest {
 
@@ -98,6 +103,7 @@ class ManifestTest {
         // Das Homes-Konto (owner 2026-11-03, #206): into its own account only, each part behind its own switch
         "WRITE_CONTACTS", "READ_CALENDAR", "WRITE_CALENDAR", "READ_SYNC_SETTINGS", "WRITE_SYNC_SETTINGS",
         "READ_SYNC_STATS", // whether a sync runs, for the line under „Jetzt abgleichen“
+        "NFC", // Auslöser (homes ADR 0004): a touched tag reported, a new tag written; a normal permission
     )
 
     /**
@@ -242,6 +248,44 @@ class ManifestTest {
         assertTrue("the Homes account's raw contacts are written", t.contains("ACCOUNT_TYPE} != ?") && t.contains("HomesKonto.TYP") && t.contains("RAW_CONTACT_IS_READ_ONLY} = 0"))
         val callers = sources.filter { (p, s) -> p != "app/src/main/java/cloud/dopp/homes/sicherung/HandyKorrektur.kt" && s.contains("HandyKorrektur(") }.keys
         assertEquals("who builds the writer", setOf("app/src/main/java/cloud/dopp/homes/sicherung/SicherungWorker.kt"), callers)
+    }
+
+    /**
+     * A touched tag (homes ADR 0004): NDEF_DISCOVERED for Homes' `cloud.dopp.homes://tag/…` and HA's app's
+     * `https://www.home-assistant.io/tag/…`, never VIEW (no link reports a tag); it leaves nothing behind.
+     * NFC is optional: a phone without it installs the app.
+     */
+    @Test
+    fun aTouchedTagOpensOneActivityAndNfcIsOptional() {
+        val tag = manifest.substringAfter("""android:name=".ausloeser.TagActivity"""").substringBefore("</activity>")
+        assertEquals("two filters, NDEF only", 2, Regex("android.nfc.action.NDEF_DISCOVERED").findAll(tag).count())
+        assertFalse(tag, tag.contains("android.intent.action.VIEW"))
+        assertTrue(tag, tag.contains("""<data android:scheme="cloud.dopp.homes" android:host="tag" />"""))
+        assertTrue(tag, tag.contains("""android:host="www.home-assistant.io"""") && tag.contains("""android:pathPrefix="/tag/""""))
+        listOf("""android:excludeFromRecents="true"""", """android:noHistory="true"""", """android:taskAffinity=""""", "Translucent").forEach {
+            assertTrue("$it: $tag", tag.contains(it))
+        }
+        assertEquals("NDEF_DISCOVERED nowhere else", 2, Regex("android.nfc.action.NDEF_DISCOVERED").findAll(manifest).count())
+        assertTrue(manifest.contains("""<uses-feature android:name="android.hardware.nfc" android:required="false" />"""))
+    }
+
+    /**
+     * The charger (homes ADR 0004 open question 2, pending the owner's yes): heard only by the receiver
+     * [cloud.dopp.homes.ausloeser.Ladestation] registers, and only the live service holds one — no manifest
+     * receiver, no job, no alarm, no wakelock (those tests above still hold for the whole app).
+     */
+    @Test
+    fun theChargerIsHeardOnlyWhileTheLiveServiceRuns() {
+        assertFalse(manifest.contains("POWER_CONNECTED") || manifest.contains("POWER_DISCONNECTED"))
+        val ladestation = "app/src/main/java/cloud/dopp/homes/ausloeser/Ladestation.kt"
+        val hits = noneSay("ACTION_POWER_CONNECTED", "ACTION_POWER_DISCONNECTED", except = setOf(ladestation))
+        assertTrue("left in the sources:
+" + hits.joinToString("
+"), hits.isEmpty())
+        val holders = sources.filter { (p, t) -> p != ladestation && t.contains("Ladestation(") }.keys
+        assertEquals("who holds the receiver", setOf(serviceFile), holders)
+        val service = sources.getValue(serviceFile)
+        assertTrue(service.contains("ladestation.anpassen()") && service.contains("ladestation.aus()"))
     }
 
     /** One receiver restarts the live service after a boot and after an app update, both allowed starts. */
