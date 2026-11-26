@@ -726,7 +726,7 @@ one is named by its type. It is switched by the box's `teilen` key `musik`.
 
 (The owner's call, 2026-11-26: „Ich will die Home Assistant App nicht“, and
 „wir brauchen ein Konzept wie ich NFC Tags benennen kann“; homes ADR 0004
-§1 and §2. Homes' side is `internal/napi/ausloeser.go`.)
+§1, §2 and §4. Homes' side is `internal/napi/ausloeser.go`.)
 The phone reports what it noticed; Homes fires Home Assistant's event and
 says what it did; HA's automations decide. The app keeps no rule and
 filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
@@ -769,6 +769,24 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   its line, which opens the screen naming that id the same way. A name
   taken (409, case aside) or empty or over 60 characters (400) is said in
   Homes' sentence. Names live in HA (laib ADR 0017); the app stores none.
+- **What a tag does** (ADR 0004 §4, owner 2026-11-26 „Go. Passt alles“).
+  The list also brings each tag's `"aktion"` (`""` reports to HA,
+  `"scannen-ich"`, `"scannen-haushalt"`) and the box's `"aktionen":[{"id",
+  "titel"}]`, in order, HA's (`""`, „Home Assistant melden“) first, the scan
+  ones only where the box has a scanner. The name form asks „Was soll der
+  Tag tun?“ with one choice per entry — exactly what `aktionen` lists, the
+  tag's own preselected, `""` for a new one — and sends it as `"aktion"`
+  with „Sichern“ and „Tag beschreiben“ (`POST /napi/ausloeser/tag`; the
+  answer says the tag's `aktion`; 400 „Das kann ein Tag auf dieser Box
+  nicht tun.“ for one the box lacks). An older Homes that lists no
+  `aktionen` gets no choice and no `aktion`, so its tags keep theirs. A tag
+  whose action is not `""` shows that action's title under its name
+  („Scannen – für mich“). A touched scan tag is answered `{"ok":true,
+  "name","aktion","text":"Der Scanner startet – nur für dich."}` (or „– für
+  den Haushalt.“): the tag's line is that `text` instead of „… – gemeldet“,
+  without „Benennen“. Its refusals are sentences, shown as they come: 403
+  (a phone without its own login, for „für mich“), 503 (no scanner), 502
+  (the scanner silent).
 - **The charger.** „Ladestation melden“, off by default. While it is on and
   the live service of (c) runs, the service holds a receiver for
   `ACTION_POWER_CONNECTED`/`DISCONNECTED` (`ausloeser/Ladestation.kt`;

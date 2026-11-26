@@ -32,19 +32,32 @@ class AusloeserClient(
     private val http: OkHttpClient = HTTP,
 ) {
 
-    /** One of HA's tags: its id and its name there (`""` when it has none). */
-    data class Tag(val tag: String, val name: String)
+    /** One of HA's tags: its id, its name there (`""` when it has none), and what it does (`""`: report to HA, §4). */
+    data class Tag(val tag: String, val name: String, val aktion: String = "")
+
+    /** An action this box offers a tag (§4): its [id] (`""` is HA's) and its German [titel]. */
+    data class Aktion(val id: String, val titel: String)
 
     /** What a call came to. */
     sealed class Ausgang {
-        /** A report Homes passed on: the tag's name in HA, `""` when HA does not know it (and for the charger). */
-        data class Gemeldet(val name: String) : Ausgang()
+        /**
+         * A report Homes passed on: the tag's name in HA, `""` when HA does not know it (and for the charger); a tag
+         * with an action of Homes' own (§4) brings its [aktion] and [text], the sentence to show instead.
+         */
+        data class Gemeldet(val name: String, val aktion: String = "", val text: String? = null) : Ausgang()
 
-        /** A new tag in HA: its [tag] id and the [uri] to write onto it. */
-        data class Angelegt(val tag: String, val uri: String) : Ausgang()
+        /** A tag in HA: its [tag] id, the [uri] to write onto a new one, and what it does now. */
+        data class Angelegt(val tag: String, val uri: String, val aktion: String = "") : Ausgang()
 
-        /** HA's tags, in Homes' order, and the names to offer for a new one (the house's rooms, a few places). */
-        data class Tags(val tags: List<Tag>, val vorschlaege: List<String> = emptyList()) : Ausgang()
+        /**
+         * HA's tags, in Homes' order, the names to offer for a new one (the house's rooms, a few places), and the
+         * actions this box offers a tag, in Homes' order (§4).
+         */
+        data class Tags(
+            val tags: List<Tag>,
+            val vorschlaege: List<String> = emptyList(),
+            val aktionen: List<Aktion> = emptyList(),
+        ) : Ausgang()
 
         /** Removed from HA. */
         object Entfernt : Ausgang()
@@ -74,12 +87,16 @@ class AusloeserClient(
         return post(Napi.AUSLOESER, Napi.AUSLOESER.json(Napi.Art.LADEN.wire, null, zustand, ladeart.wire)) { gemeldet(it) }
     }
 
-    /** A new tag named [name] in HA; with [tag], that one named or renamed, not written again (§2). */
-    fun benennen(name: String, tag: String? = null): Ausgang = post(Napi.AUSLOESER_TAG, Napi.AUSLOESER_TAG.json(name, tag)) { o ->
-        val id = HomesHttp.text(o, NeuerTagJson.TAG)
-        val uri = HomesHttp.text(o, NeuerTagJson.URI)
-        if (id == null || uri == null) null else Ausgang.Angelegt(id, uri)
-    }
+    /**
+     * A new tag named [name] in HA; with [tag], that one named or renamed, not written again (§2). [aktion]: what it
+     * does (§4), `""` back to HA; null leaves it as it is.
+     */
+    fun benennen(name: String, tag: String? = null, aktion: String? = null): Ausgang =
+        post(Napi.AUSLOESER_TAG, Napi.AUSLOESER_TAG.json(name, tag, aktion)) { o ->
+            val id = HomesHttp.text(o, NeuerTagJson.TAG)
+            val uri = HomesHttp.text(o, NeuerTagJson.URI)
+            if (id == null || uri == null) null else Ausgang.Angelegt(id, uri, HomesHttp.text(o, NeuerTagJson.AKTION).orEmpty())
+        }
 
     /** HA's tags. */
     fun tags(): Ausgang = rufe(Napi.AUSLOESER_TAGS.request(base, token)) { o -> tagsAus(o) }
@@ -121,19 +138,35 @@ class AusloeserClient(
             }
         }
 
-        /** A report's `{ok, name}`: the name, `""` when HA does not know the tag or none came. */
-        fun gemeldet(o: JSONObject): Ausgang = Ausgang.Gemeldet(HomesHttp.text(o, GemeldetJson.NAME).orEmpty())
+        /** A report's `{ok, name, aktion?, text?}`: the name, `""` when HA does not know the tag or none came. */
+        fun gemeldet(o: JSONObject): Ausgang = Ausgang.Gemeldet(
+            HomesHttp.text(o, GemeldetJson.NAME).orEmpty(),
+            HomesHttp.text(o, GemeldetJson.AKTION).orEmpty(),
+            HomesHttp.text(o, GemeldetJson.TEXT),
+        )
 
-        /** `{ok, tags: [{tag, name}], vorschlaege}`; an entry without its id is left out. */
+        /** `{ok, tags: [{tag, name, aktion}], vorschlaege, aktionen}`; an entry without its id is left out. */
         fun tagsAus(o: JSONObject): Ausgang? {
             val a = o.optJSONArray(TagsJson.TAGS) ?: return null
             val tags = (0 until a.length()).mapNotNull { i ->
                 val t = a.optJSONObject(i)
-                HomesHttp.text(t, TagsJson.TAG)?.let { Tag(it, HomesHttp.text(t, TagsJson.NAME).orEmpty()) }
+                HomesHttp.text(t, TagsJson.TAG)?.let {
+                    Tag(it, HomesHttp.text(t, TagsJson.NAME).orEmpty(), HomesHttp.text(t, TagsJson.AKTION).orEmpty())
+                }
             }
             val v = o.optJSONArray(TagsJson.VORSCHLAEGE)
             val vorschlaege = (0 until (v?.length() ?: 0)).mapNotNull { v?.optString(it)?.trim()?.ifBlank { null } }.distinct()
-            return Ausgang.Tags(tags, vorschlaege)
+            return Ausgang.Tags(tags, vorschlaege, aktionenAus(o))
+        }
+
+        /** `aktionen: [{id, titel}]`, as Homes lists them; HA's id is `""`, an entry without a title is left out. */
+        private fun aktionenAus(o: JSONObject): List<Aktion> {
+            val a = o.optJSONArray(TagsJson.AKTIONEN) ?: return emptyList()
+            return (0 until a.length()).mapNotNull { i ->
+                val e = a.optJSONObject(i) ?: return@mapNotNull null
+                val titel = HomesHttp.text(e, TagsJson.TITEL) ?: return@mapNotNull null
+                Aktion(HomesHttp.text(e, TagsJson.ID).orEmpty(), titel)
+            }.distinctBy { it.id }
         }
     }
 }

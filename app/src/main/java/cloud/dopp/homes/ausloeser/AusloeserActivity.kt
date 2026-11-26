@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
@@ -29,13 +31,15 @@ import cloud.dopp.homes.widget.ActionTone
 import kotlin.concurrent.thread
 
 /**
- * Mehr → Auslöser (homes ADR 0004 §1, §2), shown while the box offers it
+ * Mehr → Auslöser (homes ADR 0004 §1, §2, §4), shown while the box offers it
  * (`mehr` `ausloeser`, the geraete module): HA's tags; „Neuen Tag beschreiben“
  * — a name (the house's rooms as suggestions), the tag made in HA, „Halte den
  * Tag ans Telefon …“, Homes' URI written onto it, done or why not; a tag
  * tapped in the list is renamed („Sichern“) or removed after one question,
  * and a touched unknown tag's „Benennen“ ([EXTRA_TAG]) names that id — never
- * written again, so its automations keep working. While the screen is in
+ * written again, so its automations keep working. „Was soll der Tag tun?“
+ * offers exactly the actions the box lists (§4: HA's report first, the
+ * scanner's where the box has one), sent with „Sichern“ and „Tag beschreiben“. While the screen is in
  * front, a blank tag held to the phone is offered for a new one. And the
  * switch „Ladestation melden“, off until the person turns it on. Every press
  * answers on its button at once and ends in the line below it; a tag that
@@ -56,6 +60,12 @@ class AusloeserActivity : AppCompatActivity() {
     private var bearbeitet: AusloeserClient.Tag? = null
     private var ausListe = false
     private var setzt = false
+
+    /** The actions the box offers a tag, as the list said them last (§4); empty: an older Homes, none sent. */
+    private var aktionen: List<AusloeserClient.Aktion> = emptyList()
+
+    /** The chosen action: the tag's own while it is changed, HA's (`""`) for a new one. */
+    private var gewaehlt = ""
 
     private val zuSpaet = Runnable {
         warteAus()
@@ -121,8 +131,10 @@ class AusloeserActivity : AppCompatActivity() {
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 if (a is Ausgang.Tags) {
+                    aktionen = a.aktionen
                     zeigeTags(liste, if (a.tags.isEmpty()) getString(R.string.ausloeser_tags_keine) else null, a.tags)
                     zeigeVorschlaege(a.vorschlaege)
+                    zeigeAktionen()
                 } else {
                     zeigeTags(liste, Ausloeser.fehler(a) ?: AusloeserClient.UNLESBAR, emptyList())
                 }
@@ -147,7 +159,10 @@ class AusloeserActivity : AppCompatActivity() {
         satz?.let { liste.addView(text(it)) }
         tags.forEach { t ->
             val name = t.name.ifEmpty { getString(R.string.ausloeser_ohne_namen) }
-            liste.addView(text(name) { bearbeite(t, true) }) // the id is never shown (§2)
+            // what it does, under the name, when it is not HA's report (§4); the id is never shown (§2)
+            val tut = aktionen.firstOrNull { it.id == t.aktion && t.aktion.isNotEmpty() }?.titel
+            val zeile = if (tut == null) name else getString(R.string.ausloeser_tag_mit_aktion, name, tut)
+            liste.addView(text(zeile) { bearbeite(t, true) })
         }
     }
 
@@ -173,6 +188,35 @@ class AusloeserActivity : AppCompatActivity() {
         }
     }
 
+    /** One choice per action the box lists, [gewaehlt] checked; nothing while it lists none. */
+    private fun zeigeAktionen() {
+        val gruppe = findViewById<RadioGroup>(R.id.ausloeser_aktion)
+        setzt = true
+        gruppe.setOnCheckedChangeListener(null)
+        gruppe.removeAllViews()
+        if (aktionen.isNotEmpty() && aktionen.none { it.id == gewaehlt }) gewaehlt = aktionen.first().id
+        aktionen.forEach { a ->
+            val knopf = RadioButton(this).apply {
+                id = View.generateViewId()
+                setTextAppearance(R.style.Text_Homes_Body)
+                text = a.titel
+                tag = a.id
+            }
+            gruppe.addView(knopf)
+            if (a.id == gewaehlt) gruppe.check(knopf.id)
+        }
+        gruppe.setOnCheckedChangeListener { g, id ->
+            if (!setzt) gewaehlt = g.findViewById<RadioButton>(id)?.tag as? String ?: gewaehlt
+        }
+        setzt = false
+        val sichtbar = if (aktionen.isEmpty()) View.GONE else View.VISIBLE
+        gruppe.visibility = sichtbar
+        findViewById<View>(R.id.ausloeser_aktion_frage).visibility = sichtbar
+    }
+
+    /** The action to send: the chosen one, or none at all to an older Homes that lists none (it keeps the tag's). */
+    private fun aktion(): String? = gewaehlt.takeIf { aktionen.isNotEmpty() }
+
     /** Name or rename [tag] instead of writing a new one; null: back to „Neuen Tag beschreiben“. */
     private fun bearbeite(tag: AusloeserClient.Tag?, ausListe: Boolean) {
         if (wartet) warteAus()
@@ -188,6 +232,8 @@ class AusloeserActivity : AppCompatActivity() {
         findViewById<EditText>(R.id.ausloeser_name).setText(tag?.name.orEmpty())
         findViewById<View>(R.id.ausloeser_aendern).visibility = if (tag == null) View.GONE else View.VISIBLE
         findViewById<View>(R.id.ausloeser_entfernen).visibility = if (ausListe) View.VISIBLE else View.GONE
+        gewaehlt = tag?.aktion.orEmpty()
+        zeigeAktionen()
         knopfRuht()
     }
 
@@ -244,7 +290,7 @@ class AusloeserActivity : AppCompatActivity() {
     private fun anlegen(kopplung: Pair<String, String>, name: String) {
         laeuft(R.string.ausloeser_legt_an, getString(R.string.ausloeser_legt_an_satz, name))
         thread(name = "tag-anlegen") {
-            val a = client(kopplung).benennen(name)
+            val a = client(kopplung).benennen(name, aktion = aktion())
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 if (a is Ausgang.Angelegt) {
@@ -263,7 +309,7 @@ class AusloeserActivity : AppCompatActivity() {
     private fun sichern(kopplung: Pair<String, String>, tag: AusloeserClient.Tag, name: String) {
         laeuft(R.string.ausloeser_sichert, getString(R.string.ausloeser_sichert_satz, name))
         thread(name = "tag-benennen") {
-            val a = client(kopplung).benennen(name, tag.tag)
+            val a = client(kopplung).benennen(name, tag.tag, aktion())
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 if (a is Ausgang.Angelegt) {
@@ -346,6 +392,8 @@ class AusloeserActivity : AppCompatActivity() {
         warteAus() // the button says what is next: a new tag, or the same one again
         if (e is TagSchreiber.Ergebnis.Fehler) return stand(e.satz)
         findViewById<EditText>(R.id.ausloeser_name).text.clear()
+        gewaehlt = "" // the next new tag starts as HA's
+        zeigeAktionen()
         stand(getString(R.string.ausloeser_fertig, tag.first))
     }
 

@@ -73,7 +73,7 @@ class TagActivity : Activity() {
                     val a = AusloeserClient(base, token).nfc(tag)
                     runOnUiThread {
                         if (isFinishing) return@runOnUiThread
-                        val unbekannt = a is AusloeserClient.Ausgang.Gemeldet && a.name.isEmpty()
+                        val unbekannt = a is AusloeserClient.Ausgang.Gemeldet && a.name.isEmpty() && a.text == null
                         if (unbekannt) {
                             findViewById<Button>(R.id.tag_benennen).apply {
                                 visibility = View.VISIBLE

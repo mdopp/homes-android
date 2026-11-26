@@ -74,6 +74,23 @@
                     android:orientation="horizontal" />
             </HorizontalScrollView>
 
+            <!-- „Was soll der Tag tun?“ (homes ADR 0004 §4): one choice per action the box lists. -->
+            <TextView
+                android:id="@+id/ausloeser_aktion_frage"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/ausloeser_aktion_frage"
+                android:visibility="gone" />
+
+            <RadioGroup
+                android:id="@+id/ausloeser_aktion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone" />
+
             <Button
                 android:id="@+id/ausloeser_schreiben"
                 android:layout_width="match_parent"
