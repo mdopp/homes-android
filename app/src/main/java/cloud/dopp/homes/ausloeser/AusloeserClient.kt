@@ -2,7 +2,10 @@ package cloud.dopp.homes.ausloeser
 
 import cloud.dopp.homes.data.HomesHttp
 import cloud.dopp.homes.data.Napi
+import cloud.dopp.homes.data.Napi.AenderungJson
 import cloud.dopp.homes.data.Napi.AusloeserJson
+import cloud.dopp.homes.data.Napi.AutomationenJson
+import cloud.dopp.homes.data.Napi.FreigabeJson
 import cloud.dopp.homes.data.Napi.GemeldetJson
 import cloud.dopp.homes.data.Napi.NeuerTagJson
 import cloud.dopp.homes.data.Napi.TagsJson
@@ -32,8 +35,17 @@ class AusloeserClient(
     private val http: OkHttpClient = HTTP,
 ) {
 
-    /** One of HA's tags: its id, its name there (`""` when it has none), and what it does (`""`: report to HA, §4). */
-    data class Tag(val tag: String, val name: String, val aktion: String = "")
+    /**
+     * One of HA's tags: its id, its name there (`""` when it has none), what it does (`""`: report to HA, §4), and
+     * the automations that trigger on it (§8).
+     */
+    data class Tag(val tag: String, val name: String, val aktion: String = "", val automationen: List<Automation> = emptyList())
+
+    /** One of HA's automations: its config id, its name, and whether it is on (unknown under a tag: on). */
+    data class Automation(val id: String, val name: String, val an: Boolean = true)
+
+    /** A change to a tag's automations (§8), [Art] its last path segment. */
+    enum class Art(val endpoint: Napi.Endpoint) { VERBINDEN(Napi.TAG_VERBINDEN), LOESEN(Napi.TAG_LOESEN), NEU(Napi.TAG_NEU) }
 
     /** An action this box offers a tag (§4): its [id] (`""` is HA's) and its German [titel]. */
     data class Aktion(val id: String, val titel: String)
@@ -44,7 +56,7 @@ class AusloeserClient(
          * A report Homes passed on: the tag's name in HA, `""` when HA does not know it (and for the charger); a tag
          * with an action of Homes' own (§4) brings its [aktion] and [text], the sentence to show instead.
          */
-        data class Gemeldet(val name: String, val aktion: String = "", val text: String? = null) : Ausgang()
+        data class Gemeldet(val name: String, val aktion: String = "", val text: String? = null, val oeffnen: String? = null) : Ausgang()
 
         /** A tag in HA: its [tag] id, the [uri] to write onto a new one, and what it does now. */
         data class Angelegt(val tag: String, val uri: String, val aktion: String = "") : Ausgang()
@@ -61,6 +73,25 @@ class AusloeserClient(
 
         /** Removed from HA. */
         object Entfernt : Ausgang()
+
+        /** HA's automations to link a tag to, by name. */
+        data class Automationen(val automationen: List<Automation>) : Ausgang()
+
+        /**
+         * A change to a tag's automations (§8): [satz] what it would do or did; [bestaetigen] asks for the yes (and
+         * [freigabeNoetig]: the admins decide); [wartet] with the wish's id [freigabe]; [bote] the Bote's reply.
+         */
+        data class Aenderung(
+            val satz: String,
+            val bestaetigen: Boolean = false,
+            val freigabeNoetig: Boolean = false,
+            val wartet: Boolean = false,
+            val freigabe: String? = null,
+            val bote: String? = null,
+        ) : Ausgang()
+
+        /** Where a wish stands: [wartet] still, else [satz] says what came of it; [wunsch] what was asked. */
+        data class Freigabe(val wartet: Boolean, val satz: String, val wunsch: String = "") : Ausgang()
 
         /** Homes refused, in its sentence, or the app's when it sent none. */
         data class Abgelehnt(val code: Int, val satz: String) : Ausgang()
@@ -101,6 +132,40 @@ class AusloeserClient(
     /** HA's tags. */
     fun tags(): Ausgang = rufe(Napi.AUSLOESER_TAGS.request(base, token)) { o -> tagsAus(o) }
 
+    /** HA's automations whose name holds [q] (case aside), to link a tag to (§8). */
+    fun automationen(q: String): Ausgang =
+        rufe(Napi.AUTOMATIONEN.request(base, token, target = Napi.AUTOMATIONEN.target(q.trim().ifEmpty { null }))) { o ->
+            val a = o.optJSONArray(AutomationenJson.AUTOMATIONEN) ?: return@rufe null
+            Ausgang.Automationen(automationenAus(a, AutomationenJson.AN))
+        }
+
+    /**
+     * [art] for [tag]: [automation] for verbinden and lösen, [satz] for a new one. Without [bestaetigt] Homes only
+     * says what it would do; with it an admin's is written, anyone else's waits for an admin.
+     */
+    fun aendern(art: Art, tag: String, automation: String?, satz: String?, bestaetigt: Boolean): Ausgang {
+        val e = art.endpoint.with(tag)
+        val ja = if (bestaetigt) true else null
+        val body = if (art == Art.NEU) art.endpoint.json(satz, ja) else art.endpoint.json(automation, ja)
+        return rufe(e.request(base, token, body = body.asBody())) { o ->
+            val text = HomesHttp.text(o, AenderungJson.SATZ) ?: return@rufe null
+            Ausgang.Aenderung(
+                satz = text,
+                bestaetigen = o.optBoolean(AenderungJson.BESTAETIGEN, false),
+                freigabeNoetig = o.optBoolean(AenderungJson.FREIGABE_NOETIG, false),
+                wartet = o.optBoolean(AenderungJson.WARTET, false),
+                freigabe = HomesHttp.text(o, AenderungJson.FREIGABE),
+                bote = HomesHttp.text(o, AenderungJson.BOTE),
+            )
+        }
+    }
+
+    /** Where the wish [id] stands. */
+    fun freigabe(id: String): Ausgang = rufe(Napi.TAG_FREIGABE.with(id).request(base, token)) { o ->
+        val satz = HomesHttp.text(o, FreigabeJson.SATZ) ?: return@rufe null
+        Ausgang.Freigabe(HomesHttp.text(o, FreigabeJson.STAND) == Napi.STAND_WARTET, satz, HomesHttp.text(o, FreigabeJson.WUNSCH).orEmpty())
+    }
+
     /** [tag] out of HA, name and id. */
     fun entfernen(tag: String): Ausgang = rufe(Napi.AUSLOESER_TAG_WEG.with(tag).request(base, token)) { Ausgang.Entfernt }
 
@@ -119,6 +184,9 @@ class AusloeserClient(
     companion object {
         /** Homes asks HA, which answers in a moment; a touched tag should not wait long. */
         private val HTTP: OkHttpClient by lazy { HomesHttp.client(connect = 8, read = 12, write = 8) }
+
+        /** A change to a tag's automations (§8): HA writes and reloads one, the Bote drafts one; Homes says 504 when too late. */
+        val LANGSAM: OkHttpClient by lazy { HomesHttp.client(connect = 8, read = 65, write = 8) }
 
         /** Said when Homes answered without a sentence of its own. */
         const val UNLESBAR = "Homes hat nicht lesbar geantwortet."
@@ -143,7 +211,17 @@ class AusloeserClient(
             HomesHttp.text(o, GemeldetJson.NAME).orEmpty(),
             HomesHttp.text(o, GemeldetJson.AKTION).orEmpty(),
             HomesHttp.text(o, GemeldetJson.TEXT),
+            HomesHttp.text(o, GemeldetJson.OEFFNEN),
         )
+
+        /** `[{id, name, an?}]`; an entry without its id or name is left out. */
+        private fun automationenAus(a: org.json.JSONArray?, an: String?): List<Automation> =
+            (0 until (a?.length() ?: 0)).mapNotNull { i ->
+                val e = a?.optJSONObject(i) ?: return@mapNotNull null
+                val id = HomesHttp.text(e, AutomationenJson.ID) ?: return@mapNotNull null
+                val name = HomesHttp.text(e, AutomationenJson.NAME) ?: return@mapNotNull null
+                Automation(id, name, an == null || e.optBoolean(an, true))
+            }
 
         /** `{ok, tags: [{tag, name, aktion}], vorschlaege, aktionen}`; an entry without its id is left out. */
         fun tagsAus(o: JSONObject): Ausgang? {
@@ -151,7 +229,10 @@ class AusloeserClient(
             val tags = (0 until a.length()).mapNotNull { i ->
                 val t = a.optJSONObject(i)
                 HomesHttp.text(t, TagsJson.TAG)?.let {
-                    Tag(it, HomesHttp.text(t, TagsJson.NAME).orEmpty(), HomesHttp.text(t, TagsJson.AKTION).orEmpty())
+                    Tag(
+                        it, HomesHttp.text(t, TagsJson.NAME).orEmpty(), HomesHttp.text(t, TagsJson.AKTION).orEmpty(),
+                        automationenAus(t?.optJSONArray(TagsJson.AUTOMATIONEN), null),
+                    )
                 }
             }
             val v = o.optJSONArray(TagsJson.VORSCHLAEGE)

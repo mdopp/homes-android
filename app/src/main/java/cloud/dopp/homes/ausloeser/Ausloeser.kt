@@ -5,6 +5,7 @@ import android.os.BatteryManager
 import androidx.core.content.edit
 import cloud.dopp.homes.HomesConfig
 import cloud.dopp.homes.data.Napi
+import org.json.JSONObject
 import java.net.URI
 
 /**
@@ -27,17 +28,21 @@ object Ausloeser {
     private val ID = Regex("""[A-Za-z0-9_.:-]{1,128}""")
 
     /**
-     * The tag's id in [text], an NDEF URI record: Homes' own form or HA's
-     * app's. Anything else, or an id HA could not have made, is null.
+     * The tag's id in [text], an NDEF URI record or a link: the box's own address
+     * `https://<homes>/tag/<id>` (§5, an App Link; [homes] the paired server's
+     * host, no other box's), Homes' older scheme form, or HA's app's. Anything
+     * else, or an id HA could not have made, is null.
      */
-    fun tagAus(text: String?): String? {
+    fun tagAus(text: String?, homes: String? = null): String? {
         val u = runCatching { URI(text?.trim().orEmpty()) }.getOrNull() ?: return null
         val scheme = u.scheme?.lowercase()
         val host = u.host?.lowercase()
         val pfad = u.rawPath.orEmpty()
+        val https = scheme == "https" && pfad.startsWith(HA_PFAD)
         val id = when {
             scheme == HomesConfig.SCHEME && host == TAG_HOST -> pfad.removePrefix("/")
-            scheme == "https" && host == HA_HOST && pfad.startsWith(HA_PFAD) -> pfad.removePrefix(HA_PFAD)
+            https && host == HA_HOST -> pfad.removePrefix(HA_PFAD)
+            https && host != null && host == homes?.lowercase() -> pfad.removePrefix(HA_PFAD)
             else -> return null
         }.removeSuffix("/")
         return id.takeIf { ID.matches(it) }
@@ -73,6 +78,29 @@ object Ausloeser {
     }
 
     fun merke(ctx: Context, satz: String, um: Long) = prefs(ctx).edit { putString(ZULETZT, satz).putLong(ZULETZT_UM, um) }
+
+    // --- wishes that wait for an admin (§8) ------------------------------------------
+
+    private const val WARTEN = "freigaben"
+
+    /** The wishes this phone filed that still wait, by their id, each with its tag; asked while the screen is open. */
+    fun wartende(ctx: Context): Map<String, String> {
+        val o = runCatching { JSONObject(prefs(ctx).getString(WARTEN, null) ?: return emptyMap()) }.getOrNull() ?: return emptyMap()
+        return o.keys().asSequence().associateWith { o.optString(it) }
+    }
+
+    fun wartet(ctx: Context, id: String, tag: String) = setzeWartende(ctx, wartende(ctx) + (id to tag))
+
+    fun erledigt(ctx: Context, id: String) = setzeWartende(ctx, wartende(ctx) - id)
+
+    private fun setzeWartende(ctx: Context, m: Map<String, String>) = prefs(ctx).edit { putString(WARTEN, JSONObject(m).toString()) }
+
+    /** [url] when it is an https address on the paired Homes ([base]): what the app opens for a tag (§8), nothing else. */
+    fun aufHomes(url: String?, base: String?): String? {
+        val u = runCatching { URI(url?.trim().orEmpty()) }.getOrNull() ?: return null
+        val homes = runCatching { URI(base.orEmpty()).host }.getOrNull()?.lowercase() ?: return null
+        return url?.trim()?.takeIf { u.scheme?.lowercase() == "https" && u.host?.lowercase() == homes }
+    }
 
     // --- the sentences ------------------------------------------------------------
 

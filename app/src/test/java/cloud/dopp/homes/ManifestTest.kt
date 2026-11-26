@@ -251,21 +251,34 @@ class ManifestTest {
     }
 
     /**
-     * A touched tag (homes ADR 0004): NDEF_DISCOVERED for Homes' `cloud.dopp.homes://tag/…` and HA's app's
-     * `https://www.home-assistant.io/tag/…`, never VIEW (no link reports a tag); it leaves nothing behind.
-     * NFC is optional: a phone without it installs the app.
+     * A touched tag (homes ADR 0004): NDEF_DISCOVERED for Homes' `cloud.dopp.homes://tag/…`, HA's app's
+     * `https://www.home-assistant.io/tag/…` and, since §5, the box's own address `https://<homes>/tag/homes-…`;
+     * it leaves nothing behind. NFC is optional: a phone without it installs the app.
+     *
+     * One VIEW, and only that one (§5, owner 2026-11-26): the box's own address as an App Link, verified
+     * (`autoVerify`) against Homes' `/.well-known/assetlinks.json`, its host the build's `homesHost`
+     * placeholder (app/build.gradle) — never `home-assistant.io`, never the app's scheme, never a path but
+     * `/tag/homes-…` (Homes' `/tag/freigabe/…` stays the browser's). A link reports nothing by itself: the
+     * activity asks for „Auslösen“ first (TagStandardTest's link tests).
      */
     @Test
     fun aTouchedTagOpensOneActivityAndNfcIsOptional() {
         val tag = manifest.substringAfter("""android:name=".ausloeser.TagActivity"""").substringBefore("</activity>")
-        assertEquals("two filters, NDEF only", 2, Regex("android.nfc.action.NDEF_DISCOVERED").findAll(tag).count())
-        assertFalse(tag, tag.contains("android.intent.action.VIEW"))
+        assertEquals("three NDEF filters", 3, Regex("android.nfc.action.NDEF_DISCOVERED").findAll(tag).count())
+        assertEquals("one VIEW, the App Link", 1, Regex("android.intent.action.VIEW").findAll(tag).count())
+        val link = tag.substringAfter("<intent-filter android:autoVerify=\"true\">").substringBefore("</intent-filter>")
+        assertTrue("the VIEW filter is the verified one: $tag", link.contains("android.intent.action.VIEW"))
+        assertTrue(link, link.contains("android.intent.category.BROWSABLE") && link.contains("""android:scheme="https""""))
+        assertTrue(link, link.contains("""android:host="${'$'}{homesHost}"""") && link.contains("""android:pathPattern="/tag/homes-.*""""))
+        assertFalse(link, link.contains("home-assistant.io") || link.contains("cloud.dopp.homes"))
+        assertTrue(gradle, gradle.contains("manifestPlaceholders = [homesHost:"))
         assertTrue(tag, tag.contains("""<data android:scheme="cloud.dopp.homes" android:host="tag" />"""))
         assertTrue(tag, tag.contains("""android:host="www.home-assistant.io"""") && tag.contains("""android:pathPrefix="/tag/""""))
         listOf("""android:excludeFromRecents="true"""", """android:noHistory="true"""", """android:taskAffinity=""""", "Translucent").forEach {
             assertTrue("$it: $tag", tag.contains(it))
         }
-        assertEquals("NDEF_DISCOVERED nowhere else", 2, Regex("android.nfc.action.NDEF_DISCOVERED").findAll(manifest).count())
+        assertEquals("NDEF_DISCOVERED nowhere else", 3, Regex("android.nfc.action.NDEF_DISCOVERED").findAll(manifest).count())
+        assertEquals("autoVerify nowhere else", 1, Regex("android:autoVerify").findAll(manifest).count())
         assertTrue(manifest.contains("""<uses-feature android:name="android.hardware.nfc" android:required="false" />"""))
     }
 

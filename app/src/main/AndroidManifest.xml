@@ -282,11 +282,15 @@
             android:label="@string/zurueck_title"
             android:theme="@style/Theme.Homes" />
 
-        <!-- Auslöser (homes ADR 0004): a touched tag Homes wrote (cloud.dopp.homes://tag/<id>)
-             or HA's app wrote (https://www.home-assistant.io/tag/<id>, so the tags already in the
-             house keep working). It reports the tag once, says what came of it in one line and
-             closes: translucent, its own empty task, not in the recents. NDEF_DISCOVERED only,
-             never VIEW: no web page or link can report a tag. -->
+        <!-- Auslöser (homes ADR 0004): a touched tag. Since §5 Homes writes the box's own address,
+             https://${homesHost}/tag/homes-<id> (an App Link: autoVerify against Homes'
+             /.well-known/assetlinks.json); tags written before (cloud.dopp.homes://tag/<id>) and by
+             HA's app (https://www.home-assistant.io/tag/<id>) keep working. It reports the tag once,
+             says what came of it in one line and closes: translucent, its own empty task, not in the
+             recents. Touched it is NDEF_DISCOVERED; the box's address opened as a link (VIEW) acts
+             only on „Auslösen“, never by itself. The path is /tag/homes-…, so Homes' other pages
+             under /tag/ (a wish's decision, /tag/freigabe/<id>) stay the browser's.
+             ${homesHost} is the box's public host, a manifestPlaceholder (app/build.gradle). -->
         <activity
             android:name=".ausloeser.TagActivity"
             android:exported="true"
@@ -308,6 +312,23 @@
                     android:scheme="https"
                     android:host="www.home-assistant.io"
                     android:pathPrefix="/tag/" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="https"
+                    android:host="${homesHost}"
+                    android:pathPattern="/tag/homes-.*" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="${homesHost}"
+                    android:pathPattern="/tag/homes-.*" />
             </intent-filter>
         </activity>
 
