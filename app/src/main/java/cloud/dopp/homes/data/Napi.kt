@@ -638,23 +638,36 @@ object Napi {
         const val REASON = ActionJson.REASON
     }
 
-    /** `POST /napi/ausloeser`: `{ok, name}`, the tag's name in HA, `""` when HA does not know it. */
+    /**
+     * `POST /napi/ausloeser`: `{ok, name}`, the tag's name in HA, `""` when HA does not know it; a tag with an
+     * action of Homes' own (§4) adds its [AKTION] and [TEXT], the sentence the phone shows („Der Scanner startet …“).
+     */
     object GemeldetJson {
         const val NAME = "name"
+        const val AKTION = "aktion"
+        const val TEXT = "text"
     }
 
-    /** `POST /napi/ausloeser/tag`: `{ok, tag, uri}`, the new tag's id in HA and what the phone writes onto it. */
+    /** `POST /napi/ausloeser/tag`: `{ok, tag, uri, aktion}`, the tag's id in HA, what the phone writes onto it, what it does. */
     object NeuerTagJson {
         const val TAG = "tag"
         const val URI = "uri"
+        const val AKTION = GemeldetJson.AKTION
     }
 
-    /** `GET /napi/ausloeser/tags`: `{ok, tags: [{tag, name}], vorschlaege}`, HA's tag registry and names to offer (§2). */
+    /**
+     * `GET /napi/ausloeser/tags`: `{ok, tags: [{tag, name, aktion}], vorschlaege, aktionen: [{id, titel}]}`, HA's tag
+     * registry, names to offer (§2), and the actions this box offers a tag, in order, HA's (`""`) first (§4).
+     */
     object TagsJson {
         const val TAGS = "tags"
         const val TAG = NeuerTagJson.TAG
         const val NAME = GemeldetJson.NAME
+        const val AKTION = GemeldetJson.AKTION
         const val VORSCHLAEGE = "vorschlaege"
+        const val AKTIONEN = "aktionen"
+        const val ID = "id"
+        const val TITEL = "titel"
     }
 
     /** A 404's `reason`: here, the box has no Home Assistant (module geraete off). */
@@ -894,7 +907,7 @@ object Napi {
      * itself is not written again); its id and the URI the phone writes onto a new one.
      */
     val AUSLOESER_TAG = Endpoint(
-        Method.POST, "/napi/ausloeser/tag", body = listOf("name", "tag"), reply = listOf(AusloeserJson, NeuerTagJson),
+        Method.POST, "/napi/ausloeser/tag", body = listOf("name", "tag", "aktion"), reply = listOf(AusloeserJson, NeuerTagJson),
     )
 
     /** A tag removed from HA, name and id: automations that use it no longer run. */

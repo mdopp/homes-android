@@ -95,7 +95,8 @@ object Ausloeser {
 
     /** The one line a touched tag ends with: „Bürotür – gemeldet“, the unknown tag's, or why not. */
     fun tagZeile(a: AusloeserClient.Ausgang): String = when (a) {
-        is AusloeserClient.Ausgang.Gemeldet -> if (a.name.isEmpty()) UNBEKANNT else "${a.name} – gemeldet"
+        // a tag with an action of Homes' own says what it started (§4): „Der Scanner startet – nur für dich.“
+        is AusloeserClient.Ausgang.Gemeldet -> a.text ?: if (a.name.isEmpty()) UNBEKANNT else "${a.name} – gemeldet"
         else -> fehler(a) ?: AusloeserClient.UNLESBAR
     }
 

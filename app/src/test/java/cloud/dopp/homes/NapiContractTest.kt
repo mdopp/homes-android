@@ -345,25 +345,28 @@ class NapiContractTest {
                 "POST", "/napi/einrichtung/apps", "internal/napi/einrichtung.go:28-44, the GET's answer :44",
                 body = setOf("pakete"), sends = EINRICHTUNG + setOf("ok", "reason", "error"),
             ),
-            // Auslöser (homes ADR 0004 §1 and §2, owner 2026-11-26): mdopp/homes feat/ausloeser at df98309 (homes#383);
-            // registered with the geraete module, internal/napi/napi.go:312, routes ausloeser.go:49-54; 404 without HA.
+            // Auslöser (homes ADR 0004 §1, §2 and §4, owner 2026-11-26): mdopp/homes feat/tag-scannen at 9e7c97b (homes#384);
+            // registered with the geraete module, internal/napi/napi.go:316, routes ausloeser.go:131-136; 404 without HA.
             Route(
-                "POST", "/napi/ausloeser", "internal/napi/ausloeser.go:71-115",
+                "POST", "/napi/ausloeser",
+                "internal/napi/ausloeser.go:153-185, a tag :92-102, a scan tag's {aktion, text} :107-129 (403, 503, 502)",
                 body = setOf("art", "tag", "zustand", "ladeart"), required = setOf("art"),
-                sends = setOf("ok", "name", "error", "reason"),
+                sends = setOf("ok", "name", "aktion", "text", "error", "reason"),
             ),
             Route(
-                "POST", "/napi/ausloeser/tag", "internal/napi/ausloeser.go:120-164",
-                // §2: an optional tag names or renames that id; 409 a name taken, 400 an empty or too long one
-                body = setOf("name", "tag"), required = setOf("name"), sends = setOf("ok", "tag", "uri", "error", "reason"),
+                "POST", "/napi/ausloeser/tag", "internal/napi/ausloeser.go:190-246, aktion :194, :200-203, :238-245",
+                // §2: an optional tag names or renames that id; 409 a name taken, 400 an empty or too long one;
+                // §4: an optional aktion, absent unchanged, "" back to HA, 400 for one the box lacks
+                body = setOf("name", "tag", "aktion"), required = setOf("name"),
+                sends = setOf("ok", "tag", "uri", "aktion", "error", "reason"),
             ),
             Route(
-                "DELETE", "/napi/ausloeser/tag/{tag}", "internal/napi/ausloeser.go:166-176",
+                "DELETE", "/napi/ausloeser/tag/{tag}", "internal/napi/ausloeser.go:248-263",
                 sends = setOf("ok", "error", "reason"),
             ),
             Route(
-                "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go:181-194",
-                sends = setOf("ok", "tags", "tag", "name", "vorschlaege", "error", "reason"),
+                "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go:268-281, aktionen :61-69",
+                sends = setOf("ok", "tags", "tag", "name", "aktion", "vorschlaege", "aktionen", "id", "titel", "error", "reason"),
             ),
         )
 

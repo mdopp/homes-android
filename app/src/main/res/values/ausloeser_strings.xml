@@ -41,6 +41,9 @@
     <string name="ausloeser_tags_laden">Lädt die Tags …</string>
     <string name="ausloeser_tags_keine">Noch keine Tags.</string>
     <string name="ausloeser_ohne_namen">ohne Namen</string>
+    <!-- a tag's name, and under it what it does when that is not HA's report (§4) -->
+    <string name="ausloeser_tag_mit_aktion">%1$s\n%2$s</string>
+    <string name="ausloeser_aktion_frage">Was soll der Tag tun?</string>
 
     <string name="ausloeser_laden_titel">Ladestation melden</string>
     <string name="ausloeser_laden_was">Sagt Home Assistant, wenn das Telefon zu laden beginnt oder aufhört, und wie: kabellos, am Kabel, über USB – auch mit ausgeschaltetem Bildschirm. Welches Ladegerät, sagt Android nicht.</string>
