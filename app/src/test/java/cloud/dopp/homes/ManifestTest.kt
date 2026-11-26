@@ -270,7 +270,7 @@ class ManifestTest {
     }
 
     /**
-     * The charger (homes ADR 0004 open question 2, pending the owner's yes): heard only by the receiver
+     * The charger (homes ADR 0004, the owner's yes of 2026-11-26): heard only by the receiver
      * [cloud.dopp.homes.ausloeser.Ladestation] registers, and only the live service holds one — no manifest
      * receiver, no job, no alarm, no wakelock (those tests above still hold for the whole app).
      */

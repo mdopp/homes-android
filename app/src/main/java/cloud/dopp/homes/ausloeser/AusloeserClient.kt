@@ -24,8 +24,7 @@ import java.io.InterruptedIOException
  * It does not pass [cloud.dopp.homes.data.ScreenGate]: a tag is touched and
  * written with the screen on anyway, and the charger's one request goes with
  * the screen off too — the app's second exception to „no network while the
- * screen is off“, behind its switch, pending the owner's yes (ADR 0004 open
- * question 2; AGENTS.md). Blocking; call it off the main thread.
+ * screen is off“, behind its switch, the owner's yes of 2026-11-26 (ADR 0004; AGENTS.md). Blocking; call it off the main thread.
  */
 class AusloeserClient(
     private val base: String,

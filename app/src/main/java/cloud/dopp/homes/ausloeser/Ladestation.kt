@@ -18,8 +18,8 @@ import kotlin.concurrent.thread
  * switch is on, a receiver registered in it hears the phone begin and stop
  * charging and sends the one `POST /napi/ausloeser` `{art: laden}` — also with
  * the screen off. It is the app's second exception to „no network while the
- * screen is off“ (the first is Daten sichern), pending the owner's yes (ADR
- * 0004 open question 2, AGENTS.md). No job, alarm, worker or wakelock: the
+ * screen is off“ (the first is Daten sichern), the owner's yes of 2026-11-26 (ADR
+ * 0004, AGENTS.md). No job, alarm, worker or wakelock: the
  * service's foreground process carries the one request, and a phone that just
  * began charging is out of Doze anyway. Android has no manifest receiver for
  * these broadcasts since 8.0; this one exists only while the service does.

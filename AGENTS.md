@@ -88,8 +88,8 @@ These rules apply to every session, human or agent.
   an unknown one); Mehr → Auslöser lists HA's tags, writes a new one, and
   names, renames or removes one (§2: the name lives in HA only, the id is
   never shown, a rename never rewrites the tag). **„Ladestation melden“ is a second
-  exception to „no network while the screen is off“, pending the owner's
-  yes (ADR 0004 open question 2):** behind its switch, off by default, the
+  exception to „no network while the screen is off“, the owner's
+  yes of 2026-11-26 (ADR 0004):** behind its switch, off by default, the
   live service (`realtime/LiveService.kt`) holds a receiver for the charger
   while it runs (`ausloeser/Ladestation.kt`) and sends the one request also
   with the screen off. It adds no foreground service, job, worker, alarm or

@@ -10,7 +10,7 @@ import java.io.IOException
  * gate every other widget request to Homes passes, in [ApiClient] and
  * [BoxApiClient] (the assistant's name). The backup job ([SicherungClient], (e)) is the one widget-free
  * caller that does not: it runs while the phone charges, mostly with the screen off. The second,
- * pending the owner's yes (homes ADR 0004 open question 2), is „Ladestation melden“'s one request
+ * the owner's yes of 2026-11-26 (homes ADR 0004), is „Ladestation melden“'s one request
  * when the phone begins or stops charging (`ausloeser/Ladestation.kt`, behind its switch). A widget update Android
  * delivers late, after the screen went off, reads nothing and keeps its last
  * card; the stream's resync redraws every fed widget when the screen is on

@@ -140,7 +140,7 @@ object Live {
  * - A card draws the device widgets of its entity, no read; a card of an
  *   energy sensor has the energy widget read again, coalesced.
  * - With „Ladestation melden“ on it holds the charger's receiver ([Ladestation], homes ADR 0004): its one
- *   request goes with the screen off too, pending the owner's yes (AGENTS.md).
+ *   request goes with the screen off too, the owner's yes of 2026-11-26 (AGENTS.md).
  * - A 401 stops the service (the device was removed in Homes); any other loss
  *   reconnects with backoff, reset only after a healthy session.
  * - What happened goes to [Verbindung], and the notification says its answer:

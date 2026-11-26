@@ -140,7 +140,7 @@ off nothing goes over the network for the widgets: no stream, no poll (every
 widget's update period is 0), no catch-up, and no other request: every widget
 call to Homes passes `data/ScreenGate.kt`, so a widget update Android delivers
 late reads nothing and keeps its last card. The exceptions are the backup
-job of (e) and, pending the owner's yes (homes ADR 0004 open question 2),
+job of (e) and, the owner's yes of 2026-11-26 (homes ADR 0004),
 „Ladestation melden“'s one request of (k). Messages to people go
 through their chat channel, not the app (laib ADR 0022 §3).
 
@@ -777,8 +777,8 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   `ladeart` from `BatteryManager.EXTRA_PLUGGED` (empty when it stops, or
   for a dock). Android does not say *which* charger: „auf dem Pixel Stand“
   is „lädt kabellos“. The request goes with the screen off too — the
-  second exception to (c), pending the owner's yes (ADR 0004 open question
-  2). No job, alarm, worker or wakelock: the service's foreground process
+  second exception to (c), the owner's yes of 2026-11-26 (ADR
+  0004). No job, alarm, worker or wakelock: the service's foreground process
   carries it. Without a placed live widget the service does not run, and
   the screen says it reports only while one is placed. The last report's
   line („Lädt kabellos – gemeldet“, or why not) shows under the switch.

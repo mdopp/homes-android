@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit
  * [ScreenGate] refuses it before a socket is opened.
  *
  * Two callers go with the screen off on purpose: the backup job (CONTRACT (e)),
- * and — new, pending the owner's yes (homes ADR 0004 open question 2,
+ * and — new, the owner's yes of 2026-11-26 (homes ADR 0004,
  * AGENTS.md) — „Ladestation melden“'s one request, only behind its switch.
  * [theChargerReportGoesWithTheScreenOffOnlyBehindItsSwitch] holds that
  * exception to exactly that.
@@ -87,7 +87,7 @@ class ScreenGateTest {
     }
 
     /**
-     * homes ADR 0004 open question 2 (pending the owner's yes): with „Ladestation melden“ off, laying the phone
+     * homes ADR 0004 (the owner's yes of 2026-11-26): with „Ladestation melden“ off, laying the phone
      * on its charger with the screen off sends nothing; with it on, the one report goes, screen off or not.
      */
     @Test
