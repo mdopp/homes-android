@@ -667,7 +667,7 @@ object Napi {
         const val VORSCHLAEGE = "vorschlaege"
         const val AKTIONEN = "aktionen"
         const val ID = "id"
-        const val TITEL = "titel"
+        const val TITEL = ModulJson.TITEL
     }
 
     /** A 404's `reason`: here, the box has no Home Assistant (module geraete off). */
