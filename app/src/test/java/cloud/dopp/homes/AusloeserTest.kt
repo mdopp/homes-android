@@ -360,7 +360,7 @@ class AusloeserTest {
         val a = bildschirm()
         a.findViewById<EditText>(R.id.ausloeser_name).setText("Bürotür")
         a.knopf().performClick()
-        warte { schreiber.ergebnis != null }
+        warte { schreiber.uri != null } // the screen waits for a tag (the callback itself is set on opening)
         schreiber.ergebnis!!(TagSchreiber.Ergebnis.Fehler("Der Tag war zu früh weg."))
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals("Der Tag war zu früh weg.", a.stand())
@@ -375,7 +375,7 @@ class AusloeserTest {
         val a = bildschirm()
         a.findViewById<EditText>(R.id.ausloeser_name).setText("Bürotür")
         a.knopf().performClick()
-        warte { schreiber.ergebnis != null }
+        warte { schreiber.uri != null } // the screen waits for a tag (the callback itself is set on opening)
         shadowOf(Looper.getMainLooper()).idleFor(61, TimeUnit.SECONDS)
         assertEquals("Kein Tag gekommen. Tippe noch einmal und halte ihn ans Telefon.", a.stand())
         assertNull("no longer waiting: nothing would be written", schreiber.uri)
@@ -422,6 +422,7 @@ class AusloeserTest {
         val a = bildschirm()
         val reihe = a.findViewById<LinearLayout>(R.id.ausloeser_vorschlaege)
         warte { reihe.childCount == 3 }
+        assertEquals("the suggestions shown (list: ${a.findViewById<LinearLayout>(R.id.ausloeser_liste).childCount} rows)", 3, reihe.childCount)
         assertEquals("Büro", (reihe.getChildAt(0) as Button).text.toString())
         reihe.getChildAt(1).performClick()
         assertEquals("Bad", a.findViewById<EditText>(R.id.ausloeser_name).text.toString())
