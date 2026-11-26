@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A touched NFC tag (homes ADR 0004): one line at the bottom, over whatever was
-     on the screen — „Meldet …“, then what came of it; a tap closes it at once.
+     on the screen (merged into the window's own frame) — „Meldet …“, then what came of it; a tap closes it at once.
      An unknown tag adds „Benennen“ (§2). -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,4 +30,4 @@
             android:text="@string/tag_benennen"
             android:visibility="gone" />
     </LinearLayout>
-</FrameLayout>
+</merge>

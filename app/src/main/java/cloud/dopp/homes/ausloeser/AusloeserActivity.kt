@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.view.isEmpty
 import cloud.dopp.homes.R
 import cloud.dopp.homes.ausloeser.AusloeserClient.Ausgang
 import cloud.dopp.homes.data.ServerStore
@@ -114,7 +115,7 @@ class AusloeserActivity : AppCompatActivity() {
     private fun ladeTags() {
         val liste = findViewById<LinearLayout>(R.id.ausloeser_liste)
         val kopplung = gekoppelt() ?: return zeigeTags(liste, Ausloeser.NICHT_GEKOPPELT, emptyList())
-        if (liste.childCount == 0) zeigeTags(liste, getString(R.string.ausloeser_tags_laden), emptyList())
+        if (liste.isEmpty()) zeigeTags(liste, getString(R.string.ausloeser_tags_laden), emptyList())
         thread(name = "tags") {
             val a = client(kopplung).tags()
             runOnUiThread {
