@@ -161,7 +161,8 @@ class AusloeserActivity : AppCompatActivity() {
                     layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                         .apply { marginEnd = resources.getDimensionPixelSize(R.dimen.space_xs) }
                     setOnClickListener {
-                        findViewById<EditText>(R.id.ausloeser_name).apply {
+                        // the screen's field: inside apply, a bare findViewById would search this button
+                        this@AusloeserActivity.findViewById<EditText>(R.id.ausloeser_name).apply {
                             setText(v)
                             setSelection(v.length)
                         }
