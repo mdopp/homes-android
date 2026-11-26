@@ -44,6 +44,32 @@
     <!-- a tag's name, and under it what it does when that is not HA's report (§4) -->
     <string name="ausloeser_tag_mit_aktion">%1$s\n%2$s</string>
     <string name="ausloeser_aktion_frage">Was soll der Tag tun?</string>
+    <!-- a tag's automations (§8), under its name in the list -->
+    <string name="ausloeser_tag_startet">startet: %1$s</string>
+    <string name="ausloeser_tag_wartet">Wartet auf Freigabe</string>
+
+    <string name="ausloeser_auto_titel">Automationen</string>
+    <string name="ausloeser_auto_keine">Noch keine Automation startet mit diesem Tag.</string>
+    <string name="ausloeser_auto_loesen">Lösen</string>
+    <string name="ausloeser_auto_verbinden">Mit einer Automation verbinden</string>
+    <string name="ausloeser_auto_suche">Automation suchen</string>
+    <string name="ausloeser_auto_sucht">Sucht …</string>
+    <string name="ausloeser_auto_nichts">Keine Automation gefunden.</string>
+    <string name="ausloeser_auto_aus">%1$s (aus)</string>
+    <string name="ausloeser_auto_neu">Neue Automation</string>
+    <string name="ausloeser_auto_satz">Was soll passieren, wenn jemand den Tag berührt?</string>
+    <string name="ausloeser_auto_satz_fuer">Was soll passieren, wenn jemand „%1$s“ berührt?</string>
+    <string name="ausloeser_auto_satz_fehlt">Sag zuerst in einem Satz, was passieren soll.</string>
+    <string name="ausloeser_auto_weiter">Weiter</string>
+    <string name="ausloeser_auto_fragt">Fragt Homes …</string>
+    <string name="ausloeser_auto_schreibt">Speichert …</string>
+    <string name="ausloeser_auto_frage_verbinden">Verbinden?</string>
+    <string name="ausloeser_auto_frage_loesen">Lösen?</string>
+    <string name="ausloeser_auto_frage_neu">Neue Automation?</string>
+    <string name="ausloeser_auto_ja">Ja, so machen</string>
+    <string name="ausloeser_auto_bitten">Um Freigabe bitten</string>
+    <string name="ausloeser_auto_an_admins">Das entscheidet ein Admin: er bekommt eine Nachricht und gibt es frei oder nicht.</string>
+    <string name="ausloeser_auto_hinweis_admins">Bis ein Admin entschieden hat, bleibt alles, wie es ist.</string>
 
     <string name="ausloeser_laden_titel">Ladestation melden</string>
     <string name="ausloeser_laden_was">Sagt Home Assistant, wenn das Telefon zu laden beginnt oder aufhört, und wie: kabellos, am Kabel, über USB – auch mit ausgeschaltetem Bildschirm. Welches Ladegerät, sagt Android nicht.</string>
@@ -54,4 +80,7 @@
     <string name="tag_label">Homes-Tag</string>
     <string name="tag_meldet">Meldet …</string>
     <string name="tag_benennen">Benennen</string>
+    <!-- the tag's address opened as a link (§5): it acts only on the button -->
+    <string name="tag_link_frage">Ein Link zu einem Homes-Tag.</string>
+    <string name="tag_ausloesen">Auslösen</string>
 </resources>

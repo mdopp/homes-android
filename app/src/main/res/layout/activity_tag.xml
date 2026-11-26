@@ -29,5 +29,14 @@
             android:layout_marginTop="@dimen/space_sm"
             android:text="@string/tag_benennen"
             android:visibility="gone" />
+
+        <!-- A tag's address opened as a link (§5), not touched: it acts only on this tap. -->
+        <Button
+            android:id="@+id/tag_ausloesen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/tag_ausloesen"
+            android:visibility="gone" />
     </LinearLayout>
 </merge>

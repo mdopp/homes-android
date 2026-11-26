@@ -640,12 +640,14 @@ object Napi {
 
     /**
      * `POST /napi/ausloeser`: `{ok, name}`, the tag's name in HA, `""` when HA does not know it; a tag with an
-     * action of Homes' own (§4) adds its [AKTION] and [TEXT], the sentence the phone shows („Der Scanner startet …“).
+     * action of Homes' own (§4, §8) adds its [AKTION] and [TEXT], the sentence the phone shows („Der Scanner
+     * startet …“); `scanner-fragen` adds [OEFFNEN], the address on Homes the phone opens (Dokumente's Scannen).
      */
     object GemeldetJson {
         const val NAME = "name"
         const val AKTION = "aktion"
         const val TEXT = "text"
+        const val OEFFNEN = "oeffnen"
     }
 
     /** `POST /napi/ausloeser/tag`: `{ok, tag, uri, aktion}`, the tag's id in HA, what the phone writes onto it, what it does. */
@@ -656,19 +658,57 @@ object Napi {
     }
 
     /**
-     * `GET /napi/ausloeser/tags`: `{ok, tags: [{tag, name, aktion}], vorschlaege, aktionen: [{id, titel}]}`, HA's tag
-     * registry, names to offer (§2), and the actions this box offers a tag, in order, HA's (`""`) first (§4).
+     * `GET /napi/ausloeser/tags`: `{ok, tags: [{tag, name, aktion, automationen: [{id, name}]}], vorschlaege,
+     * aktionen: [{id, titel}]}`, HA's tag registry with the automations that trigger on each tag (§8), names to
+     * offer (§2), and the actions this box offers a tag, in order, HA's (`""`) first (§4, §8).
      */
     object TagsJson {
         const val TAGS = "tags"
         const val TAG = NeuerTagJson.TAG
         const val NAME = GemeldetJson.NAME
         const val AKTION = GemeldetJson.AKTION
+        const val AUTOMATIONEN = AutomationenJson.AUTOMATIONEN
         const val VORSCHLAEGE = "vorschlaege"
         const val AKTIONEN = "aktionen"
         const val ID = "id"
         const val TITEL = ModulJson.TITEL
     }
+
+    /** `GET /napi/automationen?q=` (§8): `{ok, automationen: [{id, name, an}]}`, HA's automations to link a tag to. */
+    object AutomationenJson {
+        const val AUTOMATIONEN = "automationen"
+        const val ID = TagsJson.ID
+        const val NAME = GemeldetJson.NAME
+        const val AN = ModulJson.AN
+    }
+
+    /**
+     * A tag's automation changed (§8, `…/verbinden|loesen|neu`): `{ok, satz}`; without `bestaetigt` the sentence to
+     * show first and [BESTAETIGEN] (with [FREIGABE_NOETIG] for one who is no admin); confirmed by a non-admin
+     * [WARTET] and the wish's id [FREIGABE]; an admin's new automation the Bote's reply [BOTE].
+     */
+    object AenderungJson {
+        const val SATZ = "satz"
+        const val BESTAETIGEN = "bestaetigen"
+        const val FREIGABE_NOETIG = "freigabe_noetig"
+        const val WARTET = "wartet"
+        const val FREIGABE = "freigabe"
+        const val BOTE = "bote"
+    }
+
+    /** `GET /napi/ausloeser/freigabe/{id}`: `{ok, stand, satz, wunsch}`, where a wish stands ([STAND_WARTET] …). */
+    object FreigabeJson {
+        const val STAND = ImportStandJson.STAND
+        const val SATZ = AenderungJson.SATZ
+        const val WUNSCH = "wunsch"
+    }
+
+    /** A wish's `stand`: still waiting; the others (`freigegeben`, `abgelehnt`, `verfallen`) are ends, said in its `satz`. */
+    const val STAND_WARTET = AenderungJson.WARTET
+
+    /** The body field that confirms a change (§8): absent, Homes only says what it would do. */
+    private const val BESTAETIGT = "bestaetigt"
+    private const val AUTOMATION = "automation"
 
     /** A 404's `reason`: here, the box has no Home Assistant (module geraete off). */
     const val REASON_NOT_FOUND = "not_found"
@@ -917,4 +957,27 @@ object Napi {
     val AUSLOESER_TAGS = Endpoint(
         Method.GET, "/napi/ausloeser/tags", reply = listOf(AusloeserJson, TagsJson),
     )
+
+    // --- a tag's automations (homes ADR 0004 §8): the sentence first, then confirmed ---
+
+    /** HA's automations by name, [q] a part of it, to link a tag to. */
+    val AUTOMATIONEN = Endpoint(Method.GET, "/napi/automationen", query = listOf("q"), reply = listOf(AusloeserJson, AutomationenJson))
+
+    /** The tag as one more trigger of an automation; Homes keeps the config before for „Lösen“. */
+    val TAG_VERBINDEN = Endpoint(
+        Method.POST, "/napi/ausloeser/tag/{tag}/verbinden", body = listOf(AUTOMATION, BESTAETIGT), reply = listOf(AusloeserJson, AenderungJson),
+    )
+
+    /** The tag out of an automation: its config before back. */
+    val TAG_LOESEN = Endpoint(
+        Method.POST, "/napi/ausloeser/tag/{tag}/loesen", body = listOf(AUTOMATION, BESTAETIGT), reply = listOf(AusloeserJson, AenderungJson),
+    )
+
+    /** A new automation for the tag, as one sentence, passed to the Bote. */
+    val TAG_NEU = Endpoint(
+        Method.POST, "/napi/ausloeser/tag/{tag}/neu", body = listOf(AenderungJson.SATZ, BESTAETIGT), reply = listOf(AusloeserJson, AenderungJson),
+    )
+
+    /** Where a wish stands that waits for an admin; polled while the Auslöser screen is open, never in the background. */
+    val TAG_FREIGABE = Endpoint(Method.GET, "/napi/ausloeser/freigabe/{id}", reply = listOf(AusloeserJson, FreigabeJson))
 }

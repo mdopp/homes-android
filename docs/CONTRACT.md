@@ -726,16 +726,19 @@ one is named by its type. It is switched by the box's `teilen` key `musik`.
 
 (The owner's call, 2026-11-26: „Ich will die Home Assistant App nicht“, and
 „wir brauchen ein Konzept wie ich NFC Tags benennen kann“; homes ADR 0004
-§1, §2 and §4. Homes' side is `internal/napi/ausloeser.go`.)
+§1, §2, §4, §5 and §8. Homes' side is `internal/napi/ausloeser.go`,
+`ausloeser_automationen.go` and `internal/tagaktion`.)
 The phone reports what it noticed; Homes fires Home Assistant's event and
 says what it did; HA's automations decide. The app keeps no rule and
 filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
 `mehr` has `ausloeser` (the `geraete` module); without it, its trace.
 
-- **A touched tag.** `ausloeser/TagActivity` takes `NDEF_DISCOVERED` (never
-  `VIEW`) for `cloud.dopp.homes://tag/<id>`, what Homes writes, and
+- **A touched tag.** `ausloeser/TagActivity` takes `NDEF_DISCOVERED` for
+  the box's own address `https://<homes>/tag/<id>`, what Homes writes since
+  ADR 0004 §5, `cloud.dopp.homes://tag/<id>`, what it wrote before, and
   `https://www.home-assistant.io/tag/<id>`, what HA's own app wrote — the
   id is what follows `/tag/`, so tags already in the house keep working.
+  The box's address is taken only for the paired server's host.
   It says „Meldet …“ at once, sends `POST /napi/ausloeser
   {"art":"nfc","tag":"<id>"}` once, shows one line — „Bürotür – gemeldet“
   for `{"ok":true,"name":"Bürotür"}`, „Unbekannter Tag – auf Homes oder
@@ -787,6 +790,58 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   without „Benennen“. Its refusals are sentences, shown as they come: 403
   (a phone without its own login, for „für mich“), 503 (no scanner), 502
   (the scanner silent).
+- **The tag's own address** (ADR 0004 §5). `POST /napi/ausloeser/tag`'s
+  `uri` is `<HOMES_PUBLIC_URL>/tag/<id>`, an Android App Link: the manifest
+  names its host for `android:autoVerify`, and Homes serves
+  `/.well-known/assetlinks.json` with the app's package and its signing
+  certificate's SHA-256 (`HOMES_APP_SHA256`; the release key's is
+  `C3:6A:41:03:80:AB:C9:9D:D5:6E:DF:14:5F:34:FF:A6:DA:7F:4A:15:B0:98:A3:7F:FD:AB:D7:02:FD:68:A6:2D`).
+  Android verifies a link only for a host the manifest names, so the host
+  is the build's: the manifest placeholder `homesHost`, `www.dopp.cloud` by
+  default (the owner's box), `-PhomesHost=<host>` or `HOMES_APP_HOST` for
+  another (`app/build.gradle`). The path is `/tag/homes-.*`, so Homes'
+  other pages under `/tag/` (a wish's decision, `/tag/freigabe/<id>`) stay
+  the browser's. A tag touched is reported at once; the address opened as
+  a link (`VIEW`, from a chat or a page) shows „Ein Link zu einem
+  Homes-Tag.“ and reports only on „Auslösen“ — a link never acts by
+  itself, as Homes' page `/tag/<id>` acts only on its button. A box built
+  for another host: its tags open Homes' page in the browser, which works
+  without the app.
+- **The scanner's question** (§8). The actions are `scanner-fragen`,
+  `scanner-ich`, `scanner-haushalt` with Homes' titles (the app shows
+  `aktionen` as it lists them). A touched `scanner-fragen` tag answers
+  `{"ok":true,"name","aktion","text","oeffnen":"<HOMES_PUBLIC_URL>/dokumente#scannen"}`:
+  the app says `text` and opens `oeffnen` in a Custom Tab (the browser
+  without one; no web view in the app) — only an https address on the
+  paired Homes; any other is not opened and the line says `text`.
+- **A tag's automations** (§8). The list brings each tag's `automationen`
+  `[{"id","name"}]`: the row says „startet: Gute Nacht“. Tapping one of
+  HA's tags (action `""`) shows them in a card, each with „Lösen“, and
+  „Mit einer Automation verbinden“ (`GET /napi/automationen?q=` →
+  `{"ok":true,"automationen":[{"id","name","an"}]}`, searched as one types,
+  the linked ones left out, an off one „(aus)“) and „Neue Automation“ (one
+  sentence: „Was soll passieren, wenn jemand ‚Bürotür‘ berührt?“). Each is
+  two steps: `POST /napi/ausloeser/tag/{tag}/verbinden|loesen
+  {"automation"}` or `…/neu {"satz"}` without `bestaetigt` →
+  `{"ok":true,"satz","bestaetigen":true,"freigabe_noetig"?}`, the sentence
+  shown in the app's one dialog (`widget/ActionDialog`; with
+  `freigabe_noetig` it says an admin decides, the yes is „Um Freigabe
+  bitten“) → the same with `"bestaetigt":true` → `{"ok":true,"satz"}`
+  (done, an admin's), with `"bote"` for an admin's new one (the Bote's
+  reply, with the code it asks for, shown under the sentence), or
+  `"wartet":true,"freigabe":"<id>"` (anyone else's). Pressed, the line
+  says „Fragt Homes …“, then „Speichert …“, the buttons wait; a refusal
+  (`{"ok":false,"error"}`: 404, 409, 502, 503, 504) is said as it comes.
+  The read waits up to 65 s (the Bote drafts; Homes answers 504 when it is
+  too late).
+- **Waiting for an admin.** A wish's id is kept on the phone with its tag
+  (the row says „Wartet auf Freigabe“) and asked after with `GET
+  /napi/ausloeser/freigabe/{id}` → `{"ok":true,"stand","satz","wunsch"}`
+  every 15 s while the Auslöser screen is open — never in the background,
+  no job, no alarm. `wartet` keeps it; `freigegeben`, `abgelehnt`,
+  `verfallen` end it and the card says `satz`; a 404 (Homes no longer has
+  it) ends it with Homes' sentence. Homes tells the person on their chat
+  channel too.
 - **The charger.** „Ladestation melden“, off by default. While it is on and
   the live service of (c) runs, the service holds a receiver for
   `ACTION_POWER_CONNECTED`/`DISCONNECTED` (`ausloeser/Ladestation.kt`;

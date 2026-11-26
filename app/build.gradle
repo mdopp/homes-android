@@ -36,6 +36,11 @@ android {
         // the tag, or the next patch with -dev.<run> for a build of main.
         versionCode(Integer.parseInt(System.getenv("HOMES_VERSION_CODE") ?: "1"))
         versionName(System.getenv("HOMES_VERSION_NAME") ?: "0.0.0-local")
+        // The box's public host for the tags' App Link (homes ADR 0004 §5, `HOMES_PUBLIC_URL`'s host):
+        // Android verifies an App Link only for a host the manifest names, so it is set at build time.
+        // The default is the owner's box; another box builds with -PhomesHost=<host> or HOMES_APP_HOST.
+        // Its tags work without it too: they open Homes' page in the browser.
+        manifestPlaceholders = [homesHost: System.getenv("HOMES_APP_HOST") ?: project.findProperty("homesHost") ?: "www.dopp.cloud"]
         // The live e2e on emulators (e2e/, .github/workflows/live-e2e.yml).
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

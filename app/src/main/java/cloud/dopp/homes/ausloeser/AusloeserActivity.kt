@@ -67,6 +67,9 @@ class AusloeserActivity : AppCompatActivity() {
     /** The chosen action: the tag's own while it is changed, HA's (`""`) for a new one. */
     private var gewaehlt = ""
 
+    /** The tag's automations, while one of HA's tags is changed (§8). */
+    private lateinit var automationen: TagAutomationen
+
     private val zuSpaet = Runnable {
         warteAus()
         stand(getString(R.string.ausloeser_kein_tag))
@@ -76,6 +79,7 @@ class AusloeserActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ausloeser)
         padForSystemBars(findViewById(R.id.ausloeser_root))
+        automationen = TagAutomationen(this, ::gekoppelt, ::ladeTags)
         findViewById<SwitchCompat>(R.id.ausloeser_laden).setOnCheckedChangeListener { _, an ->
             if (setzt) return@setOnCheckedChangeListener
             Ausloeser.setzeLadenMelden(this, an)
@@ -98,12 +102,14 @@ class AusloeserActivity : AppCompatActivity() {
         super.onResume()
         renderLaden()
         ladeTags()
+        automationen.anfangen()
         // reader mode while in front: written while waiting, else a blank tag is offered (§2)
         schreiber.an(this, { offen?.takeIf { wartet }?.second?.uri }, ::kam)
     }
 
     override fun onPause() {
         schreiber.aus(this)
+        automationen.aufhoeren() // a waiting wish is asked after only while the screen is open
         super.onPause()
     }
 
@@ -133,6 +139,7 @@ class AusloeserActivity : AppCompatActivity() {
                 if (a is Ausgang.Tags) {
                     aktionen = a.aktionen
                     zeigeTags(liste, if (a.tags.isEmpty()) getString(R.string.ausloeser_tags_keine) else null, a.tags)
+                    folge(a.tags)
                     zeigeVorschlaege(a.vorschlaege)
                     zeigeAktionen()
                 } else {
@@ -140,6 +147,13 @@ class AusloeserActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    /** The tag being changed, as HA has it now: its automations follow a change (§8). */
+    private fun folge(tags: List<AusloeserClient.Tag>) {
+        val jetzt = bearbeitet?.let { b -> tags.firstOrNull { it.tag == b.tag } } ?: return
+        bearbeitet = jetzt
+        automationen.zeige(jetzt.takeIf { ausListe && jetzt.aktion.isEmpty() })
     }
 
     private fun text(t: String, tippen: (() -> Unit)? = null) = TextView(this).apply {
@@ -157,11 +171,18 @@ class AusloeserActivity : AppCompatActivity() {
     private fun zeigeTags(liste: LinearLayout, satz: String?, tags: List<AusloeserClient.Tag>) {
         liste.removeAllViews()
         satz?.let { liste.addView(text(it)) }
+        val wartend = Ausloeser.wartende(this).values.toSet()
         tags.forEach { t ->
             val name = t.name.ifEmpty { getString(R.string.ausloeser_ohne_namen) }
             // what it does, under the name, when it is not HA's report (§4); the id is never shown (§2)
             val tut = aktionen.firstOrNull { it.id == t.aktion && t.aktion.isNotEmpty() }?.titel
-            val zeile = if (tut == null) name else getString(R.string.ausloeser_tag_mit_aktion, name, tut)
+            // its automations (§8), and a wish of this phone's that waits for an admin
+            val unter = listOfNotNull(
+                tut,
+                t.automationen.takeIf { it.isNotEmpty() }?.let { a -> getString(R.string.ausloeser_tag_startet, a.joinToString(", ") { it.name }) },
+                getString(R.string.ausloeser_tag_wartet).takeIf { t.tag in wartend },
+            )
+            val zeile = unter.fold(name) { z, u -> getString(R.string.ausloeser_tag_mit_aktion, z, u) }
             liste.addView(text(zeile) { bearbeite(t, true) })
         }
     }
@@ -234,6 +255,7 @@ class AusloeserActivity : AppCompatActivity() {
         findViewById<View>(R.id.ausloeser_entfernen).visibility = if (ausListe) View.VISIBLE else View.GONE
         gewaehlt = tag?.aktion.orEmpty()
         zeigeAktionen()
+        automationen.zeige(tag?.takeIf { ausListe && it.aktion.isEmpty() })
         knopfRuht()
     }
 

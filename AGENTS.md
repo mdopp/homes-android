@@ -83,8 +83,9 @@ These rules apply to every session, human or agent.
 - Auslöser (the owner's request, 2026-11-26; homes ADR 0004 §1;
   docs/CONTRACT.md (k)): the phone as a trigger for Home Assistant's
   automations, without HA's companion app. A touched NFC tag opens
-  `ausloeser/TagActivity` (`NDEF_DISCOVERED` only, Homes' form and HA's
-  app's), which reports it once, says one line and closes („Benennen“ for
+  `ausloeser/TagActivity` (`NDEF_DISCOVERED`: the box's own address, Homes'
+  older form and HA's app's; the box's address opened as a link, an App Link
+  for the build's `homesHost` placeholder, acts only on „Auslösen“), which reports it once, says one line and closes („Benennen“ for
   an unknown one); Mehr → Auslöser lists HA's tags, writes a new one, and
   names, renames or removes one (§2: the name lives in HA only, the id is
   never shown, a rename never rewrites the tag). **„Ladestation melden“ is a second

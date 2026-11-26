@@ -132,6 +132,92 @@
                 android:background="?android:attr/selectableItemBackground" />
         </LinearLayout>
 
+        <!-- The tag being changed and its automations (homes ADR 0004 §8): each with „Lösen“, one to
+             link to by name, a new one by a sentence; every change shown as a sentence first. -->
+        <LinearLayout
+            android:id="@+id/ausloeser_automationen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:background="@drawable/card_homes"
+            android:orientation="vertical"
+            android:padding="@dimen/card_padding"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/Text.Homes.Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xs"
+                android:text="@string/ausloeser_auto_titel" />
+
+            <LinearLayout
+                android:id="@+id/ausloeser_auto_liste"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <Button
+                android:id="@+id/ausloeser_auto_verbinden"
+                style="@style/Widget.Homes.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/ausloeser_auto_verbinden" />
+
+            <EditText
+                android:id="@+id/ausloeser_auto_suche"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:hint="@string/ausloeser_auto_suche"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:visibility="gone"
+                tools:targetApi="o" />
+
+            <LinearLayout
+                android:id="@+id/ausloeser_auto_treffer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/ausloeser_auto_neu"
+                style="@style/Widget.Homes.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/ausloeser_auto_neu" />
+
+            <EditText
+                android:id="@+id/ausloeser_auto_satz"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:hint="@string/ausloeser_auto_satz"
+                android:importantForAutofill="no"
+                android:inputType="textCapSentences|textMultiLine"
+                android:visibility="gone"
+                tools:targetApi="o" />
+
+            <Button
+                android:id="@+id/ausloeser_auto_weiter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/ausloeser_auto_weiter"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/ausloeser_auto_stand"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
