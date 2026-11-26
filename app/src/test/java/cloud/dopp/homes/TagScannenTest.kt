@@ -185,6 +185,11 @@ class TagScannenTest {
 
     @Test
     fun aTouchedScanTagShowsHomesSentenceNotGemeldet() {
+        // a slow answer, so the line is still „Meldet …“ when the screen is up
+        homes.melden = {
+            MockResponse().setBody("""{"ok":true,"name":"Scanner","aktion":"scannen-ich","text":"Der Scanner startet – nur für dich."}""")
+                .setBodyDelay(300, TimeUnit.MILLISECONDS)
+        }
         val t = beruehrt("cloud.dopp.homes://tag/homes-aaaaaaaaaaaa")
         assertEquals("running at once", "Meldet …", t.zeile())
         warte { t.zeile() != "Meldet …" }
