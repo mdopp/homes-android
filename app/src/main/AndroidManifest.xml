@@ -46,6 +46,11 @@
          isSyncActive/isSyncPending only with it, else a SecurityException (the crash
          on the button, v3.0.2-dev.269). A normal permission, granted at install. -->
     <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <!-- Auslöser (homes ADR 0004): a touched NFC tag opens the app's TagActivity, and the
+         Auslöser screen writes Homes' address onto a new tag. A normal permission; a phone
+         without NFC installs the app all the same. -->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
     <!-- Android 11+ package visibility: the Custom Tabs provider for pairing, and
          the apps of Homes' modules (cmd/homes/module.go), so the app can tell Homes
@@ -275,6 +280,42 @@
             android:name=".ui.ZurueckholenActivity"
             android:exported="false"
             android:label="@string/zurueck_title"
+            android:theme="@style/Theme.Homes" />
+
+        <!-- Auslöser (homes ADR 0004): a touched tag Homes wrote (cloud.dopp.homes://tag/<id>)
+             or HA's app wrote (https://www.home-assistant.io/tag/<id>, so the tags already in the
+             house keep working). It reports the tag once, says what came of it in one line and
+             closes: translucent, its own empty task, not in the recents. NDEF_DISCOVERED only,
+             never VIEW: no web page or link can report a tag. -->
+        <activity
+            android:name=".ausloeser.TagActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="@string/tag_label"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="cloud.dopp.homes" android:host="tag" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="https"
+                    android:host="www.home-assistant.io"
+                    android:pathPrefix="/tag/" />
+            </intent-filter>
+        </activity>
+
+        <!-- Mehr → Auslöser (homes ADR 0004): HA's tags, a new tag written, „Ladestation melden“. -->
+        <activity
+            android:name=".ausloeser.AusloeserActivity"
+            android:exported="false"
+            android:label="@string/ausloeser_title"
             android:theme="@style/Theme.Homes" />
 
         <!-- Mehr → Standortverlauf (owner 2026-11-02): the switch, the mode, Reitti. -->

@@ -80,6 +80,22 @@ These rules apply to every session, human or agent.
   stop (no network, the six hours used up) is said and retried; the app's
   screen starts it again. `ManifestTest` holds each job to its one file; do
   not add a third job, and do not reuse either for something else.
+- Auslöser (the owner's request, 2026-11-26; homes ADR 0004 §1;
+  docs/CONTRACT.md (k)): the phone as a trigger for Home Assistant's
+  automations, without HA's companion app. A touched NFC tag opens
+  `ausloeser/TagActivity` (`NDEF_DISCOVERED` only, Homes' form and HA's
+  app's), which reports it once, says one line and closes („Benennen“ for
+  an unknown one); Mehr → Auslöser lists HA's tags, writes a new one, and
+  names, renames or removes one (§2: the name lives in HA only, the id is
+  never shown, a rename never rewrites the tag). **„Ladestation melden“ is a second
+  exception to „no network while the screen is off“, the owner's
+  yes of 2026-11-26 (ADR 0004):** behind its switch, off by default, the
+  live service (`realtime/LiveService.kt`) holds a receiver for the charger
+  while it runs (`ausloeser/Ladestation.kt`) and sends the one request also
+  with the screen off. It adds no foreground service, job, worker, alarm or
+  wakelock, and no manifest receiver; `ManifestTest` and `ScreenGateTest`
+  hold it to that. If the owner says no, the switch and that receiver go,
+  and the tags stay.
 - Standortverlauf (the owner's call, 2026-11-02; docs/CONTRACT.md (f)):
   behind its own switch and the background-location permission,
   Android's own LocationManager delivers by PendingIntent to
@@ -225,6 +241,8 @@ app/src/main/java/cloud/dopp/homes/
   hochladen/   the Hochladen job (WorkManager, dataSync while it uploads): music, Takeout ZIPs
   archiv/      Share → „Ins Archiv“: a Facebook or LinkedIn export told by its structure, its one
                file age-encrypted to the person's archive and uploaded while the share's dialog is open
+  ausloeser/   the phone as a trigger for HA (homes ADR 0004): the touched tag's activity, Mehr → Auslöser
+               (HA's tags, writing a new one), „Ladestation melden“'s receiver, the client
   einrichtung/ the person's modules and tasks (/napi/einrichtung): „Öffnen“, „Deine Aufgaben“,
                the installed-apps report, the launcher's four shortcuts and their trampoline
 app/src/test/  JVM tests with Robolectric, including the preview renders

@@ -77,6 +77,7 @@ each row naming the Homes file and lines it came from.
 | Share → Homes | `POST /napi/merken` `{text}`: what the share sheet sent (title and link); Homes keeps the page as a note and answers `{kurz, notiz, schon, …}` or `{error}` with a German sentence (homes#120); the share sheet's Direct Share target carries the assistant's name (#188) |
 | tools | `GET /napi/defs/tool`, the catalog's `tool-api-path` rows (`/napi/portal/{documents,notes}`; Homes also lists `contacts` and `task`, which the app no longer offers as a widget, owner 2026-11-02 and 2026-11-03), `POST /napi/action-callback` |
 | live stream | `POST /napi/portal/watch`, `GET /napi/portal/events` |
+| Auslöser (NFC tags, the charger) | `POST /napi/ausloeser`, `POST /napi/ausloeser/tag`, `DELETE /napi/ausloeser/tag/{tag}`, `GET /napi/ausloeser/tags`: see (k) |
 
 Fields the widgets read beyond a value to show:
 
@@ -138,8 +139,9 @@ cuts idle streams does not make the app reconnect every minute. With the screen
 off nothing goes over the network for the widgets: no stream, no poll (every
 widget's update period is 0), no catch-up, and no other request: every widget
 call to Homes passes `data/ScreenGate.kt`, so a widget update Android delivers
-late reads nothing and keeps its last card. The one exception is the backup
-job of (e). Messages to people go
+late reads nothing and keeps its last card. The exceptions are the backup
+job of (e) and, the owner's yes of 2026-11-26 (homes ADR 0004),
+„Ladestation melden“'s one request of (k). Messages to people go
 through their chat channel, not the app (laib ADR 0022 §3).
 
 ## (d) Pages
@@ -719,3 +721,64 @@ one is named by its type. It is switched by the box's `teilen` key `musik`.
   the live widgets' channel does not (`live_widgets_v2`, the old one
   deleted): nothing there to act on, and the start screen says the line's
   state itself (`verbindung/`).
+
+## (k) Auslöser: NFC tags and the charger
+
+(The owner's call, 2026-11-26: „Ich will die Home Assistant App nicht“, and
+„wir brauchen ein Konzept wie ich NFC Tags benennen kann“; homes ADR 0004
+§1 and §2. Homes' side is `internal/napi/ausloeser.go`.)
+The phone reports what it noticed; Homes fires Home Assistant's event and
+says what it did; HA's automations decide. The app keeps no rule and
+filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
+`mehr` has `ausloeser` (the `geraete` module); without it, its trace.
+
+- **A touched tag.** `ausloeser/TagActivity` takes `NDEF_DISCOVERED` (never
+  `VIEW`) for `cloud.dopp.homes://tag/<id>`, what Homes writes, and
+  `https://www.home-assistant.io/tag/<id>`, what HA's own app wrote — the
+  id is what follows `/tag/`, so tags already in the house keep working.
+  It says „Meldet …“ at once, sends `POST /napi/ausloeser
+  {"art":"nfc","tag":"<id>"}` once, shows one line — „Bürotür – gemeldet“
+  for `{"ok":true,"name":"Bürotür"}`, „Unbekannter Tag – auf Homes oder
+  hier benennen“ for `"name":""`, else the reason — and closes after 2.5 s
+  (translucent, its own empty task, not in the recents). A refusal is
+  `{"ok":false,"error":"<German sentence>"}`; a 404 `{"reason":"not_found"}`
+  means the box has no Home Assistant; a 401 says to pair again; no answer
+  in 12 s, or no Homes, is said in the app's words. Unpaired, nothing goes.
+- **A new tag.** On the Auslöser screen: a name (the list's `vorschlaege`,
+  the house's rooms from HA and a few places, as one-tap words under the
+  field) → `POST /napi/ausloeser/tag {"name":"Bürotür"}` →
+  `{"ok":true,"tag":"homes-<12 hex>","uri":"cloud.dopp.homes://tag/homes-<12 hex>"}`
+  (the tag in HA's registry) → „Halte den Tag ans Telefon …“ → one NDEF
+  URI record with `uri`, written, or formatted onto a blank tag →
+  „„Bürotür“ ist fertig. Kleb ihn hin und sag in der Werkstatt, was er tun
+  soll.“ with the hint to write the name on the sticker (the tag does not
+  carry it), or why not (read only, too small, gone too early, no NDEF);
+  the retry writes the same `uri` and makes no second tag in HA. No tag
+  within a minute is said. While the screen is in front the phone reads in
+  NFC reader mode: a tag held to it opens nothing and is not reported; a
+  blank one is offered for „Neuen Tag beschreiben“, a written one is said
+  to be written already.
+- **Naming** (ADR 0004 §2). The list is `GET /napi/ausloeser/tags` →
+  `{"ok":true,"tags":[{"tag","name"}],"vorschlaege":[…]}`, names only (the
+  id is never shown). A tag tapped there is renamed — `POST
+  /napi/ausloeser/tag {"name","tag"}`, „Sichern“; the tag is not written
+  again, so its automations keep working — or removed: „Entfernen“, one
+  question („Automationen, die ‚X‘ nutzen, laufen dann nicht mehr.“), then
+  `DELETE /napi/ausloeser/tag/{tag}` → `{"ok":true}` (404 with a sentence
+  when HA has no such tag). An unknown tag touched shows „Benennen“ beside
+  its line, which opens the screen naming that id the same way. A name
+  taken (409, case aside) or empty or over 60 characters (400) is said in
+  Homes' sentence. Names live in HA (laib ADR 0017); the app stores none.
+- **The charger.** „Ladestation melden“, off by default. While it is on and
+  the live service of (c) runs, the service holds a receiver for
+  `ACTION_POWER_CONNECTED`/`DISCONNECTED` (`ausloeser/Ladestation.kt`;
+  Android has no manifest receiver for them) and sends `POST /napi/ausloeser
+  {"art":"laden","zustand":"an"|"aus","ladeart":"kabellos"|"kabel"|"usb"|""}`,
+  `ladeart` from `BatteryManager.EXTRA_PLUGGED` (empty when it stops, or
+  for a dock). Android does not say *which* charger: „auf dem Pixel Stand“
+  is „lädt kabellos“. The request goes with the screen off too — the
+  second exception to (c), the owner's yes of 2026-11-26 (ADR
+  0004). No job, alarm, worker or wakelock: the service's foreground process
+  carries it. Without a placed live widget the service does not run, and
+  the screen says it reports only while one is placed. The last report's
+  line („Lädt kabellos – gemeldet“, or why not) shows under the switch.

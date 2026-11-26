@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import cloud.dopp.homes.HomesConfig
 import cloud.dopp.homes.R
+import cloud.dopp.homes.ausloeser.AusloeserActivity
 import cloud.dopp.homes.data.ApiClient
 import cloud.dopp.homes.data.Napi.KannKey
 import cloud.dopp.homes.data.Assistent
@@ -318,7 +319,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     /**
-     * Mehr: Daten sichern (#194) and Standortverlauf (owner 2026-11-02) as the
+     * Mehr: Daten sichern (#194), Standortverlauf (owner 2026-11-02) and Auslöser (homes ADR 0004) as the
      * box offers them, Dein Archiv for whom Homes says has one, Dokumente-Adresse kopieren for whom it gives one, Homes auf dem Handy (#206); below, quiet, what the box
      * lacks, each with „Hier anfordern“ (homes ADR 0001 §10).
      */
@@ -332,6 +333,9 @@ class HomeActivity : AppCompatActivity() {
             },
             StartAngebot.Zeile(KannKey.STANDORTVERLAUF, R.drawable.ic_standort, getString(R.string.standort_title)) {
                 startActivity(Intent(this, StandortActivity::class.java))
+            },
+            StartAngebot.Zeile(KannKey.AUSLOESER, R.drawable.ic_ausloeser, getString(R.string.ausloeser_title)) {
+                startActivity(Intent(this, AusloeserActivity::class.java))
             },
         )
         val angebot = StartAngebot(this, kann, ::renderWidgetTypes)

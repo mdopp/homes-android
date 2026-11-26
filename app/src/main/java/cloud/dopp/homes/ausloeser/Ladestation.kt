@@ -1,0 +1,106 @@
+package cloud.dopp.homes.ausloeser
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
+import androidx.annotation.VisibleForTesting
+import androidx.core.content.ContextCompat
+import cloud.dopp.homes.data.Napi
+import cloud.dopp.homes.data.ServerStore
+import cloud.dopp.homes.data.TokenStore
+import kotlin.concurrent.thread
+
+/**
+ * „Ladestation melden“ (homes ADR 0004 §1): while the live service runs
+ * ([cloud.dopp.homes.realtime.LiveService], the one that already does) and the
+ * switch is on, a receiver registered in it hears the phone begin and stop
+ * charging and sends the one `POST /napi/ausloeser` `{art: laden}` — also with
+ * the screen off. It is the app's second exception to „no network while the
+ * screen is off“ (the first is Daten sichern), the owner's yes of 2026-11-26 (ADR
+ * 0004, AGENTS.md). No job, alarm, worker or wakelock: the
+ * service's foreground process carries the one request, and a phone that just
+ * began charging is out of Doze anyway. Android has no manifest receiver for
+ * these broadcasts since 8.0; this one exists only while the service does.
+ */
+class Ladestation(private val service: Context) {
+
+    private var registriert = false
+
+    private val empfaenger = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val an = when (intent.action) {
+                Intent.ACTION_POWER_CONNECTED -> true
+                Intent.ACTION_POWER_DISCONNECTED -> false
+                else -> return
+            }
+            val app = context.applicationContext
+            melden(app, an) { if (an) Ausloeser.ladeart(eingesteckt(app)) else Napi.Ladeart.UNBEKANNT }
+        }
+    }
+
+    /** Listen while the switch is on, else not; called on each start of the service and when the switch changes. */
+    fun anpassen() {
+        val soll = Ausloeser.ladenMelden(service)
+        if (soll == registriert) return
+        if (soll) {
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+            }
+            ContextCompat.registerReceiver(service, empfaenger, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        } else {
+            runCatching { service.unregisterReceiver(empfaenger) }
+        }
+        registriert = soll
+    }
+
+    /** The service ends: nothing listens any more. */
+    fun aus() {
+        if (registriert) runCatching { service.unregisterReceiver(empfaenger) }
+        registriert = false
+    }
+
+    companion object {
+        /** Sends the report. Replaced in tests, which run it in place. */
+        @VisibleForTesting
+        @Volatile
+        var senden: (Context, () -> Unit) -> Unit = { _, lauf -> thread(name = "ladestation") { lauf() } }
+
+        /** How long the plug's kind may take to show after POWER_CONNECTED; replaced in tests. */
+        @VisibleForTesting
+        @Volatile
+        var nachsehen: List<Long> = listOf(0L, 500L, 1000L, 1500L)
+
+        /**
+         * How the phone is plugged in: the sticky battery broadcast says it; POWER_CONNECTED does not, and right
+         * after it the sticky one may still say 0 (a wireless pad starts later than a cable). Read again for up to
+         * three seconds, on the sending thread, until it names a kind; still 0, it is sent as unknown.
+         */
+        private fun eingesteckt(ctx: Context): Int {
+            for (warte in nachsehen) {
+                if (warte > 0) Thread.sleep(warte)
+                val plugged = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) // a protected broadcast, read only
+                    ?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
+                if (plugged != 0) return plugged
+            }
+            return 0
+        }
+
+        /** One request, its outcome kept as the screen's line. Unpaired: nothing goes, and the line says so. */
+        fun melden(app: Context, an: Boolean, ladeart: () -> Napi.Ladeart) {
+            val base = ServerStore.baseUrl(app)
+            val token = TokenStore.get(app)
+            if (base == null || token.isNullOrBlank()) {
+                Ausloeser.merke(app, Ausloeser.NICHT_GEKOPPELT, System.currentTimeMillis())
+                return
+            }
+            senden(app) {
+                val art = ladeart() // read on the sending thread: it may wait for the plug's kind
+                val ausgang = AusloeserClient(base, token).laden(an, art)
+                Ausloeser.merke(app, Ausloeser.ladenZeile(an, art, ausgang), System.currentTimeMillis())
+            }
+        }
+    }
+}

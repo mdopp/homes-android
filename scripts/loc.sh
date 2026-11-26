@@ -48,7 +48,7 @@ budget ui        3500  # 3,026: the activities: start screen, pairing, settings 
                        #   (+12 of it is #237's level sheet, merged meanwhile);
                        # 3320 -> 3500: „Deine Geräte“ as tiles (owner, 2026-11-04): ui/FavoritenAnsicht.kt, the
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
-budget data      3185  # 2,780: Homes' calls (Napi), clients, models, the token store;
+budget data      3255  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -60,6 +60,8 @@ budget data      3185  # 2,780: Homes' calls (Napi), clients, models, the token 
                        #   a card's text, Homes' own words for a printer (mdopp/homes#370), its key, field and parse
                        # 3145 -> 3185 (owner's decision 2026-11-18 „ja, baue es so“: Homes in the phone's language, to be OK'd in the PR):
                        #   data/Sprache.kt, the system's languages as Accept-Language on every call, HomesHttp's one client carrying it
+                       # 3185 -> 3255 (owner approved 2026-11-26, homes ADR 0004 §1 and §2): the four
+                       #   /napi/ausloeser calls, their reply shapes and wire values in Napi; ScreenGate names the charger's exception
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
@@ -76,6 +78,9 @@ budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochlad
 budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
                        # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
 budget realtime   667  #   635: the live stream and its foreground service
+budget ausloeser  1000 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
+                       # trigger for HA — the touched tag's activity, the Auslöser screen (writing, naming, renaming, removing a tag;
+                       # §2 owner 2026-11-26), the charger's receiver, the client
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)
 budget .           35  #    33: HomesConfig.kt

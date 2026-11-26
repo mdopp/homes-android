@@ -93,6 +93,7 @@ internal class StartAngebot(
             return when {
                 bringt(Liste.MEHR, KannKey.DATEN_SICHERN) -> R.drawable.ic_backup
                 bringt(Liste.MEHR, KannKey.STANDORTVERLAUF) -> R.drawable.ic_standort
+                bringt(Liste.MEHR, KannKey.AUSLOESER) -> R.drawable.ic_ausloeser
                 !m.bietet[Liste.KONTO].isNullOrEmpty() -> R.drawable.ic_konto
                 bringt(Liste.WIDGETS, KannKey.GERAET) -> R.drawable.ic_device
                 bringt(Liste.WIDGETS, KannKey.ENERGIE) -> R.drawable.ic_bolt

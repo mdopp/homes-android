@@ -14,6 +14,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
+import cloud.dopp.homes.ausloeser.AusloeserActivity
 import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.sicherung.SicherungWorker
@@ -71,7 +72,7 @@ class SicherungScreenTest {
     fun homeLeadsToIt() {
         val a = Robolectric.buildActivity(HomeActivity::class.java).setup().get()
         val mehr = a.findViewById<ViewGroup>(R.id.mehr_group)
-        assertEquals("Daten sichern, Standortverlauf and Homes auf dem Handy", 3, mehr.childCount)
+        assertEquals("Daten sichern, Standortverlauf, Auslöser and Homes auf dem Handy", 4, mehr.childCount)
         val row = mehr.getChildAt(0)
         assertEquals("Daten sichern", row.findViewById<TextView>(R.id.type_label).text.toString())
         row.performClick()
@@ -81,7 +82,12 @@ class SicherungScreenTest {
         assertEquals("Standortverlauf", standort.findViewById<TextView>(R.id.type_label).text.toString())
         standort.performClick()
         assertEquals(StandortActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)
-        val konto = mehr.getChildAt(2)
+        // homes ADR 0004: with what the box can do unknown, Auslöser is offered as every row is
+        val ausloeser = mehr.getChildAt(2)
+        assertEquals("Auslöser", ausloeser.findViewById<TextView>(R.id.type_label).text.toString())
+        ausloeser.performClick()
+        assertEquals(AusloeserActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)
+        val konto = mehr.getChildAt(3)
         assertEquals("Homes auf dem Handy", konto.findViewById<TextView>(R.id.type_label).text.toString())
         konto.performClick()
         assertEquals(HomesKontoActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)

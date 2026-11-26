@@ -345,6 +345,26 @@ class NapiContractTest {
                 "POST", "/napi/einrichtung/apps", "internal/napi/einrichtung.go:28-44, the GET's answer :44",
                 body = setOf("pakete"), sends = EINRICHTUNG + setOf("ok", "reason", "error"),
             ),
+            // Auslöser (homes ADR 0004 §1 and §2, owner 2026-11-26): mdopp/homes feat/ausloeser at df98309 (homes#383);
+            // registered with the geraete module, internal/napi/napi.go:312, routes ausloeser.go:49-54; 404 without HA.
+            Route(
+                "POST", "/napi/ausloeser", "internal/napi/ausloeser.go:71-115",
+                body = setOf("art", "tag", "zustand", "ladeart"), required = setOf("art"),
+                sends = setOf("ok", "name", "error", "reason"),
+            ),
+            Route(
+                "POST", "/napi/ausloeser/tag", "internal/napi/ausloeser.go:120-164",
+                // §2: an optional tag names or renames that id; 409 a name taken, 400 an empty or too long one
+                body = setOf("name", "tag"), required = setOf("name"), sends = setOf("ok", "tag", "uri", "error", "reason"),
+            ),
+            Route(
+                "DELETE", "/napi/ausloeser/tag/{tag}", "internal/napi/ausloeser.go:166-176",
+                sends = setOf("ok", "error", "reason"),
+            ),
+            Route(
+                "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go:181-194",
+                sends = setOf("ok", "tags", "tag", "name", "vorschlaege", "error", "reason"),
+            ),
         )
 
         /** Where Homes reads the token: `bearerOf`, internal/napi/napi.go:208-211. */
@@ -387,6 +407,8 @@ class NapiContractTest {
             "DELETE /napi/gemeinsam/kalender/{kalender}/{uid}", "DELETE /napi/gemeinsam/kontakte/{uid}",
             "GET /napi/kann", "POST /napi/kann/anfordern",
             "GET /napi/einrichtung", "POST /napi/einrichtung/apps", "POST /napi/musik",
+            "POST /napi/ausloeser", "POST /napi/ausloeser/tag", "GET /napi/ausloeser/tags",
+            "DELETE /napi/ausloeser/tag/{tag}",
         )
 
         const val NAPI = "cloud.dopp.homes.data.Napi"
@@ -415,6 +437,7 @@ class NapiContractTest {
             "app/src/main/java/cloud/dopp/homes/einrichtung/Einrichtung.kt",
             "app/src/main/java/cloud/dopp/homes/einrichtung/EinrichtungLeser.kt",
             "app/src/main/java/cloud/dopp/homes/hochladen/MusikClient.kt",
+            "app/src/main/java/cloud/dopp/homes/ausloeser/AusloeserClient.kt",
         )
 
         private val literal = Regex(""""((?:[^"\\]|\\.)*)"""")
