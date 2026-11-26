@@ -345,25 +345,24 @@ class NapiContractTest {
                 "POST", "/napi/einrichtung/apps", "internal/napi/einrichtung.go:28-44, the GET's answer :44",
                 body = setOf("pakete"), sends = EINRICHTUNG + setOf("ok", "reason", "error"),
             ),
-            // Auslöser (homes ADR 0004 §1 and §2, owner 2026-11-26): copied from the contract ADR 0004 fixes for mdopp/homes
-            // feat/ausloeser, whose handler was being written in parallel; no line numbers yet. When it lands, the rows are
-            // checked against internal/napi/ausloeser.go and get their lines, as every other row has them.
+            // Auslöser (homes ADR 0004 §1 and §2, owner 2026-11-26): mdopp/homes feat/ausloeser at df98309 (homes#383);
+            // registered with the geraete module, internal/napi/napi.go:312, routes ausloeser.go:49-54; 404 without HA.
             Route(
-                "POST", "/napi/ausloeser", "internal/napi/ausloeser.go (ADR 0004 §1; lines when it lands)",
+                "POST", "/napi/ausloeser", "internal/napi/ausloeser.go:71-115",
                 body = setOf("art", "tag", "zustand", "ladeart"), required = setOf("art"),
                 sends = setOf("ok", "name", "error", "reason"),
             ),
             Route(
-                "POST", "/napi/ausloeser/tag", "internal/napi/ausloeser.go (ADR 0004 §1; lines when it lands)",
+                "POST", "/napi/ausloeser/tag", "internal/napi/ausloeser.go:120-164",
                 // §2: an optional tag names or renames that id; 409 a name taken, 400 an empty or too long one
                 body = setOf("name", "tag"), required = setOf("name"), sends = setOf("ok", "tag", "uri", "error", "reason"),
             ),
             Route(
-                "DELETE", "/napi/ausloeser/tag/{tag}", "internal/napi/ausloeser.go (ADR 0004 §2; lines when it lands)",
+                "DELETE", "/napi/ausloeser/tag/{tag}", "internal/napi/ausloeser.go:166-176",
                 sends = setOf("ok", "error", "reason"),
             ),
             Route(
-                "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go (ADR 0004 §1; lines when it lands)",
+                "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go:181-194",
                 sends = setOf("ok", "tags", "tag", "name", "vorschlaege", "error", "reason"),
             ),
         )
