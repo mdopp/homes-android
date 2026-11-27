@@ -66,7 +66,7 @@ budget data      3335  # 2,780: Homes' calls (Napi), clients, models, the token 
                        #   the scan's text and the box's aktionen in the three reply shapes
                        # 3265 -> 3330 (owner approved 2026-11-26, homes ADR 0004 §5 §8): the five calls of a tag's
                        #   automations and their wish's state, their reply shapes, the scanner's oeffnen
-                       # 3330 -> 3335 (owner's request 2026-11-27 — the raise to be OK'd in the PR): a tag's zuletzt (§9)
+                       # 3330 -> 3335 (owner approved 2026-11-27, „Alles OK. Go ahead“): a tag's zuletzt (§9)
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
@@ -92,7 +92,7 @@ budget ausloeser  1620 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        #   Link (a link acts on „Auslösen“), the scanner's question opening Homes, a tag's automations
                        #   (TagAutomationen.kt: link, loose, a new one, each confirmed; the admins' approval asked after
                        #   while the screen is open) and the client's five calls;
-                       # 1510 -> 1620 (owner's request 2026-11-27 — the raise to be OK'd in the PR): the new-tag form closed
+                       # 1510 -> 1620 (owner approved 2026-11-27, „Alles OK. Go ahead“): the new-tag form closed
                        #   behind the list's last row, opened by a blank tag too; a tag's last run under it (§9), Homes'
                        #   time read and said as „heute 18:12“
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
