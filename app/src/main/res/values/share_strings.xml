@@ -8,6 +8,9 @@
     <string name="share_already">Schon gemerkt</string>
     <string name="share_not_kept">Nicht gemerkt</string>
     <string name="share_open">Notiz öffnen</string>
+    <!-- a shared recipe (owner 2026-11-27): Homes' recipes show it -->
+    <string name="share_rezept">„%1$s“ als Rezept gemerkt</string>
+    <string name="share_ansehen">Ansehen</string>
     <string name="share_done">Fertig</string>
     <string name="share_not_paired">Diese App ist noch nicht mit Homes gekoppelt. Öffne die App und verbinde sie zuerst.</string>
     <string name="share_unreachable">Homes hat nicht rechtzeitig geantwortet. Ist das Handy im Netz? Teile den Link später noch einmal.</string>

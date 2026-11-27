@@ -43,6 +43,7 @@ class ToolWidgetProvider : FedWidgetProvider(ACTION_REFRESH, 400_000, tapStartsL
 
     override fun refresh(context: Context, appWidgetId: Int) {
         val toolId = WidgetStore.toolId(context, appWidgetId)
+        if (toolId in ToolDefs.AUSGEBAUT) return WidgetFallback.ausgebaut(context, appWidgetId) // taken out: no network
         if (toolId != null && WidgetFallback.weg(context, appWidgetId, KannKey.TOOL + toolId)) return // the box lost the tool
         val mgr = AppWidgetManager.getInstance(context)
         val cached = ToolCells.decode(WidgetStore.toolCellsJson(context, appWidgetId))

@@ -2,6 +2,7 @@ package cloud.dopp.homes.ui
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,6 +10,9 @@ import cloud.dopp.homes.R
 import cloud.dopp.homes.data.ApiClient
 import cloud.dopp.homes.data.ApiClient.Merken
 import cloud.dopp.homes.data.ApiClient.Upload
+import cloud.dopp.homes.data.Napi
+import cloud.dopp.homes.data.ServerStore
+import cloud.dopp.homes.ausloeser.Ausloeser
 import cloud.dopp.homes.widget.ActionDialog
 import cloud.dopp.homes.widget.ActionItem
 import cloud.dopp.homes.widget.ActionSheet
@@ -109,8 +113,8 @@ class ShareActivity : Activity() {
         )
 
     /** What became of the share, in the same dialog: [open] adds „Notiz öffnen“; „Fertig“ closes. */
-    private fun said(title: String, message: String, open: String? = null) {
-        val sheet = ActionSheet(listOfNotNull(open?.let { ActionItem(R.string.share_open, ActionTone.PRIMARY) }))
+    private fun said(title: String, message: String, open: String? = null, knopf: Int = R.string.share_open) {
+        val sheet = ActionSheet(listOfNotNull(open?.let { ActionItem(knopf, ActionTone.PRIMARY) }))
         ActionDialog.show(
             activity = this, title = title, message = message, sheet = sheet,
             onPick = {
@@ -125,14 +129,27 @@ class ShareActivity : Activity() {
     private fun answer(result: Merken) {
         busy?.dismiss()
         when (result) {
-            is Merken.Kept -> said(getString(if (result.already) R.string.share_already else R.string.share_kept), result.said, result.note)
+            is Merken.Kept -> gemerkt(this, result, ServerStore.baseUrl(this)).let { said(it.titel, it.text, it.link, it.knopf) }
             is Merken.Refused -> said(getString(R.string.share_not_kept), result.sentence)
             Merken.NotPaired -> said(getString(R.string.share_not_kept), getString(R.string.share_not_paired))
             Merken.Unreachable -> said(getString(R.string.share_not_kept), getString(R.string.share_unreachable))
         }
     }
 
+    /** How a kept share is said: the dialog's title and line, the note to open (on the paired Homes only), its button. */
+    data class Gemerkt(val titel: String, val text: String, val link: String?, val knopf: Int)
+
     companion object {
+        /** A recipe „‚Kürbissuppe‘ als Rezept gemerkt“ with „Ansehen“; anything else as before, „Notiz öffnen“. */
+        fun gemerkt(ctx: Context, k: Merken.Kept, base: String?): Gemerkt {
+            val link = Ausloeser.aufHomes(k.note, base)
+            return if (k.art == Napi.ART_REZEPT && k.titel.isNotEmpty()) {
+                Gemerkt(ctx.getString(R.string.share_rezept, k.titel), k.said, link, R.string.share_ansehen)
+            } else {
+                Gemerkt(ctx.getString(if (k.already) R.string.share_already else R.string.share_kept), k.said, link, R.string.share_open)
+            }
+        }
+
         /**
          * What was shared, as one text: a browser shares the page's title as
          * the subject and the link as the text; either alone is fine. Null

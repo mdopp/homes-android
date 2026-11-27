@@ -244,6 +244,10 @@ object Napi {
     /** The reminders tool of `/napi/defs/tool`: not offered either (owner, 2026-11-03: reminders go into the phone's calendar). */
     const val TOOL_TASKS = "task"
 
+    /** Dokumente and Notizen, gone as widgets (owner 2026-11-27: „Kann ganz weg“); a placed one says so. */
+    const val TOOL_DOC = "doc"
+    const val TOOL_NOTE = "note"
+
     /** The frame the stream carries, by its SSE event name. */
     const val CARD_STATE = "card_state"
 
@@ -308,6 +312,9 @@ object Napi {
      * `POST /napi/merken` (Share → Homes, homes#120): the note Homes kept, or
      * `{error}` with a German sentence when it kept none.
      */
+    /** `art` of a kept recipe (owner 2026-11-27: shared recipes show in the app again). */
+    const val ART_REZEPT = "rezept"
+
     object MerkenJson {
         const val TITLE = "titel"
         const val KIND = "art"

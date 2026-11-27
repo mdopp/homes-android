@@ -177,14 +177,7 @@ class NapiContractTest {
                 "GET", "/napi/portal/contacts", "internal/napi/tools.go:58, 179-218, the page :210",
                 sends = setOf("ok", "error", "contacts", "id", "page", "name", "phone", "email", "birthday"),
             ),
-            Route(
-                "GET", "/napi/portal/documents", "internal/napi/tools.go:61, 220-249, the page :244",
-                sends = setOf("ok", "error", "documents", "id", "title", "created", "correspondent", "link", "page"),
-            ),
-            Route(
-                "GET", "/napi/portal/notes", "internal/napi/tools.go:64, 251-265",
-                sends = setOf("ok", "error", "notes", "id", "page", "title", "changed"),
-            ),
+            // /napi/portal/documents and /napi/portal/notes: their widgets went (owner 2026-11-27), the app calls neither
             Route(
                 "POST", "/napi/upload", "internal/napi/upload.go:144-145, the parts upload.go:214-232",
                 body = setOf("filename", "file"), required = setOf("file"), sends = setOf("ok", "error", "id", "files"),
@@ -412,7 +405,7 @@ class NapiContractTest {
         val HOMES_CARD_DOMAINS = setOf("sensor", "binary_sensor", "cover", "light", "switch", "climate", "media_player", "lock")
 
         /** The rows paths Homes' tool catalog names: internal/napi/tools.go:81-93. */
-        val HOMES_TOOL_PATHS = setOf("/napi/portal/contacts", "/napi/portal/documents", "/napi/portal/notes", "/napi/portal/tasks")
+        val HOMES_TOOL_PATHS = setOf("/napi/portal/contacts", "/napi/portal/tasks") // the tools the app still renders (placed ones)
 
         /** The cell roles Homes' tool catalog uses: internal/napi/tools.go:82-94. */
         val HOMES_CELL_ROLES = setOf("title", "meta", "actions")

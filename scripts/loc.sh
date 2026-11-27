@@ -41,14 +41,16 @@ budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
                        #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
                        #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
-budget ui        3500  # 3,026: the activities: start screen, pairing, settings screens;
+budget ui        3506  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
                        # 3220 -> 3320: the account's and the backup's missing parts as disabled switches with their trace, homes-android#233
                        #   (+12 of it is #237's level sheet, merged meanwhile);
                        # 3320 -> 3500: „Deine Geräte“ as tiles (owner, 2026-11-04): ui/FavoritenAnsicht.kt, the
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
-budget data      3335  # 2,780: Homes' calls (Napi), clients, models, the token store;
+                       # 3500 -> 3506 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut, and shared recipes shown —
+                       #   to be OK'd in the PR): the recipe's „als Rezept gemerkt“ with „Ansehen“ (ShareActivity.gemerkt)
+budget data      3348  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -67,15 +69,19 @@ budget data      3335  # 2,780: Homes' calls (Napi), clients, models, the token 
                        # 3265 -> 3330 (owner approved 2026-11-26, homes ADR 0004 §5 §8): the five calls of a tag's
                        #   automations and their wish's state, their reply shapes, the scanner's oeffnen
                        # 3330 -> 3335 (owner approved 2026-11-27, „Alles OK. Go ahead“): a tag's zuletzt (§9)
+                       # 3335 -> 3348 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut — to be OK'd in the PR): the two
+                       #   tools taken out (ToolDefs.AUSGEBAUT), a kept share's art and titel
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
                        # 1632 -> 1726 (owner approved 2026-11-05: contact pictures, homes#287): a card's
                        #   PHOTO read, written as the contact's picture with its hash read back, the person's own sent, at most 256 px
 budget standort  1098  # 1,046: Standortverlauf — recording, batching, import
-budget kann      460  #   340 on 2026-11-04: what the box can do, /napi/kann kept and read, „Hier anfordern“ (homes ADR 0001);
+budget kann      469  #   340 on 2026-11-04: what the box can do, /napi/kann kept and read, „Hier anfordern“ (homes ADR 0001);
                        # 360 -> 420 (owner-approved, homes ADR 0001 plan): the share targets switched by teilen, homes-android#232;
                        # 420 -> 460: the widget providers switched by widgets, homes-android#233
+                       # 460 -> 469 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut — to be OK'd in the PR): the tool
+                       #   widget's provider leaves the picker while no tool is offered (Anbieter.werkzeug)
 budget einrichtung 618 #   617 on 2026-11-14, the first three tasks and „Alle N Aufgaben“ (owner: „immer nur die ersten mit Verweis auf alle“); 574 on 2026-11-04, a new package (owner): /napi/einrichtung kept and read, „Öffnen“ and „Deine Aufgaben“
                        # on the start screen, the launcher's four shortcuts and their trampoline
 budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochladen job — music and Takeout ZIPs, with the screen off;

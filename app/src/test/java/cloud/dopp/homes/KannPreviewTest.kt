@@ -113,7 +113,8 @@ class KannPreviewTest {
         assertFalse("the admins' trace is on Homes' Box page", "Werkstatt" in spuren)
         val widgets = texts(a.findViewById(R.id.widgets_group))
         assertTrue("energy is a muted entry: $widgets", "Energie" in widgets || widgets.any { it.startsWith("Energie") })
-        assertTrue("dokumente's tool joins as a muted entry: $widgets", "Dokumente" in widgets)
+        // the Dokumente and Notizen widgets went (owner 2026-11-27): no entry, not even a muted one
+        assertFalse("dokumente's tool is no entry any more: $widgets", "Dokumente" in widgets || "Notizen" in widgets)
         draw(a, "app-start-spuren", content(a))
         draw(a, "app-mehr-spuren", section)
         draw(a, "app-picker-spur", a.findViewById(R.id.widgets_card))

@@ -59,7 +59,8 @@ class ApiClient(private val ctx: Context) {
      * [Unreachable] — no answer in time.
      */
     sealed class Merken {
-        data class Kept(val said: String, val note: String?, val already: Boolean) : Merken()
+        /** Kept: Homes' line, its note's address, whether it was there already; [art] `rezept` for a recipe, its [titel]. */
+        data class Kept(val said: String, val note: String?, val already: Boolean, val art: String = "", val titel: String = "") : Merken()
         data class Refused(val sentence: String) : Merken()
         object NotPaired : Merken()
         object Unreachable : Merken()
@@ -416,7 +417,10 @@ class ApiClient(private val ctx: Context) {
             val o = HomesHttp.json(body)
             if (code in 200..299 && o != null) {
                 val note = o.optString(MerkenJson.NOTE).takeIf { it.startsWith("https://") }
-                return Merken.Kept(o.optString(MerkenJson.SAID), note, o.optBoolean(MerkenJson.ALREADY))
+                return Merken.Kept(
+                    o.optString(MerkenJson.SAID), note, o.optBoolean(MerkenJson.ALREADY),
+                    HomesHttp.text(o, MerkenJson.KIND).orEmpty(), HomesHttp.text(o, MerkenJson.TITLE).orEmpty(),
+                )
             }
             val sentence = o?.optString(MerkenJson.ERROR).orEmpty()
             return when {
