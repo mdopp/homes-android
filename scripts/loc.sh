@@ -95,7 +95,7 @@ budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochlad
 budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
                        # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
 budget realtime   667  #   635: the live stream and its foreground service
-budget ausloeser  2472 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
+budget ausloeser  2473 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
                        # trigger for HA — the touched tag's activity, the Auslöser screen (writing, naming, renaming, removing a tag;
                        # §2 owner 2026-11-26), the charger's receiver, the client;
                        # 1000 -> 1070 (owner approved 2026-11-26 „Go. Passt alles“, §4): „Was soll der Tag tun?“, the action
@@ -112,7 +112,7 @@ budget ausloeser  2472 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        #   new-tag form (LeerTagActivity, TECH_DISCOVERED) and is written while Android still holds it;
                        # 1765 -> 2035 (owner approved 2026-11-27 (WLAN-Tag)): „+ WLAN-Tag beschreiben“, the WSC credential
                        #   built byte by byte (WlanTag.kt) and its form (WlanFormular.kt), the writer's record of any kind
-                       # 2035 -> 2472 (owner approved 2026-11-27 („Bau alles“), Tag-Inhalt anzeigen): what is on a written
+                       # 2035 -> 2473 (owner approved 2026-11-27 („Bau alles“), Tag-Inhalt anzeigen): what is on a written
                        #   tag held to the screen (TagInhalt.kt: Homes, WLAN read back, any record in plain words), its card
                        #   (TagInhaltAnsicht.kt), „Bearbeiten“, „Auslösen“, „Ins Telefon übernehmen“ (WlanUebernahme.kt),
                        #   and „Überschreiben“ only after one question (TagSchreiber.darf, erlauben)
