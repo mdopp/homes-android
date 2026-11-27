@@ -110,6 +110,5 @@
     <!-- Dokumente-Adresse kopieren (owner 2026-11-10): the Mehr row, its hint, the app icon's menu, what Android 12 and older are told. -->
     <string name="dokumente_adresse">Dokumente-Adresse kopieren</string>
     <string name="dokumente_adresse_kurz">Dokumente-Adresse</string>
-    <string name="dokumente_adresse_hinweis">%1$s – hinter dem + den Absender anhängen</string>
     <string name="dokumente_adresse_kopiert">Dokumente-Adresse kopiert</string>
 </resources>

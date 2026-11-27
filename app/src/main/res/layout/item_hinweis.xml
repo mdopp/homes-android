@@ -10,7 +10,8 @@
     android:gravity="center_vertical"
     android:minHeight="56dp"
     android:orientation="horizontal"
-    android:paddingStart="@dimen/card_padding">
+    android:paddingStart="@dimen/card_padding"
+    android:paddingEnd="0dp">
 
     <TextView
         android:id="@+id/hinweis_text"
