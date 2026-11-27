@@ -23,8 +23,11 @@ import cloud.dopp.homes.R
  */
 internal class TagInhaltAnsicht(private val a: Activity) {
 
-    /** A button: its [text], what it says while it runs ([laeuft], null: it ends at once), and what it does. */
-    class Knopf(val text: String, val laeuft: String? = null, val tun: (fertig: (String) -> Unit) -> Unit)
+    /**
+     * A button: its [text], what it says while it runs ([laeuft], null: it ends at once), the button it becomes
+     * once done ([danach], null: itself again), and what it does.
+     */
+    class Knopf(val text: String, val laeuft: String? = null, val danach: Knopf? = null, val tun: (fertig: (String) -> Unit) -> Unit)
 
     private val karte = a.findViewById<View>(R.id.ausloeser_inhalt)
     private val titel = a.findViewById<TextView>(R.id.inhalt_titel)
@@ -96,8 +99,10 @@ internal class TagInhaltAnsicht(private val a: Activity) {
             b.text = k.laeuft
         }
         k.tun { satz ->
+            val weiter = k.danach ?: k
             b.isEnabled = true
-            b.text = k.text
+            b.text = weiter.text
+            b.setOnClickListener { druecke(b, weiter) }
             sage(satz)
         }
     }

@@ -783,7 +783,8 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   that holds something is never written over without one question** („Der
   Inhalt geht verloren.“): only after the yes may the next write go onto
   that tag (its id, once; forgotten when the screen goes), also while a new
-  tag or a WLAN tag waits. Nothing read leaves the phone.
+  tag or a WLAN tag waits. Nothing read leaves the phone. After „Ins Telefon
+  übernehmen“ the card's button becomes „WLAN anbieten“.
 - **Blank, or a card with data of its own** (owner 2026-11-28, a field
   case: an access card was taken for a blank sticker; `ausloeser/TagBefund.kt`,
   `TagLeser.kt`, `TagKarteTest`). Every tag is read before anything is
@@ -810,6 +811,19 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   logged. LeerTagActivity opens the form only for a blank tag; for a card
   with data, or one unclear, „Das ist keine leere NFC-Karte.“ The charger's
   card is as before.
+- **„WLAN anbieten“** (owner 2026-11-27; no `/napi`, nothing leaves the
+  phone but over NFC to the phone held to it): from the WLAN form's
+  „Anbieten statt schreiben“ or a read WLAN tag's „WLAN anbieten“, the
+  screen „Halte das andere Telefon an meins“ makes the phone answer as a
+  read-only NFC Forum Type 4 Tag (`ausloeser/Typ4Tag.kt`, AID
+  `D2760000850101`, CC file E103 with write access FF, NDEF file E104)
+  carrying exactly the WLAN tag's record. The bound HCE service
+  (`WlanAnbietenDienst`, `BIND_NFC_SERVICE`, `requireDeviceUnlock`) answers
+  only while that screen is in front, with the screen on, for at most two
+  minutes from its first start (going away and back does not extend it);
+  then it stops by itself and says so. At any other time every command is
+  6A82. The credential lives in memory only (`WlanAngebot`), never stored,
+  and is forgotten when the offer ends or the screen closes.
 - **A new tag.** On the Auslöser screen: a name (the list's `vorschlaege`,
   the house's rooms from HA and a few places, as one-tap words under the
   field) → `POST /napi/ausloeser/tag {"name":"Bürotür"}` →

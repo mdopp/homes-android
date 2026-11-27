@@ -1,6 +1,7 @@
 package cloud.dopp.homes.ausloeser
 
 import android.content.Intent
+import android.nfc.NdefMessage
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -506,7 +507,7 @@ class AusloeserActivity : AppCompatActivity() {
     private fun gelesen(e: TagSchreiber.Ergebnis.Gelesen) {
         when (val i = TagInhalt.lesen(e.nachricht, ServerStore.baseUrl(this)?.toUri()?.host)) {
             is TagInhalt.Homes -> homesTag(i.id)
-            is TagInhalt.Wlan -> wlanTag(i.netz, e.id)
+            is TagInhalt.Wlan -> wlanTag(i.netz, e.id, e.nachricht)
             is TagInhalt.Fremd -> inhalt.zeige(
                 getString(R.string.inhalt_fremd), i.zeilen, null,
                 listOf(TagInhaltAnsicht.Knopf(getString(R.string.inhalt_ueberschreiben)) { fragUeberschreiben(e.id) { neuerTag(getString(R.string.inhalt_neu_titel)) } }),
@@ -543,15 +544,24 @@ class AusloeserActivity : AppCompatActivity() {
         }
     }
 
-    /** A WLAN tag: its network, the password behind „zeigen“, „Neu beschreiben“ and „Ins Telefon übernehmen“. */
-    private fun wlanTag(n: WlanTag.Netz, id: ByteArray?) {
+    /**
+     * A WLAN tag: its network, the password behind „zeigen“, „Neu beschreiben“ and „Ins Telefon übernehmen“,
+     * which then becomes „WLAN anbieten“ (the record as read, offered from memory for two minutes).
+     */
+    private fun wlanTag(n: WlanTag.Netz, id: ByteArray?, gelesen: NdefMessage) {
         val neu = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_neu_beschreiben)) {
             fragUeberschreiben(id) {
                 inhalt.schliessen()
                 wlan.vorbelegen(n)
             }
         }
-        val uebernehmen = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_uebernehmen), getString(R.string.inhalt_uebernimmt)) { fertig -> uebernehmen(n, fertig) }
+        val anbieten = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_anbieten)) {
+            inhalt.schliessen()
+            WlanAnbietenActivity.oeffnen(this, n.ssid, gelesen)
+        }
+        val uebernehmen = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_uebernehmen), getString(R.string.inhalt_uebernimmt), anbieten) { fertig ->
+            uebernehmen(n, fertig)
+        }
         val zeilen = listOf(getString(R.string.inhalt_wlan_name, n.ssid), getString(R.string.inhalt_wlan_schutz, n.art))
         inhalt.zeige(getString(R.string.inhalt_wlan_titel), zeilen, n.passwort.ifEmpty { null }, listOf(neu, uebernehmen))
     }

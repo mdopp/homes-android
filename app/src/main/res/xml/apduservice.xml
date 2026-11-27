@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- „WLAN anbieten“ (owner 2026-11-27): the NFC Forum Type 4 Tag's NDEF application, answered only with
+     the phone unlocked (and, as every such service by default, with the screen on); WlanAnbietenDienst
+     answers it only while the person offers on WlanAnbietenActivity. -->
+<host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/anbieten_dienst"
+    android:requireDeviceUnlock="true">
+    <aid-group
+        android:category="other"
+        android:description="@string/anbieten_dienst">
+        <aid-filter android:name="D2760000850101" />
+    </aid-group>
+</host-apdu-service>

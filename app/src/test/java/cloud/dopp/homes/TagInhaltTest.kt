@@ -295,6 +295,12 @@ class TagInhaltTest {
         shadowOf(a).receiveResult(gestartet.intent, Activity.RESULT_OK, Intent())
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals("„Zuhause“ ist im Telefon gespeichert.", a.karte())
+        assertEquals("then it can be offered", "WLAN anbieten", a.zwei().text.toString())
+        a.zwei().performClick()
+        assertEquals(cloud.dopp.homes.ausloeser.WlanAnbietenActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)
+        assertEquals("held in memory for the offer", "Zuhause", cloud.dopp.homes.ausloeser.WlanAngebot.ssid)
+        cloud.dopp.homes.ausloeser.WlanAngebot.vergessen()
+        halte(a, WlanTag.nachricht("Zuhause", "geheim123", WlanTag.Schutz.WPA2))
         a.zwei().performClick()
         val wieder = shadowOf(a).nextStartedActivityForResult
         shadowOf(a).receiveResult(wieder.intent, Activity.RESULT_CANCELED, null)

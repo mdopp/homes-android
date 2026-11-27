@@ -45,6 +45,7 @@ internal class WlanFormular(
     private val schutz = a.findViewById<RadioGroup>(R.id.wlan_schutz)
     private val knopf = a.findViewById<Button>(R.id.wlan_schreiben)
     private val abbrechen = a.findViewById<Button>(R.id.wlan_abbrechen)
+    private val anbieten = a.findViewById<Button>(R.id.wlan_anbieten)
     private val stand = a.findViewById<TextView>(R.id.wlan_stand)
 
     /** Waiting for a tag: the screen's NFC is this form's. */
@@ -71,6 +72,7 @@ internal class WlanFormular(
         }
         schutz.setOnCheckedChangeListener { _, id -> passwortSichtbar(id != R.id.wlan_offen) }
         knopf.setOnClickListener { tippe() }
+        anbieten.setOnClickListener { anbieten() }
     }
 
     /** Open, or closed with everything typed forgotten. */
@@ -118,17 +120,13 @@ internal class WlanFormular(
             zeigeStand(a.getString(R.string.wlan_abgebrochen))
             return
         }
-        val name = ssid.text.toString().trim()
-        val offen = schutz.checkedRadioButtonId == R.id.wlan_offen
-        val art = if (offen) WlanTag.Schutz.OFFEN else WlanTag.Schutz.WPA2
-        val geheim = if (offen) "" else passwort.text.toString()
-        val fehlt = WlanTag.pruefen(name, geheim, art) ?: when (schreiber().bereit(a)) {
+        val (name, n) = eingabe() ?: return
+        val fehlt = when (schreiber().bereit(a)) {
             TagSchreiber.Bereit.KEIN_NFC -> a.getString(R.string.ausloeser_kein_nfc)
             TagSchreiber.Bereit.AUS -> a.getString(R.string.ausloeser_nfc_aus)
             TagSchreiber.Bereit.JA -> null
         }
         if (fehlt != null) return zeigeStand(fehlt)
-        val n = WlanTag.nachricht(name, geheim, art)
         nachricht = name to n
         wartet = true
         knopf.text = a.getString(R.string.ausloeser_abbrechen)
@@ -136,6 +134,27 @@ internal class WlanFormular(
         lesen(name, n)
         main.removeCallbacks(zuSpaet)
         main.postDelayed(zuSpaet, WARTEN_MS)
+    }
+
+    /** The form as a record, or null with what is wrong said. */
+    private fun eingabe(): Pair<String, NdefMessage>? {
+        val name = ssid.text.toString().trim()
+        val offen = schutz.checkedRadioButtonId == R.id.wlan_offen
+        val art = if (offen) WlanTag.Schutz.OFFEN else WlanTag.Schutz.WPA2
+        val geheim = if (offen) "" else passwort.text.toString()
+        WlanTag.pruefen(name, geheim, art)?.let {
+            zeigeStand(it)
+            return null
+        }
+        return name to WlanTag.nachricht(name, geheim, art)
+    }
+
+    /** „Anbieten statt schreiben“: the phone itself answers as the tag, for two minutes (WlanAnbietenActivity). */
+    private fun anbieten() {
+        if (wartet) warteAus()
+        val (name, n) = eingabe() ?: return
+        auf(false) // the form forgets what was typed; the offer holds it in memory only
+        WlanAnbietenActivity.oeffnen(a, name, n)
     }
 
     private fun lesen(name: String, n: NdefMessage) {

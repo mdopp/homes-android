@@ -148,4 +148,15 @@
     <string name="karte_kopieren">Kopieren</string>
     <string name="karte_kopiert">Kopiert.</string>
     <string name="leer_keine">Das ist keine leere NFC-Karte.</string>
+    <!-- „WLAN anbieten“ (owner 2026-11-27): the phone answers as a WLAN tag, two minutes at most -->
+    <string name="wlan_anbieten">Anbieten statt schreiben</string>
+    <string name="inhalt_anbieten">WLAN anbieten</string>
+    <string name="anbieten_titel">WLAN anbieten</string>
+    <string name="anbieten_halte">Halte das andere Telefon an meins</string>
+    <string name="anbieten_noch">Wird angeboten – noch %1$s. Danach hört es von selbst auf.</string>
+    <string name="anbieten_vorbei">Die zwei Minuten sind um: das WLAN wird nicht mehr angeboten, und dieses Telefon hat es vergessen.</string>
+    <string name="anbieten_nichts">Nichts anzubieten: das WLAN ist schon vergessen. Lies den Tag noch einmal oder füll das Formular aus.</string>
+    <string name="anbieten_kann_nicht">Dieses Telefon kann sich nicht als Tag ausgeben.</string>
+    <string name="anbieten_beenden">Beenden</string>
+    <string name="anbieten_dienst">Homes: ein WLAN anbieten</string>
 </resources>

@@ -50,7 +50,10 @@ import java.io.File
  * Auslöser (homes ADR 0004, owner 2026-11-26): the NFC permission, NFC not
  * required; one activity a touched tag opens (NDEF_DISCOVERED only, Homes' own
  * form and HA's app's), and the charger heard by a receiver the live service
- * registers while it runs — never in the manifest, no job, no alarm.
+ * registers while it runs — never in the manifest, no job, no alarm. „WLAN
+ * anbieten“ (owner approved 2026-11-27) adds one bound HCE service, which
+ * only Android's NFC stack binds and which answers only while its screen
+ * offers: no foreground service, no notification.
  */
 class ManifestTest {
 
@@ -167,9 +170,36 @@ class ManifestTest {
             listOf(".konto.KontoDienst", ".konto.KontakteSyncDienst", ".konto.KalenderSyncDienst"),
             konto.map { Regex("""android:name="([^"]+)"""").find(it)!!.groupValues[1] },
         )
-        (services - fgs - upload - konto.toSet()).forEach { assertTrue("$it is not a widget list", it.contains("RemoteViewsService\"")) }
+        val hce = services.filter { it.contains(".ausloeser.") }
+        assertEquals("one bound HCE service, „WLAN anbieten“'s", listOf(".ausloeser.WlanAnbietenDienst"), hce.map { Regex("""android:name="([^"]+)"""").find(it)!!.groupValues[1] })
+        (services - fgs - upload - konto.toSet() - hce.toSet()).forEach { assertTrue("$it is not a widget list", it.contains("RemoteViewsService\"")) }
         // dataSync is capped at 6 h a day (Android 15): never the live widgets', only the uploads' (the job says when it runs out)
         assertEquals("dataSync only for the uploads", 1, Regex("""foregroundServiceType="dataSync"""").findAll(manifest).count())
+    }
+
+    /**
+     * „WLAN anbieten“ (owner approved 2026-11-27): a bound host-card-emulation service, not a foreground service
+     * — only Android's NFC stack may bind it, for exactly the NDEF application's AID, only with the phone unlocked;
+     * its screen is not exported and not in the recents.
+     */
+    @Test
+    fun theWlanOfferIsOneBoundHceServiceForTheNdefAidUnlockedOnly() {
+        val own = manifest.replace(removed, "")
+        val start = own.indexOf("""android:name=".ausloeser.WlanAnbietenDienst"""")
+        assertTrue(start > 0)
+        val dienst = own.substring(own.lastIndexOf("<service", start), own.indexOf("</service>", start))
+        assertTrue(dienst, dienst.contains("""android:permission="android.permission.BIND_NFC_SERVICE""""))
+        assertFalse("not a foreground service", dienst.contains("foregroundServiceType"))
+        assertTrue(dienst, dienst.contains("android.nfc.cardemulation.action.HOST_APDU_SERVICE"))
+        assertTrue(dienst, dienst.contains("""android:resource="@xml/apduservice""""))
+        assertEquals("one HCE service", 1, Regex("HOST_APDU_SERVICE").findAll(own).count())
+        val xml = File(RepoFiles.main, "res/xml/apduservice.xml").readText()
+        assertTrue(xml, xml.contains("""android:requireDeviceUnlock="true""""))
+        assertEquals("exactly the NDEF application's AID", listOf("D2760000850101"), Regex("""<aid-filter android:name="([^"]+)"""").findAll(xml).map { it.groupValues[1] }.toList())
+        assertFalse("never a payment service", xml.contains("payment"))
+        val screen = own.substringAfter("""android:name=".ausloeser.WlanAnbietenActivity"""").substringBefore("/>")
+        assertTrue(screen, screen.contains("""android:exported="false"""") && screen.contains("""android:excludeFromRecents="true""""))
+        assertTrue(own.contains("""<uses-feature android:name="android.hardware.nfc.hce" android:required="false" />"""))
     }
 
     /**

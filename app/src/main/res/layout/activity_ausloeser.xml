@@ -166,6 +166,15 @@
                     android:layout_marginTop="@dimen/space_sm"
                     android:text="@string/ausloeser_schreiben" />
 
+                <!-- „WLAN anbieten“: the phone answers as the tag itself, for two minutes. -->
+                <Button
+                    android:id="@+id/wlan_anbieten"
+                    style="@style/Widget.Homes.Button.Ghost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/wlan_anbieten" />
+
                 <Button
                     android:id="@+id/wlan_abbrechen"
                     style="@style/Widget.Homes.Button.Ghost"

@@ -58,7 +58,13 @@ These rules apply to every session, human or agent.
   own notification; Android 15 allows `dataSync` six hours a day, and when
   they run out the job says in German that it goes on later — never a
   silent stop. Do not add a third, a poll (widget update periods stay 0), an
-  alarm, a wakelock or a rescue worker. Recovery after a killed process rests
+  alarm, a wakelock or a rescue worker. Beside them, and not one of them, one
+  bound service that is no foreground service (owner approved 2026-11-27):
+  „WLAN anbieten“'s host-card-emulation service
+  (`ausloeser/WlanAnbietenDienst.kt`), which only Android's NFC stack binds
+  (`BIND_NFC_SERVICE`), for the NDEF application's AID alone, with the
+  phone unlocked (`@xml/apduservice`); it posts nothing, holds nothing, and
+  answers only while its screen offers (else 6A82). Recovery after a killed process rests
   on the battery-optimization exemption the person grants. `ManifestTest`
   holds this; `e2e/` proves it on emulators (`.github/workflows/live-e2e.yml`).
 - Two jobs, and only these. The backup pick-up (the owner's call in #194):
@@ -116,7 +122,15 @@ These rules apply to every session, human or agent.
   blank is decided only after an actual read; what reads without keys is
   shown on the screen only (MIFARE Classic with the four public default keys
   alone, ISO-DEP by application name, never a record or the card number),
-  never stored, sent or logged — no UID in a log.
+  never stored, sent or logged — no UID in a log. „WLAN
+  anbieten“ (from the form's „Anbieten statt schreiben“, or a read WLAN tag's
+  card after „Ins Telefon übernehmen“): the phone answers another phone as a
+  read-only Type 4 Tag with that one record (`Typ4Tag`, `WlanAnbietenTest`)
+  — only while `WlanAnbietenActivity` is in front, at most two minutes from
+  its start, then it stops by itself and says so; the credential is held in
+  memory only (`WlanAngebot`) and forgotten when the offer ends. Homes keeps
+  no WLAN anywhere: „Ins Telefon übernehmen“ hands it to Android's own WLAN
+  settings, and nothing else stores it.
 - Standortverlauf (the owner's call, 2026-11-02; docs/CONTRACT.md (f)):
   behind its own switch and the background-location permission,
   Android's own LocationManager delivers by PendingIntent to
