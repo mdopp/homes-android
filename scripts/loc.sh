@@ -95,7 +95,7 @@ budget ausloeser  1765 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        # 1510 -> 1620 (owner approved 2026-11-27, „Alles OK. Go ahead“): the new-tag form closed
                        #   behind the list's last row, opened by a blank tag too; a tag's last run under it (§9), Homes'
                        #   time read and said as „heute 18:12“;
-                       # 1620 -> 1765 (owner's wish and field finding 2026-11-27 — the raise to be OK'd in the PR): a VIEW
+                       # 1620 -> 1765 (owner's wish and field finding 2026-11-27, owner approved 2026-11-27 „OK“): a VIEW
                        #   from Android's NFC service is a touch (TagActivity.weg); a blank tag touched anywhere opens the
                        #   new-tag form (LeerTagActivity, TECH_DISCOVERED) and is written while Android still holds it
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
