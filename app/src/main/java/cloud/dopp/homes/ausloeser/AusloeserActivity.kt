@@ -70,6 +70,9 @@ class AusloeserActivity : AppCompatActivity() {
     /** The chosen action: the tag's own while it is changed, HA's (`""`) for a new one. */
     private var gewaehlt = ""
 
+    /** „+ WLAN-Tag beschreiben“ (owner 2026-11-27): its own form, nothing of it leaves the phone. */
+    private lateinit var wlan: WlanFormular
+
     /** The tag's automations, while one of HA's tags is changed (§8). */
     private lateinit var automationen: TagAutomationen
 
@@ -86,6 +89,7 @@ class AusloeserActivity : AppCompatActivity() {
         setContentView(R.layout.activity_ausloeser)
         padForSystemBars(findViewById(R.id.ausloeser_root))
         automationen = TagAutomationen(this, ::gekoppelt, ::ladeTags)
+        wlan = WlanFormular(this, { schreiber }, ::leserZurueck, ::zuklappen, ::stand)
         findViewById<SwitchCompat>(R.id.ausloeser_laden).setOnCheckedChangeListener { _, an ->
             if (setzt) return@setOnCheckedChangeListener
             Ausloeser.setzeLadenMelden(this, an)
@@ -116,7 +120,7 @@ class AusloeserActivity : AppCompatActivity() {
         ladeTags()
         automationen.anfangen()
         // reader mode while in front: written while waiting, else a blank tag is offered (§2)
-        schreiber.an(this, { offen?.takeIf { wartet }?.second?.uri }, ::kam)
+        if (wlan.wartet) wlan.wiederAn() else leserZurueck()
     }
 
     override fun onPause() {
@@ -124,6 +128,9 @@ class AusloeserActivity : AppCompatActivity() {
         automationen.aufhoeren() // a waiting wish is asked after only while the screen is open
         super.onPause()
     }
+
+    /** The phone's NFC for this screen: written while a new tag waits, else a blank tag is offered (§2). */
+    private fun leserZurueck() = schreiber.an(this, { offen?.takeIf { wartet }?.second?.uri }, ::kam)
 
     override fun onDestroy() {
         main.removeCallbacksAndMessages(null)
@@ -284,6 +291,7 @@ class AusloeserActivity : AppCompatActivity() {
 
     /** The form open in place of the list's last row, or closed to it (owner 2026-11-27: „Neu nimmt zu viel Platz ein“). */
     private fun aufklappen(an: Boolean) {
+        if (an) wlan.auf(false) // one form at a time
         findViewById<View>(R.id.ausloeser_formular).isVisible = an
         findViewById<View>(R.id.ausloeser_neu_zeile).isVisible = !an
     }

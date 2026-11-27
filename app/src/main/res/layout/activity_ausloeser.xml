@@ -65,6 +65,123 @@
                 android:text="@string/ausloeser_neu_zeile"
                 android:textColor="@color/homes_accent" />
 
+            <!-- A WLAN tag (owner 2026-11-27: „Ja WLAN schreiben“): its own form, closed until asked for. -->
+            <TextView
+                android:id="@+id/ausloeser_wlan_zeile"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingBottom="@dimen/space_xs"
+                android:text="@string/wlan_zeile"
+                android:textColor="@color/homes_accent" />
+
+            <!-- The network's name, its password (masked, „Passwort zeigen“; never saved with the screen's
+                 state), open or not, the two plain warnings, the button that answers at once, „Abbrechen“. -->
+            <LinearLayout
+                android:id="@+id/wlan_formular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/Text.Homes.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/wlan_titel" />
+
+                <TextView
+                    style="@style/Text.Homes.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wlan_warnung" />
+
+                <TextView
+                    style="@style/Text.Homes.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/wlan_iphone" />
+
+                <EditText
+                    android:id="@+id/wlan_ssid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:hint="@string/wlan_ssid"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:maxLength="32"
+                    tools:targetApi="o" />
+
+                <EditText
+                    android:id="@+id/wlan_passwort"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:hint="@string/wlan_passwort"
+                    android:importantForAutofill="no"
+                    android:inputType="textPassword"
+                    android:maxLength="64"
+                    android:saveEnabled="false"
+                    tools:targetApi="o" />
+
+                <CheckBox
+                    android:id="@+id/wlan_zeigen"
+                    style="@style/Text.Homes.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wlan_zeigen" />
+
+                <RadioGroup
+                    android:id="@+id/wlan_schutz"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checkedButton="@+id/wlan_wpa2"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/wlan_wpa2"
+                        style="@style/Text.Homes.Body"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/wlan_wpa2" />
+
+                    <RadioButton
+                        android:id="@+id/wlan_offen"
+                        style="@style/Text.Homes.Body"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/wlan_offen" />
+                </RadioGroup>
+
+                <Button
+                    android:id="@+id/wlan_schreiben"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/ausloeser_schreiben" />
+
+                <Button
+                    android:id="@+id/wlan_abbrechen"
+                    style="@style/Widget.Homes.Button.Ghost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/ausloeser_abbrechen" />
+
+                <TextView
+                    android:id="@+id/wlan_stand"
+                    style="@style/Text.Homes.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm" />
+            </LinearLayout>
+
             <!-- A new tag, or one named or renamed (§2), closed until asked for: its name with the
                  house's suggestions, „Was soll der Tag tun?“, the button that answers at once,
                  „Entfernen“ while one is changed, „Abbrechen“ that closes it. -->
