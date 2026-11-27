@@ -55,7 +55,7 @@ class NapiContractTest {
          * A card: internal/napi/home.go:164-193, its control attributes home.go:43-45, its page :177; its
          * `text`, a printer's words, `withText` at home.go:145-150 (mdopp/homes#370 at 53532d1). Its `achtung`
          * (homes-android#290): `card` home.go:116-142 sets it from `achtung` :147-160, a printer's `withText` :167
-         * (mdopp/homes#391 feat/start-felder at a63bcdd, not merged yet).
+         * (mdopp/homes#391, main at 0ead43d).
          */
         val CARD = setOf(
             "entity_id", "name", "domain", "state", "page", "text", "achtung", "device_class", "unit", "updated_at_ms",
@@ -75,7 +75,7 @@ class NapiContractTest {
 
         /**
          * `/napi/einrichtung`'s answer: `einrichten.Antwort`, `NapiModul`, `NapiApp`, `NapiAufgabe` and the ziele's keys;
-         * for the start screen (homes-android#290, mdopp/homes#391 at a63bcdd) `bereiche` {key: `Bereich` {stand, neu}},
+         * for the start screen (homes-android#290, mdopp/homes#391, main at 0ead43d) `bereiche` {key: `Bereich` {stand, neu}},
          * an entry's `neu` and a task's `dringend`.
          */
         val EINRICHTUNG = setOf(
@@ -336,7 +336,7 @@ class NapiContractTest {
                 body = setOf("file"), required = setOf("file"), sends = setOf("ok", "dateien", "error", "reason"),
             ),
             // The person's modules and setup tasks (owner 2026-11-04): mdopp/homes main at cc8a5ea (the merge of homes#269);
-            // the start screen's fields at mdopp/homes#391 (feat/start-felder at a63bcdd, not merged yet): registered
+            // the start screen's fields at mdopp/homes main 0ead43d (the merge of homes#391): registered
             // napi.go:264-265.
             Route(
                 "GET", "/napi/einrichtung",
