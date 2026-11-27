@@ -41,16 +41,16 @@ budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
                        #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
                        #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
-budget ui        3506  # 3,026: the activities: start screen, pairing, settings screens;
+budget ui        3513  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
                        # 3220 -> 3320: the account's and the backup's missing parts as disabled switches with their trace, homes-android#233
                        #   (+12 of it is #237's level sheet, merged meanwhile);
                        # 3320 -> 3500: „Deine Geräte“ as tiles (owner, 2026-11-04): ui/FavoritenAnsicht.kt, the
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
-                       # 3500 -> 3506 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut, and shared recipes shown —
+                       # 3500 -> 3513 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut, and shared recipes shown —
                        #   owner approved 2026-11-27 („Bau alles“)): the recipe's „als Rezept gemerkt“ with „Ansehen“ (ShareActivity.gemerkt)
-budget data      3348  # 2,780: Homes' calls (Napi), clients, models, the token store;
+budget data      3351  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -69,7 +69,7 @@ budget data      3348  # 2,780: Homes' calls (Napi), clients, models, the token 
                        # 3265 -> 3330 (owner approved 2026-11-26, homes ADR 0004 §5 §8): the five calls of a tag's
                        #   automations and their wish's state, their reply shapes, the scanner's oeffnen
                        # 3330 -> 3335 (owner approved 2026-11-27, „Alles OK. Go ahead“): a tag's zuletzt (§9)
-                       # 3335 -> 3348 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut — owner approved 2026-11-27 („Bau alles“)): the two
+                       # 3335 -> 3351 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut — owner approved 2026-11-27 („Bau alles“)): the two
                        #   tools taken out (ToolDefs.AUSGEBAUT), a kept share's art and titel
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
