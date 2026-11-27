@@ -107,4 +107,32 @@
     <string name="wlan_zu_klein">Auf diesen Tag passt das WLAN nicht (Bytes nötig: %1$d, auf dem Tag: %2$d). Nimm einen größeren, etwa einen NTAG215, oder einen kürzeren Namen oder ein kürzeres Passwort.</string>
     <string name="wlan_kein_tag">Kein Tag gekommen. Tippe noch einmal auf „Tag beschreiben“ und halte ihn ans Telefon.</string>
     <string name="wlan_abgebrochen">Abgebrochen. Es wurde nichts geschrieben.</string>
+    <!-- What is on a written tag held to the Auslöser screen (owner 2026-11-27) -->
+    <string name="inhalt_zu">Schließen</string>
+    <string name="inhalt_zeigen">zeigen</string>
+    <string name="inhalt_verbergen">verbergen</string>
+    <string name="inhalt_passwort">Passwort: %1$s</string>
+    <string name="inhalt_homes_titel">Homes-Tag „%1$s“</string>
+    <string name="inhalt_homes_ohne">Ein Homes-Tag ohne Namen</string>
+    <string name="inhalt_homes_unbekannt">Ein Homes-Tag, den Home Assistant nicht kennt</string>
+    <string name="inhalt_bearbeiten">Bearbeiten</string>
+    <string name="inhalt_ausloesen">Auslösen</string>
+    <string name="inhalt_loest_aus">Löst aus …</string>
+    <string name="inhalt_wlan_titel">WLAN-Tag</string>
+    <string name="inhalt_wlan_name">Netz: %1$s</string>
+    <string name="inhalt_wlan_schutz">Schutz: %1$s</string>
+    <string name="inhalt_neu_beschreiben">Neu beschreiben</string>
+    <string name="inhalt_uebernehmen">Ins Telefon übernehmen</string>
+    <string name="inhalt_uebernimmt">Android fragt …</string>
+    <string name="inhalt_uebernommen">„%1$s“ ist im Telefon gespeichert.</string>
+    <string name="inhalt_nicht_uebernommen">Nicht übernommen: das Telefon hat das WLAN nicht gespeichert.</string>
+    <string name="inhalt_passwort_nimmt_nicht">Android nimmt dieses Passwort so nicht. Gib das WLAN in den Einstellungen selbst ein.</string>
+    <string name="inhalt_fremd">Auf diesem Tag steht etwas anderes</string>
+    <string name="inhalt_ueberschreiben">Überschreiben</string>
+    <string name="inhalt_frage_titel">Tag überschreiben?</string>
+    <string name="inhalt_frage">Der Inhalt geht verloren.</string>
+    <string name="inhalt_frage_hinweis">Danach hältst du den Tag noch einmal ans Telefon.</string>
+    <string name="inhalt_neu_titel">Neuer Inhalt für diesen Tag</string>
+    <string name="inhalt_halte_nochmal">Gut. Halte den Tag noch einmal ans Telefon, dann wird er überschrieben.</string>
+    <string name="wlan_schon_beschrieben">Auf diesem Tag steht schon etwas. Nimm einen leeren, oder schließe das Formular und halte ihn ans Telefon: dann kannst du ihn überschreiben.</string>
 </resources>

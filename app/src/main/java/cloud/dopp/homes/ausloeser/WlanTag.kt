@@ -70,6 +70,61 @@ object WlanTag {
         return ByteArrayOutputStream().apply { feld(CREDENTIAL, innen) }.toByteArray()
     }
 
+    /**
+     * A network read from a WLAN tag: its [ssid], WSC's authentication bits [auth] and the [passwort] (empty
+     * when open). Its text never carries the password, so it cannot end up in a log by accident.
+     */
+    class Netz(val ssid: String, val auth: Int, val passwort: String) {
+        /** How the form writes it again: open, or WPA2 for any network with a password. */
+        val schutz: Schutz get() = if (auth == Schutz.OFFEN.authentifizierung) Schutz.OFFEN else Schutz.WPA2
+
+        /** Protected by a password alone (WPA or WPA2 Personal), as Android takes one. */
+        val psk: Boolean get() = (auth and (Schutz.WPA2.authentifizierung or WPA_PERSONAL)) != 0
+
+        /** How it is protected, in plain words. */
+        val art: String get() = when {
+            auth == Schutz.OFFEN.authentifizierung -> "offen, ohne Passwort"
+            (auth and (WPA2_ENTERPRISE or WPA_ENTERPRISE)) != 0 -> "WPA-Enterprise (mit Anmeldung)"
+            (auth and Schutz.WPA2.authentifizierung) != 0 -> "WPA2"
+            (auth and WPA_PERSONAL) != 0 -> "WPA"
+            (auth and SHARED) != 0 -> "WEP (veraltet)"
+            else -> "unbekannt"
+        }
+
+        override fun toString() = "Netz($ssid, $art)"
+        override fun equals(other: Any?) = other is Netz && other.ssid == ssid && other.auth == auth && other.passwort == passwort
+        override fun hashCode() = ssid.hashCode() * 31 + auth
+    }
+
+    /** The network in a WLAN record's [payload]: the first credential's SSID, authentication and key; null when none. */
+    fun lesen(payload: ByteArray): Netz? {
+        val cred = felder(payload)[CREDENTIAL] ?: return null
+        val innen = felder(cred)
+        val ssid = innen[SSID]?.toString(Charsets.UTF_8) ?: return null
+        val auth = innen[AUTH_TYPE]?.takeIf { it.size == 2 }?.let { (it[0].toInt() and 0xFF shl 8) or (it[1].toInt() and 0xFF) } ?: 0
+        return Netz(ssid, auth, innen[NETWORK_KEY]?.toString(Charsets.UTF_8).orEmpty())
+    }
+
+    /** WSC's attributes (type, 2-byte length, value), the first of each type; a cut-off one ends the list. */
+    private fun felder(b: ByteArray): Map<Int, ByteArray> {
+        val out = mutableMapOf<Int, ByteArray>()
+        var i = 0
+        while (i + 4 <= b.size) {
+            val typ = (b[i].toInt() and 0xFF shl 8) or (b[i + 1].toInt() and 0xFF)
+            val laenge = (b[i + 2].toInt() and 0xFF shl 8) or (b[i + 3].toInt() and 0xFF)
+            if (i + 4 + laenge > b.size) break
+            out.putIfAbsent(typ, b.copyOfRange(i + 4, i + 4 + laenge))
+            i += 4 + laenge
+        }
+        return out
+    }
+
+    /** WSC's other authentication types, read only. */
+    private const val WPA_PERSONAL = 0x0002
+    private const val SHARED = 0x0004
+    private const val WPA_ENTERPRISE = 0x0008
+    private const val WPA2_ENTERPRISE = 0x0010
+
     /** The tag's one record. */
     fun nachricht(ssid: String, passwort: String, schutz: Schutz): NdefMessage =
         NdefMessage(arrayOf(NdefRecord.createMime(MIME, nutzlast(ssid, passwort, schutz))))

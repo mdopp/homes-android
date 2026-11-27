@@ -106,7 +106,11 @@ These rules apply to every session, human or agent.
   byte by byte) onto a tag, which Android's own NFC service then offers to
   join. **The password never leaves the phone:** no call to Homes, not
   stored, not logged, not in the screen's saved state, cleared when the form
-  closes (`WlanTagTest`). No `/napi` and no manifest filter for it.
+  closes (`WlanTagTest`). No `/napi` and no manifest filter for it. A
+  written tag held to the Auslöser screen shows what is on it first
+  (`TagInhalt`, a WLAN's password behind „zeigen“, held only while the card
+  is open), and nothing that holds something is written over without „Der
+  Inhalt geht verloren.“ (`TagSchreiber.darf`, `TagInhaltTest`).
 - Standortverlauf (the owner's call, 2026-11-02; docs/CONTRACT.md (f)):
   behind its own switch and the background-location permission,
   Android's own LocationManager delivers by PendingIntent to
