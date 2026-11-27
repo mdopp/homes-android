@@ -6,13 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
-import androidx.core.net.toUri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -25,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import cloud.dopp.homes.HomesConfig
 import cloud.dopp.homes.R
-import cloud.dopp.homes.ausloeser.AusloeserActivity
 import cloud.dopp.homes.data.ApiClient
 import cloud.dopp.homes.data.Napi.KannKey
 import cloud.dopp.homes.data.Assistent
@@ -49,7 +44,6 @@ import cloud.dopp.homes.realtime.Live
 import cloud.dopp.homes.widget.ActionDialog
 import cloud.dopp.homes.widget.ActionItem
 import cloud.dopp.homes.widget.ActionSheet
-import cloud.dopp.homes.widget.DokumenteAdresse
 import cloud.dopp.homes.widget.ActionTone
 import cloud.dopp.homes.widget.AppShortcuts
 import cloud.dopp.homes.widget.DeviceLook
@@ -80,17 +74,17 @@ import kotlin.concurrent.thread
  * `/napi/whoami` before it is stored, an http address is refused with a
  * message, and a token that cannot be saved is said so.
  *
- * **Paired.** The app's icon and the assistant's name (`/napi/assistent`,
- * „Homes“ until Homes names one) head the screen; first below them the person's
- * favorite devices as tiles ([FavoritenAnsicht], owner 2026-11-04), a tap
- * switches one, each with the fine controls Homes' devices page has
- * ([DeviceControls], owner 2026-11-03), and „Alle →“ in the head, Homes'
- * devices page ([StartDevices], owner 2026-11-02); then one list of
- * widgets to add (owner, 2026-11-03: no groups) — one device, the energy, the
- * tools from Homes' catalog —, each one tap from the home screen, and under
- * them, only while the battery exemption is missing, the row that asks for it
- * (owner 2026-11-08: live is the one way, no switch); under Mehr, Daten
- * sichern (#194); and where the app is paired, beside the way to unpair.
+ * **Paired** (owner 2026-11-27: „nothing hidden; every area speaks only as
+ * loud as it matters now“). The head — the app's icon, the assistant's name,
+ * the claim. „Jetzt“: at most two hints while something wants attention
+ * ([Jetzt]), gone without one. „Deine Geräte“: the favourites as tiles
+ * ([FavoritenAnsicht]), what wants attention first, then what is on, „Alle →“
+ * in the head. „Deine Aufgaben“ in one row. „Alles auf einen Blick“: every
+ * area as a tile ([Ueberblick]); what the box lacks, quiet, below it.
+ * „Dieses Telefon · <name>“ ([TelefonActivity]): backups, the Homes account,
+ * what the phone reports and the pairing, in one place. Last „Widget
+ * hinzufügen“, the list it always was, with the row that asks for the
+ * battery exemption while it is missing.
  */
 class HomeActivity : AppCompatActivity() {
 
@@ -132,17 +126,17 @@ class HomeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_home)
         findViewById<Button>(R.id.connect_btn).setOnClickListener { onConnect() }
         findViewById<Button>(R.id.qr_scan_btn).setOnClickListener { startScan() }
-        findViewById<Button>(R.id.logout_btn).setOnClickListener { unpair() }
+        findViewById<View>(R.id.telefon_zeile).setOnClickListener { startActivity(Intent(this, TelefonActivity::class.java)) }
         // The live row (owner 2026-11-03; no switch since 2026-11-08): there while the exemption is missing, a tap asks for it.
         val onLiveRow = View.OnClickListener { requestExemption() }
         findViewById<View>(R.id.live_row).setOnClickListener(onLiveRow)
         findViewById<TextView>(R.id.live_battery).setOnClickListener(onLiveRow)
-        findViewById<TextView>(R.id.app_version).text = getString(R.string.app_version_fmt, appVersionName())
         cloud.dopp.homes.verbindung.Verbindung.zeigen(this, findViewById(R.id.verbindung)) { unpair() }
         Abschnitte.zeigen(this) // Öffnen and Deine Aufgaben, from /napi/einrichtung (owner, 2026-11-04)
         cloud.dopp.homes.hochladen.Stand.zeigen(this, findViewById(R.id.hochladen_zeile)) // uploads, as their notification says
         padForSystemBars(findViewById(R.id.home_root))
         handleDeepLink(intent)
+        entkoppeln(intent)
         render()
     }
 
@@ -150,7 +144,15 @@ class HomeActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         handleDeepLink(intent)
+        entkoppeln(intent)
         render()
+    }
+
+    /** „Kopplung aufheben“ on „Dieses Telefon“ (owner 2026-11-27): the unpairing stays here, as it was. */
+    private fun entkoppeln(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_ENTKOPPELN, false) != true) return
+        intent.removeExtra(EXTRA_ENTKOPPELN)
+        unpair()
     }
 
     override fun onResume() {
@@ -199,9 +201,9 @@ class HomeActivity : AppCompatActivity() {
             }
         renderAssistent()
         if (!connected) return
-        findViewById<TextView>(R.id.status).text = getString(R.string.home_connected, ServerStore.host(this) ?: "")
         findViewById<View>(R.id.live_row).visibility = if (Live.exempt(this)) View.GONE else View.VISIBLE
         renderDevices()
+        renderTelefon()
         renderWidgetTypes()
         renderTools()
         refreshAssistent()
@@ -247,8 +249,9 @@ class HomeActivity : AppCompatActivity() {
             shown == null && devicesFailed -> group.addView(note(getString(R.string.home_devices_unreadable)))
             shown == null -> group.addView(note(getString(R.string.home_devices_loading)))
             shown.isEmpty() -> group.addView(note(getString(R.string.home_devices_none)))
-            else -> ansicht.kacheln(group, shown)
+            else -> ansicht.kacheln(group, Jetzt.ordnen(shown)) // what wants attention first, then what is on (owner 2026-11-27)
         }
+        renderJetzt()
         // an open level sheet stays open across a fresh read and shows its level
         levelSheet?.let { sheet -> shown?.firstOrNull { it.entityId == sheet.entityId }?.let { sheet.refresh(DeviceControls.of(it).slider) } }
     }
@@ -323,51 +326,54 @@ class HomeActivity : AppCompatActivity() {
     /** One list, no groups (owner, 2026-11-03): one device, the energy, then the tools. */
     private fun renderWidgetTypes() {
         showTools(WidgetStore.keptToolCatalog(this).filter { it.isOffered })
-        renderMehr()
+        renderBereiche()
     }
 
     /**
-     * Mehr: Daten sichern (#194), Standortverlauf (owner 2026-11-02) and Auslöser (homes ADR 0004) as the
-     * box offers them, Dein Archiv for whom Homes says has one, Dokumente-Adresse kopieren for whom it gives one, Homes auf dem Handy (#206); below, quiet, what the box
-     * lacks, each with „Hier anfordern“ (homes ADR 0001 §10).
+     * „Alles auf einen Blick“ (owner 2026-11-27, [Ueberblick]) and below it, quiet, what the box
+     * lacks, each with „Hier anfordern“ (homes ADR 0001 §10). Daten sichern and Homes auf dem Handy
+     * are on „Dieses Telefon“.
      */
-    private fun renderMehr() {
-        val group = findViewById<ViewGroup>(R.id.mehr_group)
-        group.removeAllViews()
-        val kann = KannStore.kann(this)
-        val zeilen = listOf(
-            StartAngebot.Zeile(KannKey.DATEN_SICHERN, R.drawable.ic_backup, getString(R.string.sicherung_title)) {
-                startActivity(Intent(this, SicherungActivity::class.java))
-            },
-            StartAngebot.Zeile(KannKey.STANDORTVERLAUF, R.drawable.ic_standort, getString(R.string.standort_title)) {
-                startActivity(Intent(this, StandortActivity::class.java))
-            },
-            StartAngebot.Zeile(KannKey.AUSLOESER, R.drawable.ic_ausloeser, getString(R.string.ausloeser_title)) {
-                startActivity(Intent(this, AusloeserActivity::class.java))
-            },
-        )
-        val angebot = StartAngebot(this, kann, ::renderWidgetTypes)
-        angebot.fuellen(group, Liste.MEHR, zeilen, { row(group, it.icon, it.label, it.tap) }, inSpuren = true)
-        StartAngebot.archiv(kann, ServerStore.baseUrl(this))?.let { url ->
-            group.addView(row(group, R.drawable.ic_archiv, getString(R.string.archiv_title)) { open(url.toUri()) })
-        }
-        val dok = kann?.dokumenteAdresse.orEmpty()
-        DokumenteAdresse.muster(dok)?.let { muster -> // owner 2026-11-10: only when Homes gives this person one
-            val r = row(group, R.drawable.ic_modul_dokumente, getString(R.string.dokumente_adresse)) { DokumenteAdresse.kopieren(this, dok) }
-            val hinweis = SpannableString(getString(R.string.dokumente_adresse_hinweis, muster)).apply {
-                setSpan(RelativeSizeSpan(HINWEIS_GROESSE), 0, length, 0)
-                setSpan(ForegroundColorSpan(getColor(R.color.homes_text_muted)), 0, length, 0)
-            }
-            r.findViewById<TextView>(R.id.type_label).apply { maxLines = 3; append("\n"); append(hinweis) }
-            group.addView(r)
-        }
-        group.addView(
-            row(group, R.drawable.ic_konto, getString(R.string.konto_title)) {
-                startActivity(Intent(this, HomesKontoActivity::class.java))
-            },
-        )
-        val spuren = angebot.spuren(findViewById(R.id.spuren_group))
+    private fun renderBereiche() {
+        Ueberblick.zeichnen(this, findViewById(R.id.ueberblick_section), findViewById(R.id.ueberblick_group))
+        val spuren = StartAngebot(this, KannStore.kann(this), ::renderWidgetTypes).spuren(findViewById(R.id.spuren_group))
         findViewById<View>(R.id.spuren_section).visibility = if (spuren) View.VISIBLE else View.GONE
+    }
+
+    /** „Jetzt“: at most two hints while something wants attention ([Jetzt]); gone without one. */
+    private fun renderJetzt() {
+        val group = findViewById<ViewGroup>(R.id.jetzt_group)
+        val alle = devices.orEmpty().mapNotNull(Jetzt::geraet) + Telefon.ueberfaellig(this)
+        val zeigen = Jetzt.zeigen(alle, Jetzt.weg(this))
+        group.removeAllViews()
+        zeigen.forEach { h -> group.addView(hinweis(group, h)) }
+        findViewById<View>(R.id.jetzt_section).visibility = if (zeigen.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    private fun hinweis(group: ViewGroup, h: Jetzt.Hinweis): View {
+        val v = layoutInflater.inflate(R.layout.item_hinweis, group, false)
+        v.findViewById<TextView>(R.id.hinweis_text).text = h.text
+        v.setOnClickListener {
+            when (val z = h.ziel) {
+                is Jetzt.Ziel.Seite -> openHomes(HomesPages.item(z.page))
+                Jetzt.Ziel.Sicherung -> startActivity(Intent(this, SicherungActivity::class.java))
+            }
+        }
+        v.findViewById<View>(R.id.hinweis_weg).setOnClickListener {
+            Jetzt.wegtun(this, h)
+            renderJetzt()
+        }
+        return v
+    }
+
+    /** „Dieses Telefon · <name>“ and its one line, orange while a backup part is overdue. */
+    private fun renderTelefon() {
+        findViewById<TextView>(R.id.telefon_zeile_titel).text = getString(R.string.telefon_zeile, Telefon.name(this))
+        val zeile = Telefon.zeile(this)
+        val stand = findViewById<TextView>(R.id.telefon_zeile_stand)
+        stand.text = zeile
+        stand.visibility = if (zeile.isEmpty()) View.GONE else View.VISIBLE
+        stand.setTextColor(getColor(if (Telefon.ueberfaellig(this).isEmpty()) R.color.homes_text_muted else R.color.homes_accent))
     }
 
     private fun row(group: ViewGroup, icon: Int, label: String, onTap: () -> Unit): View {
@@ -636,13 +642,11 @@ class HomeActivity : AppCompatActivity() {
 
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
 
-    private companion object {
-        const val PREFS_ASKED = "homes_asked"
-        const val KEY_EXEMPTION = "battery_exemption"
-        const val HINWEIS_GROESSE = 0.8f // the Dokumente-Adresse row's hint, below its label
-    }
+    companion object {
+        private const val PREFS_ASKED = "homes_asked"
+        private const val KEY_EXEMPTION = "battery_exemption"
 
-    private fun appVersionName(): String = runCatching {
-        packageManager.getPackageInfo(packageName, 0).versionName ?: "?"
-    }.getOrDefault("?")
+        /** From „Dieses Telefon“'s „Kopplung aufheben“: unpair, here. */
+        const val EXTRA_ENTKOPPELN = "cloud.dopp.homes.ENTKOPPELN"
+    }
 }

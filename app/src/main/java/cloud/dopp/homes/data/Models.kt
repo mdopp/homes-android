@@ -34,6 +34,8 @@ data class Card(
     // The thing in Homes' own words, as its web page says them (a printer's „druckt · Schwarz 42 %“,
     // owner 2026-11-14); null where Homes has none and the app says the state itself.
     val text: String? = null,
+    // Why it needs a look, Homes' few words (homes-android#290): the start screen's „Jetzt“ and its order; null: it needs none.
+    val achtung: String? = null,
 ) {
     /**
      * Best-effort "active" reading across the supported domains. For a lock

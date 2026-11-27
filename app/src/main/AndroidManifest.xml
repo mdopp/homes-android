@@ -265,6 +265,14 @@
             </intent-filter>
         </activity>
 
+        <!-- Dieses Telefon (owner 2026-11-27): what this phone backs up, is connected with and
+             reports, and its pairing, in one place; each row opens the screen below. -->
+        <activity
+            android:name=".ui.TelefonActivity"
+            android:exported="false"
+            android:label="@string/telefon_titel"
+            android:theme="@style/Theme.Homes" />
+
         <!-- Mehr → Daten sichern (#194): the two folders, the state, „Jetzt
              sichern“, the guide. The folders come through the system picker
              (storage access framework): no storage permission. -->

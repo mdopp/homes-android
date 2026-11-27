@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- „Dieses Telefon“ (owner 2026-11-27): what this phone does with the box, grouped — what it
+     backs up, what it is connected with, what it reports, and its pairing — each row leading to
+     the screen that was there before. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/telefon_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingEnd="@dimen/screen_gutter"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingBottom="@dimen/space_xl">
+
+        <TextView
+            style="@style/Text.Homes.Headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/telefon_titel" />
+
+        <TextView
+            android:id="@+id/telefon_name"
+            style="@style/Text.Homes.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_sm" />
+
+        <TextView
+            style="@style/Text.Homes.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginBottom="@dimen/space_xs"
+            android:text="@string/telefon_sichert" />
+
+        <LinearLayout
+            android:id="@+id/telefon_sichert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_homes"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/Text.Homes.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginBottom="@dimen/space_xs"
+            android:text="@string/telefon_verbunden" />
+
+        <LinearLayout
+            android:id="@+id/telefon_verbunden"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_homes"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/Text.Homes.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginBottom="@dimen/space_xs"
+            android:text="@string/telefon_meldet" />
+
+        <LinearLayout
+            android:id="@+id/telefon_meldet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_homes"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/Text.Homes.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginBottom="@dimen/space_xs"
+            android:text="@string/telefon_kopplung" />
+
+        <!-- Where the app is paired, beside the way to unpair, and the app's version (moved from the start screen). -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_homes"
+            android:orientation="vertical"
+            android:padding="@dimen/card_padding">
+
+            <TextView
+                android:id="@+id/status"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal" />
+
+            <Button
+                android:id="@+id/logout_btn"
+                style="@style/Widget.Homes.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/home_logout" />
+
+            <TextView
+                android:id="@+id/app_version"
+                style="@style/Text.Homes.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:gravity="center_horizontal" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

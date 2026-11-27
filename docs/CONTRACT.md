@@ -93,6 +93,11 @@ Fields the widgets read beyond a value to show:
   „bereit · Papier leer · Schwarz 40 %“, „nicht erreichbar“
   (mdopp/homes#370). The app shows it instead of its own reading of
   `state`; absent or blank, the app's words stay.
+- `achtung` on a card only while the thing needs a look (homes-android#290,
+  mdopp/homes#391): a few German words, „nicht erreichbar“, „Batterie fast
+  leer“, a printer's „Papier leer“. The start screen's „Jetzt“ says „<Name>:
+  <achtung>“ and „Deine Geräte“ puts it first (`ui/Jetzt.kt`); the app reads
+  no other word for it and guesses nothing from `state` or `text`.
 - `today` on every energy total: what it added since the house's midnight,
   in kWh, by the Energie page's rule; absent when HA's history does not say,
   and then the widget shows a dash, never the lifetime count.
@@ -592,7 +597,7 @@ there.
   kept, and with nothing kept the app offers everything, as before.
 - **Nothing is hidden (§10):** a feature the box lacks leaves a quiet trace
   — grey, no red, no warning sign. The widget list shows a missing type as
-  a muted entry that cannot be placed; Mehr shows its own rows by `mehr`
+  a muted entry that cannot be placed; the start screen's tiles and „Dieses Telefon“ show the app's own areas by `mehr` (no Mehr list since 2026-11-27)
   and ends with „Gibt es hier noch nicht“, one trace per off module (not
   the `admins` ones), each with „Hier anfordern“ while `anfordern` is true.
   A placed widget whose type went shows the module's `grund`; a tap opens
@@ -625,8 +630,9 @@ there.
 (The owner's call, 2026-11-04; Homes' side is mdopp/homes#269,
 docs/REFERENCE.md there.) `GET /napi/einrichtung` → `{version: 1, offen,
 module: [{name, titel, icon, oeffnen, web, ziel?, stand?, app: {name, paket,
-store}, nur_web, aufgabe: {titel, erledigt, am, wie, einrichten}}], ziele:
-{einkauf, zeitleiste, scannen}}`, the device's person's modules that are on.
+store}, nur_web, neu?, aufgabe: {titel, erledigt, am, wie, einrichten,
+dringend?}}], ziele: {einkauf, zeitleiste, scannen}, bereiche?: {<key>:
+{stand?, neu?}}}`, the device's person's modules that are on.
 
 - **When the app reads:** at start and resume, at most every five minutes,
   and when the answer of `/napi/kann` changed (so also right after the
@@ -655,7 +661,13 @@ store}, nur_web, aufgabe: {titel, erledigt, am, wie, einrichten}}], ziele:
   an unknown or missing key gets the generic one.
 - **„Deine Aufgaben“** with `offen` beside its title: the tasks with
   `erledigt: false`. A tap opens the app's `store` page while the app is
-  not on the phone, else `einrichten` in a Custom Tab.
+  not on the phone, else `einrichten` in a Custom Tab. The number is grey,
+  orange while any open task carries `dringend: true` (mdopp/homes#391).
+- **„Alles auf einen Blick“** (the start screen's tiles, homes-android#290):
+  a tile's line is its entry's `stand`, else `bereiche[<key>].stand` (keys:
+  a module's `name`, `ausloeser`, `archiv`); `neu` (on the entry or in
+  `bereiche`) shows the green dot and „neu: <neu>“ once, until the tile is
+  opened; a changed `neu` shows it again. Absent, the tile is as before.
 - **The apps the phone has:** after a read, when the app of an open task
   is installed, `POST /napi/einrichtung/apps {"pakete": [...]}` with every
   module app installed; Homes ticks those tasks and answers as the GET.

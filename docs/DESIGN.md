@@ -85,11 +85,22 @@ Kacheln, die nur eine Aktion auslösen, folgen **einem** Muster:
 - Zustand als Balken/Prozent unten; Akzent = Domänenfarbe im aktiven Zustand.
 
 ## App-Screens
-Ein Bildschirm (`activity_home.xml`, #176): oben das App-Icon, der Name des
-Assistenten („Homes“, sonst der Name der Box) und eine Linie in Phosphorgrün auf
-dem Grund `#0C120E`, darunter ungekoppelt die Kopplung
-(Adresse, „Koppeln", QR-Code), gekoppelt die Widgets zum Hinzufügen — erst das
-Homes, dann die Werkzeuge aus dem Katalog, zuletzt die Box. Konsistente
+Der Startbildschirm (`activity_home.xml`, Besitzer 2026-11-27: „nichts
+versteckt; jeder Bereich spricht nur so laut, wie es gerade wichtig ist“), von
+oben: der Kopf (App-Icon, Name des Assistenten, Linie in Phosphorgrün auf
+`#0C120E`, der Claim); **Jetzt** — höchstens zwei Hinweise, nur wenn etwas
+Aufmerksamkeit will, je mit ×, sonst fehlt der Abschnitt (`ui/Jetzt.kt`);
+**Deine Geräte** — was Aufmerksamkeit will zuerst, dann was an ist, dann der
+Rest; **Deine Aufgaben** in einer Zeile mit Zahl (grau, orange erst wenn Homes
+eine Aufgabe `dringend` nennt); **Alles auf einen Blick** — jeder Bereich eine
+Kachel, drei je Reihe (Bild, Name, eine Zeile Stand von Homes, ein grüner Punkt
+und einmal „neu: …“ für Neues, bis die Kachel geöffnet ist,
+`item_bereich.xml`, `ui/Ueberblick.kt`), darunter leise die Spuren;
+**Dieses Telefon · <Name>** — eine Zeile (orange, wenn eine Sicherung
+überfällig ist) zu einer Seite mit „Sichert auf die Box“, „Ist verbunden
+mit“, „Meldet an die Box“ und „Kopplung“ (mit der Version,
+`ui/TelefonActivity.kt`); zuletzt **Widget hinzufügen** als Liste. Ungekoppelt
+nur die Kopplung (Adresse, „Koppeln", QR-Code). Konsistente
 Radien/Abstände/Typo aus den Tokens; runde Karten `card_homes`, alle mit
 demselben Innenabstand `card_padding`. Karten sagen in **einer** Zeile, was
 etwas tut.

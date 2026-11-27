@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_version_placeholder">Version</string>
     <string name="app_version_fmt">Version %1$s</string>
     <string name="home_claim">Dein Zuhause, klar im Blick.</string>
     <!-- only while Homes says all is well on the box (`/napi/box/home` gut, owner 2026-11-27) -->
@@ -68,25 +67,38 @@
     <string name="live_battery_why">Damit die Widgets von selbst aktuell bleiben, tippe auf „Erlauben“ und dann im nächsten Fenster auf „Zulassen“.</string>
     <string name="live_battery_yes">Erlauben</string>
     <string name="live_battery_no">Später</string>
-    <!-- Öffnen, Deine Aufgaben and the launcher's shortcuts (owner, 2026-11-04; einrichtung/). -->
-    <string name="oeffnen_titel">Öffnen</string>
-    <!-- Below the four, Homes' own start page in the browser (owner, 2026-11-04). -->
+    <!-- The start screen (owner 2026-11-27: „nothing hidden; every area speaks only as loud as it matters now“). -->
+    <string name="jetzt_titel">Jetzt</string>
+    <string name="jetzt_weg">Ausblenden</string>
+    <string name="jetzt_x">×</string>
+    <string name="ueberblick_titel">Alles auf einen Blick</string>
+    <!-- the tile of Homes' own start page in the browser (owner, 2026-11-04) -->
     <string name="oeffnen_homes">Homes</string>
-    <string name="oeffnen_hinweis">Öffnet im Browser, mit deiner Anmeldung dort.</string>
+    <string name="bereich_neu">neu</string>
+    <!-- once on a tile Homes marks new (`neu`), until it is opened -->
+    <string name="bereich_neu_was">neu: %1$s</string>
+    <string name="bereich_punkt">●</string>
     <string name="aufgaben_titel">Deine Aufgaben</string>
     <plurals name="aufgaben_offen">
         <item quantity="one">%d Aufgabe offen</item>
         <item quantity="other">%d Aufgaben offen</item>
     </plurals>
-    <!-- After the first three tasks, the way to all of them on Homes (owner, 2026-11-14). -->
-    <plurals name="aufgaben_alle">
-        <item quantity="one">Alle %d Aufgaben</item>
-        <item quantity="other">Alle %d Aufgaben</item>
-    </plurals>
-    <!-- A task whose app the phone lacks: the tap opens its store page. -->
-    <string name="aufgabe_holen">%1$s installieren</string>
-    <!-- A task whose app is on the phone: the tap opens its steps on Homes. -->
-    <string name="aufgabe_weiter">In Homes fertig einrichten</string>
+    <!-- Dieses Telefon: its page and the start screen's row -->
+    <string name="telefon_titel">Dieses Telefon</string>
+    <string name="telefon_zeile">Dieses Telefon · %1$s</string>
+    <string name="telefon_sichert">Sichert auf die Box</string>
+    <string name="telefon_verbunden">Ist verbunden mit</string>
+    <string name="telefon_meldet">Meldet an die Box</string>
+    <string name="telefon_kopplung">Kopplung</string>
+    <string name="telefon_gesichert">gesichert %1$s</string>
+    <string name="telefon_nie">noch nicht gesichert</string>
+    <string name="telefon_nie_kurz">noch nie</string>
+    <string name="telefon_synchron">%1$s synchron</string>
+    <string name="telefon_kalender">Kalender</string>
+    <string name="telefon_kontakte">Kontakte</string>
+    <string name="telefon_an">an</string>
+    <string name="telefon_aus">aus</string>
+    <string name="telefon_an_zuletzt">an · zuletzt gesendet %1$s</string>
     <string name="kurz_garage">Garagentor</string>
     <string name="kurz_garage_lang">Garagentor öffnen oder schließen</string>
     <string name="kurz_einkauf">Einkaufsliste</string>
@@ -98,6 +110,5 @@
     <!-- Dokumente-Adresse kopieren (owner 2026-11-10): the Mehr row, its hint, the app icon's menu, what Android 12 and older are told. -->
     <string name="dokumente_adresse">Dokumente-Adresse kopieren</string>
     <string name="dokumente_adresse_kurz">Dokumente-Adresse</string>
-    <string name="dokumente_adresse_hinweis">%1$s – hinter dem + den Absender anhängen</string>
     <string name="dokumente_adresse_kopiert">Dokumente-Adresse kopiert</string>
 </resources>

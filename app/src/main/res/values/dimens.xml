@@ -16,6 +16,7 @@
     <dimen name="space_md">16dp</dimen>
     <dimen name="space_lg">24dp</dimen>
     <dimen name="space_xl">32dp</dimen>
+    <dimen name="bereich_abstand">4dp</dimen> <!-- around a tile of „Alles auf einen Blick“ -->
     <dimen name="screen_gutter">24dp</dimen>
     <!-- One inner padding for every card on a screen (#126): the home cards used
          to sit at 18/20/22dp, so their text started on three different lines. -->

@@ -3,7 +3,6 @@
      the screen keeps only what needs the phone, one line per source; everything at a glance,
      E-Mail and Kalender included, is Homes' page „Daten sichern“, and the keys go into the archive. -->
 <resources>
-    <string name="home_mehr">Mehr</string>
     <string name="sicherung_title">Daten sichern</string>
     <string name="sicherung_ueberblick">Meine Daten: was wann ankam ›</string>
 

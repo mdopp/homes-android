@@ -9,6 +9,7 @@ import cloud.dopp.homes.data.Assistent
 import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.ui.HomeActivity
+import cloud.dopp.homes.ui.TelefonActivity
 import cloud.dopp.homes.ui.StartDevices
 import cloud.dopp.homes.verbindung.Verbindung
 import cloud.dopp.homes.verbindung.Zustand
@@ -56,6 +57,17 @@ class HomeScreenTest {
 
     private fun open(): HomeActivity = Robolectric.buildActivity(HomeActivity::class.java).setup().get()
 
+    /** „Kopplung aufheben“ on „Dieses Telefon“ (owner 2026-11-27): it hands the unpairing to the start screen, which shows the pairing. */
+    private fun aufheben(): HomeActivity {
+        val t = Robolectric.buildActivity(TelefonActivity::class.java).setup().get()
+        assertEquals("Gekoppelt mit 127.0.0.1", t.findViewById<TextView>(R.id.status).text.toString())
+        t.findViewById<View>(R.id.logout_btn).performClick()
+        val weiter = shadowOf(t).nextStartedActivity
+        assertEquals(HomeActivity::class.java.name, weiter.component?.className)
+        assertTrue(t.isFinishing)
+        return Robolectric.buildActivity(HomeActivity::class.java, weiter).setup().get()
+    }
+
     @Test
     fun unpairedItAsksForTheAddress() {
         val a = open()
@@ -96,8 +108,8 @@ class HomeScreenTest {
     fun unpairingForgetsHomesAndTheAssistantsName() {
         paired()
         Assistent.save(ctx(), "Mira")
-        val a = open()
-        a.findViewById<View>(R.id.logout_btn).performClick()
+        open()
+        val a = aufheben()
         assertNull(TokenStore.get(ctx()))
         assertNull(ServerStore.baseUrl(ctx()))
         assertEquals("Homes", Assistent.name(ctx()))
@@ -117,6 +129,9 @@ class HomeScreenTest {
         else listOfNotNull((v as? TextView)?.takeIf { it.visibility == View.VISIBLE }?.text?.toString())
 
     private fun deviceRows(a: HomeActivity): List<View> = Kacheln.of(a)
+
+    /** A tile by its device's name: the start screen orders them by what wants attention, then what is on (owner 2026-11-27). */
+    private fun tile(a: HomeActivity, name: String): View = deviceRows(a).first { it.contentDescription?.startsWith("$name,") == true }
 
     /** A tile's words under its name: only what its picture cannot say, and „schaltet …“ after a tap. */
     private fun words(tile: View): String? = tile.findViewById<TextView>(R.id.row_room).takeIf { it.visibility == View.VISIBLE }?.text?.toString()
@@ -209,7 +224,8 @@ class HomeScreenTest {
     fun unpairingForgetsTheFavorites() {
         paired()
         StartDevices.save(ctx(), favorites)
-        open().findViewById<View>(R.id.logout_btn).performClick()
+        open()
+        aufheben()
         assertNull(StartDevices.load(ctx()))
     }
 
@@ -235,8 +251,8 @@ class HomeScreenTest {
     /**
      * The row asking for „Zulassen“ is the last row of the widgets' card, in its
      * row style (owner, 2026-11-03), under „Widget hinzufügen“ and its hint — no
-     * live switch (owner, 2026-11-08: live is the one way); „Gekoppelt mit …“
-     * right above „Kopplung aufheben“.
+     * live switch (owner, 2026-11-08: live is the one way). „Gekoppelt mit …“
+     * and „Kopplung aufheben“ are on „Dieses Telefon“ since 2026-11-27.
      */
     @Test
     fun theZulassenRowIsTheWidgetCardsLastRowAndThePairingSitsByUnpair() {
@@ -251,9 +267,9 @@ class HomeScreenTest {
         assertEquals("Widgets aktuell halten", a.findViewById<TextView>(R.id.live_title).text.toString())
         assertEquals("Tippen und „Zulassen“ wählen", a.findViewById<TextView>(R.id.live_battery).text.toString())
         assertEquals("no paragraph of its own", -1, order.indexOf(a.findViewById(R.id.live_battery)))
-        val status = order.indexOf(a.findViewById(R.id.status))
-        assertEquals("„Gekoppelt mit …“ right above „Kopplung aufheben“", order.indexOf(a.findViewById(R.id.logout_btn)) - 1, status)
-        assertEquals("Gekoppelt mit 127.0.0.1", a.findViewById<TextView>(R.id.status).text.toString())
+        assertNull("the pairing is on „Dieses Telefon“", a.findViewById<View>(R.id.logout_btn))
+        val telefon = order.indexOf(a.findViewById(R.id.telefon_zeile))
+        assertTrue("„Dieses Telefon“ right above „Widget hinzufügen“", telefon in 0 until title)
     }
 
     /** The row is there only while the exemption is missing; granted, it is gone (owner 2026-11-08: nothing to explain). */
@@ -288,7 +304,7 @@ class HomeScreenTest {
         paired()
         StartDevices.save(ctx(), shutter)
         val a = open()
-        val rows = deviceRows(a)
+        val rows = listOf(tile(a, "Rollladen"), tile(a, "Garage"))
         assertEquals(listOf("Rollladen: Hoch", "Rollladen: Stopp", "Rollladen: Runter"), Kacheln.buttons(rows[0]).map { it.contentDescription })
         assertEquals(listOf("Garage: Hoch", "Garage: Runter"), Kacheln.buttons(rows[1]).map { it.contentDescription })
         val d = a.resources.displayMetrics.density
@@ -335,7 +351,7 @@ class HomeScreenTest {
         paired()
         StartDevices.save(ctx(), shutter)
         val a = open()
-        val row = deviceRows(a)[2]
+        val row = tile(a, "Bad")
         assertEquals(listOf("Bad", "21,5 °C · Soll 22,0 °C"), texts(row).take(2))
         shadowOf(a.application).clearBroadcastIntents()
         button(row, "Wärmer").performClick()
