@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tags LeerTagActivity is offered (owner 2026-11-27): one that can be formatted, or an Ndef tag;
+     it opens the new-tag form only for a blank one (no records), else it finishes unseen. -->
+<resources>
+    <tech-list>
+        <tech>android.nfc.tech.NdefFormatable</tech>
+    </tech-list>
+    <tech-list>
+        <tech>android.nfc.tech.Ndef</tech>
+    </tech-list>
+</resources>

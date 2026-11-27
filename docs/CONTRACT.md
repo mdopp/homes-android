@@ -814,7 +814,28 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   the browser's. A tag touched is reported at once; the address opened as
   a link (`VIEW`, from a chat or a page) shows „Ein Link zu einem
   Homes-Tag.“ and reports only on „Auslösen“ — a link never acts by
-  itself, as Homes' page `/tag/<id>` acts only on its button. A box built
+  itself, as Homes' page `/tag/<id>` acts only on its button. Android 12+
+  hands a touched tag's web address to the app as `VIEW`, not
+  `NDEF_DISCOVERED` (seen on the owner's Samsung, 2026-11-27, once its App
+  Link was allowed): a `VIEW` whose referrer is Android's NFC service
+  (`android-app://com.android.nfc`), or that carries NfcAdapter's
+  `EXTRA_TAG`, `EXTRA_NDEF_MESSAGES` or `EXTRA_ID`, is a touch and is
+  reported at once; any other `VIEW` (a chat, a browser, no referrer)
+  still asks. The log says which way (`HomesTag`: `nfc`, `nfc-view`,
+  `link`), nothing of the tag or the person.
+- **A blank tag anywhere** (the owner, 2026-11-27: „kann sich Homes für
+  neue Tags registrieren?“). `ausloeser/LeerTagActivity` takes
+  `TECH_DISCOVERED` for a tag that can be formatted (`NdefFormatable`) or
+  is `Ndef` (`res/xml/nfc_leer.xml`); Android offers it only after
+  `NDEF_DISCOVERED` found no taker, so Homes' and HA's tags still go to
+  `TagActivity`. Blank — formattable, or Ndef with no message or only
+  empty records — it opens the Auslöser screen's form, „Neuer Tag erkannt
+  – wie soll er heißen?“, the name focused, with Android's `Tag` handed
+  along: „Tag beschreiben“ makes the tag in HA and writes it at once while
+  Android still holds it („Beschreibt „X“ …“); gone meanwhile, the screen
+  waits for it as for any new tag („Halte „X“ noch einmal ans Telefon …“).
+  A tag with records is not Homes': nothing shows. Unpaired, it says so.
+  No `TAG_DISCOVERED`. A box built
   for another host: its tags open Homes' page in the browser, which works
   without the app.
 - **The scanner's question** (§8). The actions are `scanner-fragen`,
