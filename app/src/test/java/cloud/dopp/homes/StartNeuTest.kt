@@ -19,7 +19,6 @@ import cloud.dopp.homes.ui.SicherungActivity
 import cloud.dopp.homes.ui.StartDevices
 import cloud.dopp.homes.ui.Telefon
 import cloud.dopp.homes.ui.TelefonActivity
-import cloud.dopp.homes.ui.Ueberblick
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
