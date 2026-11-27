@@ -844,18 +844,19 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   (`{"ok":false,"error"}`: 404, 409, 502, 503, 504) is said as it comes.
   The read waits up to 65 s (the Bote drafts; Homes answers 504 when it is
   too late).
-- **What a tag did** (ADR 0004 §9; mdopp/homes feat/tag-ergebnis, the
-  contract as agreed — its handler lines are pinned when that PR exists).
-  `POST /napi/ausloeser` `{art: nfc}` waits for the automations the tag
-  started and answers `ergebnisse:[{automation,name,lief,grund}]` and a
-  ready `text`; the touched tag's line is that `text` (it may take a few
-  seconds: „Meldet …“ stays until then; the read waits 12 s). The app reads
-  `text` only, not `ergebnisse`. `GET /napi/ausloeser/tags` gives each tag
-  `zuletzt:{wann,person?,text}` when it ran before: the row says „zuletzt
-  heute 18:12, Anna – Bürolicht aus“ („gestern …“, else „26.11., …“, the
-  phone's time zone); without `person` „zuletzt heute 18:12 – …“; with a
-  `wann` the app cannot read, `text` alone. `wann` is read as RFC 3339 (or a
-  number, ms or seconds).
+- **What a tag did** (ADR 0004 §9; mdopp/homes#387, from HA's automation
+  traces). `POST /napi/ausloeser` `{art: nfc}` for a tag with automations
+  waits for them and answers `ergebnisse:[{automation,name,lief,grund}]`
+  and a ready `text`; the touched tag's line is that `text` (it may take a
+  few seconds: „Meldet …“ stays until then; the read waits 12 s). A tag
+  without automations gets no `text`, and the line stays „<Name> –
+  gemeldet“. The app reads `text` only, not `ergebnisse`. `GET
+  /napi/ausloeser/tags` gives each tag `zuletzt:{wann,person?,text}` when
+  it ran before — `wann` RFC 3339 in UTC, `person` the login of who touched
+  it (absent when Homes does not know): the row says „zuletzt heute 18:12,
+  anna – Bürolicht aus“ („gestern …“, else „26.11., …“, in the phone's time
+  zone); without `person` „zuletzt heute 18:12 – …“; with a `wann` the app
+  cannot read, `text` alone.
 - **Waiting for an admin.** A wish's id is kept on the phone with its tag
   (the row says „Wartet auf Freigabe“) and asked after with `GET
   /napi/ausloeser/freigabe/{id}` → `{"ok":true,"stand","satz","wunsch"}`

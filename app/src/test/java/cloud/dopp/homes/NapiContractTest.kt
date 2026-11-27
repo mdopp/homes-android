@@ -345,31 +345,33 @@ class NapiContractTest {
                 "POST", "/napi/einrichtung/apps", "internal/napi/einrichtung.go:28-44, the GET's answer :44",
                 body = setOf("pakete"), sends = EINRICHTUNG + setOf("ok", "reason", "error"),
             ),
-            // Auslöser (homes ADR 0004 §1, §2, §4, §5, §8, owner 2026-11-26): mdopp/homes main at b691877 (homes#385);
-            // registered with the geraete module, internal/napi/napi.go:321, routes ausloeser.go:73-79 and
-            // ausloeser_automationen.go:25-31; refusals {ok:false, error} ausloeser.go:81-83; 404 without HA.
+            // Auslöser (homes ADR 0004 §1, §2, §4, §5, §8, §9, owner 2026-11-26/27): mdopp/homes feat/tag-ergebnis at
+            // 5ce5585 (homes#387, not merged yet); registered with the geraete module, internal/napi/napi.go:327, routes
+            // ausloeser.go:101-107 and ausloeser_automationen.go:25-31; refusals {ok:false, error} ausloeser.go:109-111;
+            // 404 without HA.
             Route(
                 "POST", "/napi/ausloeser",
-                "internal/napi/ausloeser.go:91-123, a tag :56-71 ({aktion, text}, scanner-fragen's oeffnen :67-69)",
+                // a tag :73-99 ({aktion, text} :85-87, scanner-fragen's oeffnen :88-90; §9: ergebnisse and its text
+                // :91-97, only for a tag with automations, else no text and the app says „<Name> – gemeldet“)
+                "internal/napi/ausloeser.go:119-154, a tag :73-99",
                 body = setOf("art", "tag", "zustand", "ladeart"), required = setOf("art"),
-                sends = setOf("ok", "name", "aktion", "text", "oeffnen", "error", "reason"),
+                sends = setOf("ok", "name", "aktion", "text", "oeffnen", "ergebnisse", "automation", "lief", "grund", "error", "reason"),
             ),
             Route(
-                // §5: uri is <HOMES_PUBLIC_URL>/tag/<id> (:183, tagaktion's URI)
-                "POST", "/napi/ausloeser/tag", "internal/napi/ausloeser.go:128-184, aktion :132, :138-141, :176-183",
+                // §5: uri is <HOMES_PUBLIC_URL>/tag/<id> (:214, tagaktion's URI)
+                "POST", "/napi/ausloeser/tag", "internal/napi/ausloeser.go:159-215, aktion :163, :169-172, :207-214",
                 // §2: an optional tag names or renames that id; 409 a name taken, 400 an empty or too long one;
                 // §4: an optional aktion, absent unchanged, "" back to HA, 400 for one the box lacks
                 body = setOf("name", "tag", "aktion"), required = setOf("name"),
                 sends = setOf("ok", "tag", "uri", "aktion", "error", "reason"),
             ),
             Route(
-                "DELETE", "/napi/ausloeser/tag/{tag}", "internal/napi/ausloeser.go:186-201",
+                "DELETE", "/napi/ausloeser/tag/{tag}", "internal/napi/ausloeser.go:217-232",
                 sends = setOf("ok", "error", "reason"),
             ),
             Route(
-                "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go:206-224, a tag's automationen {id, name} :219",
-                // §9, a tag's zuletzt {wann, person?, text}: the contract mdopp/homes feat/tag-ergebnis builds (owner
-                // 2026-11-27), not pushed when this row was written — its lines come when that PR exists
+                "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go:237-264, a tag's automationen {id, name} :251",
+                // §9: a tag's zuletzt {wann RFC 3339 UTC, person? a login, text} :247-258
                 sends = setOf(
                     "ok", "tags", "tag", "name", "aktion", "automationen", "id", "vorschlaege", "aktionen", "titel",
                     "zuletzt", "wann", "person", "text", "error", "reason",

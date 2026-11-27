@@ -227,9 +227,9 @@ class AusloeserKompaktTest {
     @Test
     fun theListSaysWhatATagDidLast() {
         val vorhin = System.currentTimeMillis() - 60_000
-        homes.zuletzt = ""","zuletzt":{"wann":"${rfc(vorhin)}","person":"Anna","text":"Bürolicht aus"}"""
+        homes.zuletzt = ""","zuletzt":{"wann":"${rfc(vorhin)}","person":"anna","text":"Bürolicht aus"}"""
         val a = bildschirm()
-        assertEquals("Bürotür\nzuletzt ${Ausloeser.wann(vorhin)}, Anna – Bürolicht aus", a.zeile().text.toString())
+        assertEquals("Bürotür\nzuletzt ${Ausloeser.wann(vorhin)}, anna – Bürolicht aus", a.zeile().text.toString())
         assertTrue(a.zeile().text.contains("zuletzt heute") || a.zeile().text.contains("zuletzt gestern"))
     }
 
