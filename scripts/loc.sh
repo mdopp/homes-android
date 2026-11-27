@@ -95,7 +95,7 @@ budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochlad
 budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
                        # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
 budget realtime   667  #   635: the live stream and its foreground service
-budget ausloeser  3240 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
+budget ausloeser  3246 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
                        # trigger for HA — the touched tag's activity, the Auslöser screen (writing, naming, renaming, removing a tag;
                        # §2 owner 2026-11-26), the charger's receiver, the client;
                        # 1000 -> 1070 (owner approved 2026-11-26 „Go. Passt alles“, §4): „Was soll der Tag tun?“, the action
@@ -120,7 +120,7 @@ budget ausloeser  3240 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        #   tag read before it counts as blank, a card with data of its own never written (TagBefund.kt), what
                        #   reads of it without keys (TagLeser.kt: Ultralight/NTAG pages, MIFARE Classic with the public keys,
                        #   ISO-DEP applications by name, NFC-V blocks) on the screen with „Kopieren“
-                       # 2894 -> 3240 (owner approved 2026-11-27 („Bau alles“), WLAN anbieten): the phone as a read-only
+                       # 2894 -> 3246 (owner approved 2026-11-27 („Bau alles“), WLAN anbieten): the phone as a read-only
                        #   Type 4 Tag (Typ4Tag.kt), its bound HCE service (WlanAnbietenDienst.kt), the offer held in memory
                        #   for two minutes (WlanAngebot.kt) and its screen (WlanAnbietenActivity.kt), the form's „Anbieten“
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the

@@ -42,10 +42,16 @@ class Typ4Tag(private val ndef: () -> ByteArray?) {
                 gewaehlt = true
                 datei = null
             }
-            p1 == NACH_ID && gewaehlt && wert.contentEquals(CC) -> OK.also { datei = cc(n.size) }
-            p1 == NACH_ID && gewaehlt && wert.contentEquals(NDEF) -> OK.also { datei = zwei(n.size) + n }
+            p1 == NACH_ID && gewaehlt -> datei(wert, n)?.let { d -> OK.also { datei = d } } ?: NICHT_DA
             else -> NICHT_DA
         }
+    }
+
+    /** The file [id] names: the CC, or the NDEF file (its length, then the message); null for any other. */
+    private fun datei(id: ByteArray, n: ByteArray): ByteArray? = when {
+        id.contentEquals(CC) -> cc(n.size)
+        id.contentEquals(NDEF) -> zwei(n.size) + n
+        else -> null
     }
 
     private fun lies(apdu: ByteArray, ab: Int): ByteArray {
