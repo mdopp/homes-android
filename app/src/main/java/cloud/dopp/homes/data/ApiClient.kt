@@ -329,6 +329,7 @@ class ApiClient(private val ctx: Context) {
             tempStep = o.optDouble(CardJson.TARGET_TEMP_STEP, Double.NaN).takeIf { !it.isNaN() && it > 0 },
             colorModes = stringList(o.optJSONArray(CardJson.SUPPORTED_COLOR_MODES)),
             text = o.optString(CardJson.TEXT).trim().ifBlank { null },
+            achtung = HomesHttp.text(o, CardJson.ACHTUNG),
         )
 
         /**

@@ -28,9 +28,9 @@ import java.util.Locale
  * The start screen's parts from the kept answer of `/napi/einrichtung`
  * ([EinrichtungStore], owner 2026-11-04; one row and a grid since 2026-11-27):
  *
- * **Deine Aufgaben** is one row: the title, the number open (grey: Homes says
- * no task is urgent yet), the next task's title as its line; a tap opens
- * Homes' list of all. Gone while none is open.
+ * **Deine Aufgaben** is one row: the title, the number open (orange while
+ * Homes marks one `dringend`, else grey), the next task's title as its
+ * line; a tap opens Homes' list of all. Gone while none is open.
  *
  * The modules Homes lists under „Öffnen“ are tiles of „Alles auf einen
  * Blick“ ([cloud.dopp.homes.ui.Ueberblick]), drawn with it.
@@ -76,6 +76,7 @@ object Abschnitte {
         a.findViewById<TextView>(R.id.aufgaben_zahl)?.apply {
             text = String.format(Locale.getDefault(), "%d", offen)
             contentDescription = a.resources.getQuantityString(R.plurals.aufgaben_offen, offen, offen)
+            setBackgroundResource(if (e?.dringend == true) R.drawable.zahl_homes else R.drawable.zahl_grau)
         }
         val naechste = aufgaben.firstOrNull()?.let { it.aufgabe?.titel ?: it.titel }
         a.findViewById<TextView>(R.id.aufgaben_naechste)?.apply {

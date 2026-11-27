@@ -53,10 +53,12 @@ class NapiContractTest {
     companion object {
         /**
          * A card: internal/napi/home.go:164-193, its control attributes home.go:43-45, its page :177; its
-         * `text`, a printer's words, `withText` at home.go:145-150 (mdopp/homes#370 at 53532d1).
+         * `text`, a printer's words, `withText` at home.go:145-150 (mdopp/homes#370 at 53532d1). Its `achtung`
+         * (homes-android#290): `card` home.go:116-142 sets it from `achtung` :147-160, a printer's `withText` :167
+         * (mdopp/homes#391 feat/start-felder at a63bcdd, not merged yet).
          */
         val CARD = setOf(
-            "entity_id", "name", "domain", "state", "page", "text", "device_class", "unit", "updated_at_ms",
+            "entity_id", "name", "domain", "state", "page", "text", "achtung", "device_class", "unit", "updated_at_ms",
             "supported_features", "brightness", "color_temp", "rgb_color", "color_mode", "supported_color_modes",
             "current_position", "temperature", "current_temperature", "hvac_action", "target_temp_step", "min_temp",
             "max_temp", "hvac_modes", "volume_level", "media_title", "media_artist",
@@ -71,10 +73,15 @@ class NapiContractTest {
             "wunsch", "stand", "seit", "anfordern", "widgets", "teilen", "konto", "sicherung", "mehr",
         )
 
-        /** `/napi/einrichtung`'s answer: `einrichten.Antwort`, `NapiModul`, `NapiApp`, `NapiAufgabe` and the ziele's keys. */
+        /**
+         * `/napi/einrichtung`'s answer: `einrichten.Antwort`, `NapiModul`, `NapiApp`, `NapiAufgabe` and the ziele's keys;
+         * for the start screen (homes-android#290, mdopp/homes#391 at a63bcdd) `bereiche` {key: `Bereich` {stand, neu}},
+         * an entry's `neu` and a task's `dringend`.
+         */
         val EINRICHTUNG = setOf(
             "version", "offen", "module", "ziele", "name", "titel", "icon", "oeffnen", "web", "ziel", "stand", "app", "nur_web",
             "aufgabe", "paket", "store", "erledigt", "am", "wie", "einrichten", "einkauf", "zeitleiste", "scannen",
+            "dringend", "neu", "bereiche",
         )
 
         /** Every /napi route Homes serves, as its handler reads and answers it. */
@@ -329,10 +336,13 @@ class NapiContractTest {
                 body = setOf("file"), required = setOf("file"), sends = setOf("ok", "dateien", "error", "reason"),
             ),
             // The person's modules and setup tasks (owner 2026-11-04): mdopp/homes main at cc8a5ea (the merge of homes#269);
-            // registered napi.go:243-244, not_found napi.go:334.
+            // the start screen's fields at mdopp/homes#391 (feat/start-felder at a63bcdd, not merged yet): registered
+            // napi.go:264-265.
             Route(
                 "GET", "/napi/einrichtung",
-                "internal/napi/einrichtung.go:18-45, the answer internal/einrichten/einrichten.go:242-307, ziele cmd/homes/module.go:351-357, ziel and stand :359-368",
+                "internal/napi/einrichtung.go:18-41, the answer internal/einrichten/einrichten.go:345-389 (Antwort, NapiModul, " +
+                    "NapiAufgabe with dringend :388), built :393-443, bereiche :446-457 from Bereich :137-140 and Neu :145-148, " +
+                    "their lines cmd/homes/module.go:396-425",
                 sends = EINRICHTUNG + setOf("ok", "reason"),
             ),
             Route(

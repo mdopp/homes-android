@@ -1,6 +1,7 @@
 package cloud.dopp.homes
 
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
@@ -63,8 +64,8 @@ class StartNeuTest {
         listOf("start_jetzt", "start_bereiche").forEach { ctx().getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit() }
     }
 
-    private fun karte(id: String, name: String, state: String?, text: String? = null) =
-        Card(id, name, "sensor", null, state, null, page = "/raeume/$id", text = text)
+    private fun karte(id: String, name: String, state: String?, text: String? = null, achtung: String? = null) =
+        Card(id, name, "sensor", null, state, null, page = "/raeume/$id", text = text, achtung = achtung)
 
     // --- „Jetzt“ and the order ---------------------------------------------------------------
 
@@ -72,12 +73,16 @@ class StartNeuTest {
     fun whatWantsAttentionComesFirstThenWhatIsOn() {
         val aus = karte("light.flur", "Flur", "off")
         val an = karte("light.kueche", "Küche", "on")
-        val drucker = karte("sensor.drucker", "Drucker", "idle", "bereit · Papier leer · Schwarz 40 %")
-        val weg = karte("light.keller", "Keller", "unavailable")
+        val drucker = karte("sensor.drucker", "Drucker", "idle", "bereit · Papier leer · Schwarz 40 %", achtung = "Papier leer")
+        val weg = karte("light.keller", "Keller", "unavailable", achtung = "nicht erreichbar")
         assertEquals(listOf(drucker, weg, an, aus), Jetzt.ordnen(listOf(aus, an, drucker, weg)))
-        assertEquals("Drucker: bereit · Papier leer · Schwarz 40 %", Jetzt.geraet(drucker)?.text)
+        assertEquals("Drucker: Papier leer", Jetzt.geraet(drucker)?.text)
         assertEquals("Keller: nicht erreichbar", Jetzt.geraet(weg)?.text)
         assertNull("a printer printing wants nothing", Jetzt.geraet(karte("sensor.drucker", "Drucker", "printing", "druckt · Schwarz 42 %")))
+        assertNull(
+            "Homes decides: words that sound bad are no hint without its achtung",
+            Jetzt.geraet(karte("sensor.drucker", "Drucker", "idle", "bereit · Papier leer · Schwarz 40 %")),
+        )
         assertNull(Jetzt.geraet(an))
     }
 
@@ -108,7 +113,7 @@ class StartNeuTest {
 
     private val drucker = """{"ok":true,"favorites":[
         {"entity_id":"light.kueche","name":"Küche","domain":"light","state":"on","brightness":153,"page":"/raeume/light.kueche"},
-        {"entity_id":"sensor.drucker","name":"Drucker","domain":"sensor","state":"idle","text":"bereit · Papier leer · Schwarz 40 %","page":"/raeume/sensor.drucker"}]}"""
+        {"entity_id":"sensor.drucker","name":"Drucker","domain":"sensor","state":"idle","text":"bereit · Papier leer · Schwarz 40 %","achtung":"Papier leer","page":"/raeume/sensor.drucker"}]}"""
 
     @Test
     fun noHintNoSection() {
@@ -123,7 +128,7 @@ class StartNeuTest {
         val group = a.findViewById<ViewGroup>(R.id.jetzt_group)
         assertEquals(1, group.childCount)
         val h = group.getChildAt(0)
-        assertEquals("Drucker: bereit · Papier leer · Schwarz 40 %", h.findViewById<TextView>(R.id.hinweis_text).text.toString())
+        assertEquals("Drucker: Papier leer", h.findViewById<TextView>(R.id.hinweis_text).text.toString())
         assertTrue("the printer is the first tile", Kacheln.of(a).first().contentDescription.startsWith("Drucker"))
         h.performClick()
         assertEquals("its page", Uri.parse("https://homes.example/raeume/sensor.drucker").path, shadowOf(a).nextStartedActivity?.data?.path)
@@ -149,9 +154,9 @@ class StartNeuTest {
 
     // --- „Alles auf einen Blick“ -----------------------------------------------------------------
 
-    private fun antwort(vararg module: String) = """{"version":1,"offen":0,"module":[${module.joinToString(",") {
+    private fun antwort(vararg module: String, bereiche: String = "{}") = """{"version":1,"offen":0,"module":[${module.joinToString(",") {
         """{"name":"$it","titel":"${it.replaceFirstChar(Char::uppercase)}","icon":"$it","oeffnen":true,"web":"https://homes.example/$it","nur_web":true}"""
-    }}]}"""
+    }}],"bereiche":$bereiche}"""
 
     private fun kacheln(a: HomeActivity): List<View> {
         val g = a.findViewById<ViewGroup>(R.id.ueberblick_group)
@@ -176,6 +181,49 @@ class StartNeuTest {
         rezepte.performClick()
         assertEquals("https://homes.example/rezepte", shadowOf(dann).nextStartedActivity?.dataString)
         assertFalse("opened: no dot", kacheln(start()).single { it.name() == "Rezepte" }.neu())
+    }
+
+    @Test
+    fun aTileSaysHomesLineAndWhatIsNewOnceUntilOpened() {
+        EinrichtungStore.neu(ctx(), antwort("dokumente", "rezepte"))
+        start() // the first draw: all seen
+        EinrichtungStore.neu(
+            ctx(),
+            antwort(
+                "dokumente", "rezepte",
+                bereiche = """{"dokumente":{"stand":"3 diese Woche"},"rezepte":{"neu":"Rezepte an einem Ort"},
+                    "ausloeser":{"stand":"3 Tags · zuletzt heute 23:14","neu":"Tags benennen und mit Automationen verbinden"}}""",
+            ),
+        )
+        val a = start()
+        val dok = kacheln(a).single { it.name() == "Dokumente" }
+        assertFalse(dok.neu())
+        assertEquals("3 diese Woche", dok.findViewById<TextView>(R.id.bereich_stand).text.toString())
+        val rezepte = kacheln(a).single { it.name() == "Rezepte" }
+        assertTrue("seen before, but Homes says something is new in it", rezepte.neu())
+        assertEquals("neu: Rezepte an einem Ort", rezepte.findViewById<TextView>(R.id.bereich_stand).text.toString())
+        val ausloeser = kacheln(a).single { it.name() == a.getString(R.string.ausloeser_title) }
+        assertEquals("neu: Tags benennen und mit Automationen verbinden", ausloeser.findViewById<TextView>(R.id.bereich_stand).text.toString())
+        ausloeser.performClick()
+        val danach = kacheln(start()).single { it.name() == a.getString(R.string.ausloeser_title) }
+        assertFalse("opened: what is new is seen", danach.neu())
+        assertEquals("then its line", "3 Tags · zuletzt heute 23:14", danach.findViewById<TextView>(R.id.bereich_stand).text.toString())
+        assertTrue("the other still new", kacheln(start()).single { it.name() == "Rezepte" }.neu())
+    }
+
+    private fun aufgabe(dringend: Boolean) = """{"version":1,"offen":1,"module":[{"name":"zugang","titel":"Zugang für Ben","icon":"zugang",
+        "web":"https://homes.example/zugang","nur_web":true,"aufgabe":{"titel":"Zugang für Ben","erledigt":false,
+        "einrichten":"https://homes.example/zugang","dringend":$dringend}}]}"""
+
+    @Test
+    fun theTaskCountIsGreyAndOrangeWhileOneIsUrgent() {
+        fun farbe(a: HomeActivity) = (a.findViewById<View>(R.id.aufgaben_zahl).background as GradientDrawable).color?.defaultColor
+        EinrichtungStore.neu(ctx(), aufgabe(false))
+        val ruhig = start()
+        assertEquals(ruhig.getColor(R.color.homes_text_muted), farbe(ruhig))
+        EinrichtungStore.neu(ctx(), aufgabe(true))
+        val dringend = start()
+        assertEquals(dringend.getColor(R.color.homes_accent), farbe(dringend))
     }
 
     @Test

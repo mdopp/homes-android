@@ -183,6 +183,9 @@ object Napi {
          * „druckt · Schwarz 42 %“. Absent for everything else; shown instead of [STATE].
          */
         const val TEXT = "text"
+
+        /** Why it needs a look, a few German words („nicht erreichbar“, „Papier leer“; homes-android#290); absent while it needs none. */
+        const val ACHTUNG = "achtung"
     }
 
     /** `GET /napi/portal/state`: `{ok, card}`. */
@@ -586,6 +589,11 @@ object Napi {
         const val EINKAUF = "einkauf"
         const val ZEITLEISTE = "zeitleiste"
         const val SCANNEN = "scannen"
+
+        /** The start screen's areas by key (owner 2026-11-27, homes-android#290): `{stand?, neu?}`. */
+        const val BEREICHE = "bereiche"
+        const val STAND = ImportStandJson.STAND
+        const val NEU = "neu"
     }
 
     /** One module there: a [WEB] address, or its own app (KannJson's app: name, [PAKET], [STORE]) and [AUFGABE]. */
@@ -603,6 +611,8 @@ object Napi {
         const val AUFGABE = "aufgabe" // its TITEL, [ERLEDIGT] and [EINRICHTEN]
         const val ERLEDIGT = "erledigt"
         const val EINRICHTEN = "einrichten"
+        const val DRINGEND = "dringend" // the task's: something waits for it (a decision, a missing key), homes-android#290
+        const val NEU = EinrichtungJson.NEU // what is new in it in this release, one line
     }
 
     /** `POST /napi/musik` (owner 2026-11-04): `{ok, dateien}`, or `{ok: false, error, dateien}` with a German sentence. */

@@ -40,7 +40,7 @@ import cloud.dopp.homes.widget.HomesPages
 object Ueberblick {
 
     /** One tile: its [key] (for „opened“), picture, name, the line of where it stands, what a tap does. */
-    class Bereich(val key: String, @DrawableRes val bild: Int, val name: String, val stand: String?, val tap: () -> Unit)
+    class Bereich(val key: String, @DrawableRes val bild: Int, val name: String, val stand: String?, val neu: String? = null, val tap: () -> Unit)
 
     /** How many tiles a row holds. */
     private const val SPALTEN = 3
@@ -50,21 +50,27 @@ object Ueberblick {
         val e = EinrichtungStore.einrichtung(a)
         val kann = KannStore.kann(a)
         val base = ServerStore.baseUrl(a)
+        // each area's line and what is new, as Homes says them (`bereiche`, homes-android#290)
+        val von = e?.bereiche.orEmpty()
         val module = e?.oeffnen.orEmpty().map { m ->
-            Bereich(MODUL + m.name, Bilder.fuer(m.icon), m.titel, m.stand) { m.tippen?.let { Abschnitte.oeffnen(a, it.toUri()) } }
+            Bereich(MODUL + m.name, Bilder.fuer(m.icon), m.titel, m.stand ?: von[m.name]?.stand, m.neu ?: von[m.name]?.neu) {
+                m.tippen?.let { Abschnitte.oeffnen(a, it.toUri()) }
+            }
         }
-        val ausloeser = Bereich(KannKey.AUSLOESER, R.drawable.ic_ausloeser, a.getString(R.string.ausloeser_title), null) {
+        val au = von[KannKey.AUSLOESER]
+        val ausloeser = Bereich(KannKey.AUSLOESER, R.drawable.ic_ausloeser, a.getString(R.string.ausloeser_title), au?.stand, au?.neu) {
             a.startActivity(Intent(a, AusloeserActivity::class.java))
         }.takeIf { kann.hat(Liste.MEHR, KannKey.AUSLOESER) }
+        val ar = von[KannKey.ARCHIV]
         val archiv = StartAngebot.archiv(kann, base)?.let { url ->
-            Bereich(KannKey.ARCHIV, R.drawable.ic_archiv, a.getString(R.string.archiv_title), null) { Abschnitte.oeffnen(a, url.toUri()) }
+            Bereich(KannKey.ARCHIV, R.drawable.ic_archiv, a.getString(R.string.archiv_title), ar?.stand, ar?.neu) { Abschnitte.oeffnen(a, url.toUri()) }
         }
         val homes = base?.takeIf { e != null }?.let { HomesPages.url(it, HomesPages.START) }?.let { url ->
-            Bereich(HOMES, R.drawable.ic_stat_homes, a.getString(R.string.oeffnen_homes), null) { Abschnitte.oeffnen(a, url.toUri()) }
+            Bereich(HOMES, R.drawable.ic_stat_homes, a.getString(R.string.oeffnen_homes), null, null) { Abschnitte.oeffnen(a, url.toUri()) }
         }
         val dok = kann?.dokumenteAdresse.orEmpty()
         val adresse = DokumenteAdresse.muster(dok)?.let { muster ->
-            Bereich(ADRESSE, R.drawable.ic_modul_dokumente, a.getString(R.string.dokumente_adresse_kurz), muster) { DokumenteAdresse.kopieren(a, dok) }
+            Bereich(ADRESSE, R.drawable.ic_modul_dokumente, a.getString(R.string.dokumente_adresse_kurz), muster, null) { DokumenteAdresse.kopieren(a, dok) }
         }
         return module + listOfNotNull(ausloeser, archiv, homes, adresse)
     }
@@ -74,13 +80,15 @@ object Ueberblick {
         group ?: return
         val bereiche = bereiche(a)
         val gesehen = gesehen(a, bereiche.map { it.key })
+        val neuGesehen = neuGesehen(a)
         group.removeAllViews()
         bereiche.chunked(SPALTEN).forEach { reihe ->
             val zeile = LinearLayout(a).apply {
                 orientation = LinearLayout.HORIZONTAL
                 layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
-            reihe.forEach { b -> zeile.addView(kachel(a, zeile, b, b.key !in gesehen)) }
+            // new: never opened here, or Homes says something is new in it that the person has not opened since
+            reihe.forEach { b -> zeile.addView(kachel(a, zeile, b, b.key !in gesehen || (b.neu != null && neuGesehen[b.key] != b.neu))) }
             repeat(SPALTEN - reihe.size) { zeile.addView(Space(a), zelle(a)) } // the last row keeps the columns' width
             group.addView(zeile)
         }
@@ -98,14 +106,19 @@ object Ueberblick {
             layoutParams = zelle(a)
             findViewById<ImageView>(R.id.bereich_bild).setImageResource(b.bild)
             findViewById<TextView>(R.id.bereich_name).text = b.name
-            val stand = b.stand ?: if (neu) a.getString(R.string.bereich_neu) else null
+            // once, while new: what is new („neu: Tags benennen …“), else its line
+            val stand = if (neu) {
+                b.neu?.let { a.getString(R.string.bereich_neu_was, it) } ?: b.stand ?: a.getString(R.string.bereich_neu)
+            } else {
+                b.stand
+            }
             findViewById<TextView>(R.id.bereich_stand).apply {
                 text = stand
                 isVisible = stand != null
             }
             findViewById<TextView>(R.id.bereich_neu).isVisible = neu
             setOnClickListener {
-                geoeffnet(a, b.key)
+                geoeffnet(a, b.key, b.neu)
                 b.tap()
             }
         }
@@ -117,6 +130,7 @@ object Ueberblick {
     private const val MODUL = "modul:"
     private const val HOMES = "homes"
     private const val ADRESSE = "dokumente-adresse"
+    private const val NEU = "neu:"
     private const val GRAU = 0.45f
 
     private fun p(ctx: Context) = ctx.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -134,5 +148,13 @@ object Ueberblick {
         return jetzt.filter { p.getBoolean(it, false) }.toSet()
     }
 
-    private fun geoeffnet(ctx: Context, key: String) = p(ctx).edit { putBoolean(key, true) }
+    /** Opened: no dot, and what Homes said is new in it is seen. */
+    private fun geoeffnet(ctx: Context, key: String, neu: String?) = p(ctx).edit {
+        putBoolean(key, true)
+        neu?.let { putString(NEU + key, it) }
+    }
+
+    /** What is new that the person has seen, by area. */
+    private fun neuGesehen(ctx: Context): Map<String, String> =
+        p(ctx).all.mapNotNull { (k, v) -> if (k.startsWith(NEU) && v is String) k.removePrefix(NEU) to v else null }.toMap()
 }

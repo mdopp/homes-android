@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The number of open tasks beside „Deine Aufgaben“ (owner 2026-11-27): a quiet grey pill; orange
-     once Homes marks a task urgent (no such field yet). -->
+<!-- The number of open tasks beside „Deine Aufgaben“ (owner 2026-11-27): a quiet grey pill;
+     zahl_homes (orange) while Homes marks one `dringend`. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <solid android:color="@color/homes_text_muted" />
     <corners android:radius="12dp" />

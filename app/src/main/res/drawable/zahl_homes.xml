@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The number of open tasks beside „Deine Aufgaben“ while one is urgent (`dringend`,
+     homes-android#290): the pill in the accent; zahl_grau otherwise. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/homes_accent" />
+    <corners android:radius="12dp" />
+    <size android:height="24dp" />
+</shape>

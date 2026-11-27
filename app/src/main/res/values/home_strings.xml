@@ -75,6 +75,8 @@
     <!-- the tile of Homes' own start page in the browser (owner, 2026-11-04) -->
     <string name="oeffnen_homes">Homes</string>
     <string name="bereich_neu">neu</string>
+    <!-- once on a tile Homes marks new (`neu`), until it is opened -->
+    <string name="bereich_neu_was">neu: %1$s</string>
     <string name="bereich_punkt">●</string>
     <string name="aufgaben_titel">Deine Aufgaben</string>
     <plurals name="aufgaben_offen">

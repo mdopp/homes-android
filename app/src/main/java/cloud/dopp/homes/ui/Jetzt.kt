@@ -12,6 +12,7 @@ import cloud.dopp.homes.data.Napi.Quelle
  * each also reachable in its own area. Today a device whose own words say it
  * wants care (a printer's „Papier leer“, a lost device) and a backup part
  * gone quiet for more than two days. No hint: the section is not there.
+ * What a device needs is Homes' word for it (its card's `achtung`).
  *
  * Pure but for the dismissed store: what wants attention is decided from what
  * the app already has, the favourites and the backup's own memory.
@@ -33,15 +34,8 @@ object Jetzt {
     /** A backup part quiet longer than this is overdue. */
     private const val UEBERFAELLIG_MS = 2L * 24 * 60 * 60 * 1000
 
-    /**
-     * A device's own words that ask for care. Homes says them as its web page does (a printer's state,
-     * owner 2026-11-14); no field says „attention“ yet, so the words are read — a guess, kept short.
-     */
-    private val ACHTUNG = listOf("leer", "fehler", "niedrig", "stau", "klemmt", "nicht erreichbar", "wartung")
-
-    /** Wants attention: unavailable, or its own words say so. */
-    private fun achtung(card: Card): Boolean =
-        card.state == "unavailable" || card.text?.lowercase()?.let { t -> ACHTUNG.any { it in t } } == true
+    /** Wants attention: Homes says why (its card's `achtung`, homes-android#290). */
+    private fun achtung(card: Card): Boolean = card.achtung != null
 
     /** The favourites as the start screen orders them: what wants attention, then what is on, then the rest; each group in Homes' order. */
     fun ordnen(cards: List<Card>): List<Card> = cards.sortedBy { c ->
@@ -55,7 +49,7 @@ object Jetzt {
     /** A device's hint: its name and its words. */
     fun geraet(card: Card): Hinweis? {
         if (!achtung(card)) return null
-        val was = card.text?.takeIf { it.isNotBlank() } ?: NICHT_ERREICHBAR
+        val was = card.achtung ?: return null
         return Hinweis("geraet:" + card.entityId, was, "${card.name}: $was", Ziel.Seite(card.page))
     }
 
@@ -83,5 +77,4 @@ object Jetzt {
     /** × on [h]: gone until it says something else. */
     fun wegtun(ctx: Context, h: Hinweis) = p(ctx).edit { putString(h.id, h.stand) }
 
-    private const val NICHT_ERREICHBAR = "nicht erreichbar"
 }
