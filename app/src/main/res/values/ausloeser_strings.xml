@@ -91,4 +91,20 @@
     <!-- the tag's address opened as a link (§5): it acts only on the button -->
     <string name="tag_link_frage">Ein Link zu einem Homes-Tag.</string>
     <string name="tag_ausloesen">Auslösen</string>
+
+    <!-- A WLAN tag (owner 2026-11-27: „Ja WLAN schreiben“): written on the phone, nothing goes to Homes -->
+    <string name="wlan_zeile">+ WLAN-Tag beschreiben</string>
+    <string name="wlan_titel">WLAN-Tag beschreiben</string>
+    <string name="wlan_warnung">Das Passwort steht lesbar auf dem Tag. Nimm das Gastnetz der FRITZ!Box, nicht euer Hauptnetz.</string>
+    <string name="wlan_iphone">iPhones können WLAN nicht von NFC lesen – dort hilft der QR-Code der FRITZ!Box.</string>
+    <string name="wlan_ssid">WLAN-Name</string>
+    <string name="wlan_passwort">Passwort</string>
+    <string name="wlan_zeigen">Passwort zeigen</string>
+    <string name="wlan_wpa2">Mit Passwort (WPA2 / WPA3)</string>
+    <string name="wlan_offen">Offen, ohne Passwort</string>
+    <string name="wlan_halte">Halte den Tag ans Telefon … („%1$s“)</string>
+    <string name="wlan_fertig">WLAN-Tag „%1$s“ ist fertig. Ein Android-Telefon fragt beim Berühren, ob es sich verbinden soll.</string>
+    <string name="wlan_zu_klein">Auf diesen Tag passt das WLAN nicht: es braucht %1$d Bytes, der Tag hat %2$d. Nimm einen größeren, etwa einen NTAG215, oder einen kürzeren Namen oder ein kürzeres Passwort.</string>
+    <string name="wlan_kein_tag">Kein Tag gekommen. Tippe noch einmal auf „Tag beschreiben“ und halte ihn ans Telefon.</string>
+    <string name="wlan_abgebrochen">Abgebrochen. Es wurde nichts geschrieben.</string>
 </resources>

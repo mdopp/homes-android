@@ -83,7 +83,7 @@ budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochlad
 budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
                        # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
 budget realtime   667  #   635: the live stream and its foreground service
-budget ausloeser  1765 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
+budget ausloeser  2035 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
                        # trigger for HA — the touched tag's activity, the Auslöser screen (writing, naming, renaming, removing a tag;
                        # §2 owner 2026-11-26), the charger's receiver, the client;
                        # 1000 -> 1070 (owner approved 2026-11-26 „Go. Passt alles“, §4): „Was soll der Tag tun?“, the action
@@ -97,7 +97,9 @@ budget ausloeser  1765 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        #   time read and said as „heute 18:12“;
                        # 1620 -> 1765 (owner's wish and field finding 2026-11-27, owner approved 2026-11-27 „OK“): a VIEW
                        #   from Android's NFC service is a touch (TagActivity.weg); a blank tag touched anywhere opens the
-                       #   new-tag form (LeerTagActivity, TECH_DISCOVERED) and is written while Android still holds it
+                       #   new-tag form (LeerTagActivity, TECH_DISCOVERED) and is written while Android still holds it;
+                       # 1765 -> 2035 (owner approved 2026-11-27 (WLAN-Tag)): „+ WLAN-Tag beschreiben“, the WSC credential
+                       #   built byte by byte (WlanTag.kt) and its form (WlanFormular.kt), the writer's record of any kind
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)
 budget .           35  #    33: HomesConfig.kt

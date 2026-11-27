@@ -52,6 +52,12 @@ interface TagSchreiber {
      */
     fun direkt(tag: Parcelable, uri: String): Ergebnis? = null
 
+    /**
+     * Instead of [an] until [an] or [aus] again: the next tag held to the phone gets [nachricht] (a WLAN tag's
+     * one record); a tag too small for it is said by [zuKlein] (needed, there bytes). A writer that cannot: nothing.
+     */
+    fun anNachricht(activity: Activity, nachricht: NdefMessage, zuKlein: (Int, Int) -> String, ergebnis: (Ergebnis) -> Unit) = Unit
+
     companion object {
         /** Blank: one Ndef can format ([formatierbar]), or an Ndef tag whose message is none or empty records only. */
         fun leer(formatierbar: Boolean, ndef: Boolean, nachricht: NdefMessage?): Boolean =
@@ -91,21 +97,29 @@ object NfcSchreiber : TagSchreiber {
 
     override fun direkt(tag: Parcelable, uri: String): TagSchreiber.Ergebnis? = (tag as? Tag)?.let { schreiben(it, uri) }
 
+    override fun anNachricht(activity: Activity, nachricht: NdefMessage, zuKlein: (Int, Int) -> String, ergebnis: (TagSchreiber.Ergebnis) -> Unit) {
+        val nfc = NfcAdapter.getDefaultAdapter(activity) ?: return
+        nfc.enableReaderMode(activity, { tag -> ergebnis(schreiben(tag, nachricht, zuKlein)) }, ARTEN, null)
+    }
+
     override fun aus(activity: Activity) {
         runCatching { NfcAdapter.getDefaultAdapter(activity)?.disableReaderMode(activity) }
     }
 
     /** [uri] as the tag's one record. */
-    private fun schreiben(tag: Tag, uri: String): TagSchreiber.Ergebnis {
-        val nachricht = NdefMessage(arrayOf(NdefRecord.createUri(uri)))
+    private fun schreiben(tag: Tag, uri: String): TagSchreiber.Ergebnis =
+        schreiben(tag, NdefMessage(arrayOf(NdefRecord.createUri(uri)))) { _, _ -> ZU_KLEIN }
+
+    /** [nachricht] as all that is on the tag. */
+    private fun schreiben(tag: Tag, nachricht: NdefMessage, zuKlein: (Int, Int) -> String): TagSchreiber.Ergebnis {
         val ndef = Ndef.get(tag) ?: return formatieren(tag, nachricht)
-        return versuche { ndef.use { beschreibe(it, nachricht) } }
+        return versuche { ndef.use { beschreibe(it, nachricht, zuKlein) } }
     }
 
-    private fun beschreibe(ndef: Ndef, nachricht: NdefMessage): TagSchreiber.Ergebnis {
+    private fun beschreibe(ndef: Ndef, nachricht: NdefMessage, zuKlein: (Int, Int) -> String): TagSchreiber.Ergebnis {
         ndef.connect()
         if (!ndef.isWritable) return TagSchreiber.Ergebnis.Fehler(SCHREIBGESCHUETZT)
-        if (ndef.maxSize < nachricht.byteArrayLength) return TagSchreiber.Ergebnis.Fehler(ZU_KLEIN)
+        if (ndef.maxSize < nachricht.byteArrayLength) return TagSchreiber.Ergebnis.Fehler(zuKlein(nachricht.byteArrayLength, ndef.maxSize))
         ndef.writeNdefMessage(nachricht)
         return TagSchreiber.Ergebnis.Fertig
     }

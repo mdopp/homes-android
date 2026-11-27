@@ -99,6 +99,13 @@ These rules apply to every session, human or agent.
   wakelock, and no manifest receiver; `ManifestTest` and `ScreenGateTest`
   hold it to that. If the owner says no, the switch and that receiver go,
   and the tags stay.
+- WLAN-Tag (the owner, 2026-11-27: „Ja WLAN schreiben“): Mehr → Auslöser →
+  „+ WLAN-Tag beschreiben“ writes one NDEF record `application/vnd.wfa.wsc`
+  (a Wi-Fi Simple Configuration credential, `ausloeser/WlanTag.kt`, built
+  byte by byte) onto a tag, which Android's own NFC service then offers to
+  join. **The password never leaves the phone:** no call to Homes, not
+  stored, not logged, not in the screen's saved state, cleared when the form
+  closes (`WlanTagTest`). No `/napi` and no manifest filter for it.
 - Standortverlauf (the owner's call, 2026-11-02; docs/CONTRACT.md (f)):
   behind its own switch and the background-location permission,
   Android's own LocationManager delivers by PendingIntent to
