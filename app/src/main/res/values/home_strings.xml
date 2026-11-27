@@ -3,6 +3,8 @@
     <string name="app_version_placeholder">Version</string>
     <string name="app_version_fmt">Version %1$s</string>
     <string name="home_claim">Dein Zuhause, klar im Blick.</string>
+    <!-- only while Homes says all is well on the box (`/napi/box/home` gut, owner 2026-11-27) -->
+    <string name="home_claim_gut">Deinem Zuhause geht es gut.</string>
 
     <!-- Pairing (#176): Homes' address, then /pair-device, confirm, done. -->
     <string name="home_connect_hint">Gib die Adresse von Homes ein. Danach meldest du dich an und bestätigst die Kopplung.</string>

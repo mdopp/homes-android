@@ -63,6 +63,7 @@ each row naming the Homes file and lines it came from.
 | Widget | Path |
 |---|---|
 | pairing | `GET /napi/whoami`, `GET /napi/assistent` |
+| the start screen's claim | `GET /napi/box/home`, read for its `gut` alone (owner 2026-11-27, mdopp/homes#389): „Deinem Zuhause geht es gut.“ under the logo only for `gut: true` — Laib ready, no problem, every service green; `false`, absent (an older Homes) or a failed read leave the neutral „Dein Zuhause, klar im Blick.“, which also stands until Homes answered. Read when the start screen opens or comes back, with the screen on (`ScreenGate`); never in the background |
 | the start screen's devices | `GET /napi/portal/favorites` (the person's ☆ things on Homes, as cards in their order; homes#213), `POST /napi/ha/call`, `GET /napi/portal/state` (a cover's or a lock's state before its toggle) |
 | one device (widget, restored 2026-11-03) | `GET /napi/portal/state`, `POST /napi/ha/call`; its picker `GET /napi/portal/start/addable` |
 | app-icon shortcuts | Garagentor, Einkaufsliste, Zeitleiste, Dokument scannen: see (i); the garage among the favourites, else `GET /napi/portal/start/addable` (without cameras: Homes draws no card for one), `POST /napi/ha/call` |

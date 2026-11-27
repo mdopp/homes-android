@@ -5,8 +5,7 @@ import okhttp3.OkHttpClient
 import org.json.JSONObject
 
 /**
- * Read-only client for the assistant's name (`/napi/assistent`). The Box
- * widgets are gone (owner, 2026-11-03), and with them the Box keys.
+ * Read-only: the assistant's name (`/napi/assistent`) and whether all is well (`/napi/box/home`'s `gut`).
  *
  * Blocking, off the main thread; null on any failure (no server, no token,
  * 401, network). Nothing here changes anything.
@@ -37,6 +36,8 @@ class BoxApiClient(private val ctx: Context) {
 
     /** `GET /napi/assistent` → the assistant's name, or null. */
     fun getAssistent(): String? = get(Napi.ASSISTENT)?.let { Assistent.parse(it) }
+    /** `GET /napi/box/home` says all is well: true only for its `gut: true`; false, absent (an older Homes) or failed: false. */
+    fun gut(): Boolean = get(Napi.BOX_HOME)?.optBoolean(Napi.BoxHomeJson.GUT, false) == true
 
     private companion object {
         /** No reply here is larger; a bigger one is refused, never half read. */

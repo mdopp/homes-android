@@ -150,6 +150,7 @@ object Napi {
         const val NAME = "name"
     }
 
+    object BoxHomeJson { const val GUT = "gut" } // `GET /napi/box/home`'s: all is well on the box (owner 2026-11-27, the claim)
     /** `GET /napi/whoami`: who owns the device token. */
     object WhoamiJson {
         const val UID = "uid"
@@ -729,6 +730,7 @@ object Napi {
     /** The household assistant's name („Homes“ when the box sets none). */
     val ASSISTENT = Endpoint(Method.GET, "/napi/assistent", reply = listOf(AssistentJson))
 
+    val BOX_HOME = Endpoint(Method.GET, "/napi/box/home", reply = listOf(BoxHomeJson)) // only whether all is well, for the claim
     /** Who owns a device token: the pairing checks a new token here before storing it. */
     val WHOAMI = Endpoint(Method.GET, "/napi/whoami", reply = listOf(WhoamiJson))
 

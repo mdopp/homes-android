@@ -83,10 +83,11 @@ class NapiContractTest {
             Route("GET", "/napi/whoami", "internal/napi/napi.go:181-190", sends = setOf("uid", "via")),
             Route(
                 "GET", "/napi/box/home",
-                "internal/napi/napi.go:85-108 (prefix: internal/app/app.go:17; updates apart: napi.go:105, 224-235)",
+                // mdopp/homes feat/claim-gut at 70a501d (homes#389, not merged yet): gut :187, laib.Gut internal/laib/laib.go:117
+                "internal/napi/napi.go:166-189 (prefix: internal/app/app.go:27; updates apart: napi.go:185, 381)",
                 sends = setOf(
                     "servicesUp", "servicesFailed", "servicesDown", "pendingApprovals", "pendingUpdates",
-                    "state", "drift", "lastHeard", "operator",
+                    "state", "drift", "lastHeard", "operator", "gut",
                 ),
             ),
             Route(
@@ -425,7 +426,7 @@ class NapiContractTest {
 
         /** What the widgets and the pairing need: each must be declared. */
         val NEEDED = setOf(
-            "GET /napi/assistent", "GET /napi/whoami",
+            "GET /napi/assistent", "GET /napi/whoami", "GET /napi/box/home",
             "POST /napi/ha/call", "GET /napi/portal/state", "GET /napi/portal/energy",
             "GET /napi/portal/favorites", "GET /napi/portal/start/addable",
             "POST /napi/portal/watch", "GET /napi/portal/events",
