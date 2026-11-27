@@ -31,85 +31,6 @@
             android:layout_height="wrap_content"
             android:text="@string/ausloeser_intro" />
 
-        <!-- What is on a written tag held to the phone (owner 2026-11-27), before anything is offered:
-             a Homes tag's name, action and automations, a WLAN (its password behind „zeigen“), or
-             anything else in plain words; up to two buttons, „Schließen“, and the card's own line. -->
-        <LinearLayout
-            android:id="@+id/ausloeser_inhalt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:background="@drawable/card_homes"
-            android:orientation="vertical"
-            android:padding="@dimen/card_padding"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/inhalt_titel"
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_xs" />
-
-            <TextView
-                android:id="@+id/inhalt_text"
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <LinearLayout
-                android:id="@+id/inhalt_passwort_zeile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/inhalt_passwort"
-                    style="@style/Text.Homes.Body"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textIsSelectable="false" />
-
-                <Button
-                    android:id="@+id/inhalt_zeigen"
-                    style="@style/Widget.Homes.Button.Ghost"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/inhalt_eins"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_sm" />
-
-            <Button
-                android:id="@+id/inhalt_zwei"
-                style="@style/Widget.Homes.Button.Ghost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xs" />
-
-            <Button
-                android:id="@+id/inhalt_zu"
-                style="@style/Widget.Homes.Button.Ghost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xs"
-                android:text="@string/inhalt_zu" />
-
-            <TextView
-                android:id="@+id/inhalt_stand"
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_sm"
-                android:visibility="gone" />
-        </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -359,6 +280,86 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_sm"
                 android:background="?android:attr/selectableItemBackground"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- What is on a written tag held to the phone (owner 2026-11-27), before anything is offered,
+             right under the tags (they stay the first card):
+             a Homes tag's name, action and automations, a WLAN (its password behind „zeigen“), or
+             anything else in plain words; up to two buttons, „Schließen“, and the card's own line. -->
+        <LinearLayout
+            android:id="@+id/ausloeser_inhalt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:background="@drawable/card_homes"
+            android:orientation="vertical"
+            android:padding="@dimen/card_padding"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/inhalt_titel"
+                style="@style/Text.Homes.Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xs" />
+
+            <TextView
+                android:id="@+id/inhalt_text"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:id="@+id/inhalt_passwort_zeile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/inhalt_passwort"
+                    style="@style/Text.Homes.Body"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textIsSelectable="false" />
+
+                <Button
+                    android:id="@+id/inhalt_zeigen"
+                    style="@style/Widget.Homes.Button.Ghost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/inhalt_eins"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <Button
+                android:id="@+id/inhalt_zwei"
+                style="@style/Widget.Homes.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs" />
+
+            <Button
+                android:id="@+id/inhalt_zu"
+                style="@style/Widget.Homes.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/inhalt_zu" />
+
+            <TextView
+                android:id="@+id/inhalt_stand"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
                 android:visibility="gone" />
         </LinearLayout>
 

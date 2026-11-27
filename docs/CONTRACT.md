@@ -770,8 +770,8 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   the phone while the screen is open opens the form by itself, „Neuer Tag
   erkannt – wie soll er heißen?“, the name field focused. A written tag
   held to it shows what is on it, before anything is offered (owner
-  2026-11-27, `ausloeser/TagInhalt.kt`, `TagInhaltTest`), in a card above
-  the list: a Homes tag (Homes' address, the scheme form or HA's) → its
+  2026-11-27, `ausloeser/TagInhalt.kt`, `TagInhaltTest`), in a card right
+  under the list (scrolled into view): a Homes tag (Homes' address, the scheme form or HA's) → its
   name, action and automations from the list `GET /napi/ausloeser/tags`
   already read, „Bearbeiten“ (the list's form for it) and „Auslösen“ (`POST
   /napi/ausloeser` as a touch, the answer on the card); a WLAN tag → its

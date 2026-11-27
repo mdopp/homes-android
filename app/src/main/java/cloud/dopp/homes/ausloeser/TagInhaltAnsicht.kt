@@ -1,6 +1,7 @@
 package cloud.dopp.homes.ausloeser
 
 import android.app.Activity
+import android.graphics.Rect
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -53,6 +54,7 @@ internal class TagInhaltAnsicht(private val a: Activity) {
         }
         sage("")
         karte.isVisible = true
+        karte.post { karte.requestRectangleOnScreen(Rect(0, 0, karte.width, karte.height)) } // under the list: into view
     }
 
     /** Closed, its password forgotten. */
