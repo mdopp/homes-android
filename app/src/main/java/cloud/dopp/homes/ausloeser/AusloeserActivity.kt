@@ -17,6 +17,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.isEmpty
+import androidx.core.view.isVisible
 import cloud.dopp.homes.R
 import cloud.dopp.homes.ausloeser.AusloeserClient.Ausgang
 import cloud.dopp.homes.data.ServerStore
@@ -89,9 +90,10 @@ class AusloeserActivity : AppCompatActivity() {
         findViewById<Button>(R.id.ausloeser_schreiben).setOnClickListener { tippe() }
         findViewById<Button>(R.id.ausloeser_entfernen).setOnClickListener { bearbeitet?.let(::frageEntfernen) }
         findViewById<Button>(R.id.ausloeser_zurueck).setOnClickListener {
-            bearbeite(null, false)
+            zuklappen()
             stand("")
         }
+        findViewById<TextView>(R.id.ausloeser_neu_zeile).setOnClickListener { neuerTag(getString(R.string.ausloeser_neu_titel)) }
         findViewById<TextView>(R.id.ausloeser_stand).setOnClickListener {
             if (schreiber.bereit(this) == TagSchreiber.Bereit.AUS) runCatching { startActivity(Intent(Settings.ACTION_NFC_SETTINGS)) }
         }
@@ -181,9 +183,20 @@ class AusloeserActivity : AppCompatActivity() {
                 tut,
                 t.automationen.takeIf { it.isNotEmpty() }?.let { a -> getString(R.string.ausloeser_tag_startet, a.joinToString(", ") { it.name }) },
                 getString(R.string.ausloeser_tag_wartet).takeIf { t.tag in wartend },
+                t.zuletzt?.let(::zuletzt),
             )
             val zeile = unter.fold(name) { z, u -> getString(R.string.ausloeser_tag_mit_aktion, z, u) }
             liste.addView(text(zeile) { bearbeite(t, true) })
+        }
+    }
+
+    /** When a tag last ran (§9): „zuletzt heute 18:12, Anna – Bürolicht aus“; without a readable time its text alone. */
+    private fun zuletzt(z: AusloeserClient.Zuletzt): String {
+        val wann = z.wann?.let { Ausloeser.wann(it) } ?: return z.text
+        return if (z.person.isEmpty()) {
+            getString(R.string.ausloeser_tag_zuletzt_ohne, wann, z.text)
+        } else {
+            getString(R.string.ausloeser_tag_zuletzt, wann, z.person, z.text)
         }
     }
 
@@ -251,12 +264,33 @@ class AusloeserActivity : AppCompatActivity() {
             },
         )
         findViewById<EditText>(R.id.ausloeser_name).setText(tag?.name.orEmpty())
-        findViewById<View>(R.id.ausloeser_aendern).visibility = if (tag == null) View.GONE else View.VISIBLE
+        if (tag != null) aufklappen(true)
         findViewById<View>(R.id.ausloeser_entfernen).visibility = if (ausListe) View.VISIBLE else View.GONE
         gewaehlt = tag?.aktion.orEmpty()
         zeigeAktionen()
         automationen.zeige(tag?.takeIf { ausListe && it.aktion.isEmpty() })
         knopfRuht()
+    }
+
+    /** The form open in place of the list's last row, or closed to it (owner 2026-11-27: „Neu nimmt zu viel Platz ein“). */
+    private fun aufklappen(an: Boolean) {
+        findViewById<View>(R.id.ausloeser_formular).isVisible = an
+        findViewById<View>(R.id.ausloeser_neu_zeile).isVisible = !an
+    }
+
+    /** „+ Neuen Tag beschreiben“, or a blank tag held to the phone: the form open for a new tag, [titel] above it. */
+    private fun neuerTag(titel: String) {
+        bearbeite(null, false)
+        aufklappen(true)
+        findViewById<TextView>(R.id.ausloeser_name_titel).text = titel
+        stand("")
+        findViewById<EditText>(R.id.ausloeser_name).requestFocus()
+    }
+
+    /** Back to the list: nothing changed, the form closed. */
+    private fun zuklappen() {
+        bearbeite(null, false)
+        aufklappen(false)
     }
 
     /** The main button as it stands when nothing runs. */
@@ -335,7 +369,7 @@ class AusloeserActivity : AppCompatActivity() {
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 if (a is Ausgang.Angelegt) {
-                    bearbeite(null, false)
+                    zuklappen()
                     stand(getString(R.string.ausloeser_benannt, name))
                     ladeTags()
                 } else {
@@ -367,7 +401,7 @@ class AusloeserActivity : AppCompatActivity() {
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 if (a == Ausgang.Entfernt) {
-                    bearbeite(null, false)
+                    zuklappen()
                     stand(getString(R.string.ausloeser_entfernt, name))
                     ladeTags()
                 } else {
@@ -395,16 +429,18 @@ class AusloeserActivity : AppCompatActivity() {
         if (isFinishing) return@runOnUiThread
         when (e) {
             TagSchreiber.Ergebnis.Leer -> if (!wartet) leerAngeboten()
-            TagSchreiber.Ergebnis.Beschrieben -> if (!wartet) stand(getString(R.string.ausloeser_schon_beschrieben))
+            TagSchreiber.Ergebnis.Beschrieben -> if (!wartet) kurz(getString(R.string.ausloeser_schon_beschrieben))
             TagSchreiber.Ergebnis.Fertig, is TagSchreiber.Ergebnis.Fehler -> geschrieben(e)
         }
     }
 
-    /** A blank tag while nothing waits: offered for „Neuen Tag beschreiben“ (§2). */
-    private fun leerAngeboten() {
-        if (bearbeitet != null) bearbeite(null, false)
-        stand(getString(R.string.ausloeser_leer))
-        findViewById<EditText>(R.id.ausloeser_name).requestFocus()
+    /** A blank tag while nothing waits: the form opens for it by itself, its name asked for (§2). */
+    private fun leerAngeboten() = neuerTag(getString(R.string.ausloeser_neu_erkannt))
+
+    /** A note that goes again after a moment, unless something else was said meanwhile. */
+    private fun kurz(text: String) {
+        stand(text)
+        main.postDelayed({ if (findViewById<TextView>(R.id.ausloeser_stand).text.toString() == text) stand("") }, KURZ_MS)
     }
 
     private fun geschrieben(e: TagSchreiber.Ergebnis) {
@@ -416,6 +452,7 @@ class AusloeserActivity : AppCompatActivity() {
         findViewById<EditText>(R.id.ausloeser_name).text.clear()
         gewaehlt = "" // the next new tag starts as HA's
         zeigeAktionen()
+        zuklappen()
         stand(getString(R.string.ausloeser_fertig, tag.first))
     }
 
@@ -426,7 +463,10 @@ class AusloeserActivity : AppCompatActivity() {
     }
 
     private fun stand(text: String) {
-        findViewById<TextView>(R.id.ausloeser_stand).text = text
+        findViewById<TextView>(R.id.ausloeser_stand).apply {
+            this.text = text
+            isVisible = text.isNotEmpty() // no empty line under the list
+        }
     }
 
     // --- the charger --------------------------------------------------------------
@@ -450,6 +490,9 @@ class AusloeserActivity : AppCompatActivity() {
         @VisibleForTesting
         @Volatile
         var schreiber: TagSchreiber = NfcSchreiber
+
+        /** How long a passing note stays. */
+        private const val KURZ_MS = 4_000L
 
         /** How long the screen waits for a tag before it says none came. */
         private const val WARTEN_MS = 60_000L
