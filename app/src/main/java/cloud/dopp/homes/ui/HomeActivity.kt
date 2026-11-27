@@ -161,6 +161,7 @@ class HomeActivity : AppCompatActivity() {
         if (paired()) refreshDevices()
         KannLeser.lesen(this) // what the box can do, at most once a minute
         claim()
+        Anbieter.werkzeug(applicationContext) // the tool widget leaves the picker while no tool is offered (owner 2026-11-27)
         cloud.dopp.homes.hochladen.Hochladen.anstossen(applicationContext) // files wait: Android 15 gives the job new hours now
         // The app-icon long-press menu (#97): picks up a widget removed while away.
         if (paired()) AppShortcuts.refreshAsync(applicationContext)

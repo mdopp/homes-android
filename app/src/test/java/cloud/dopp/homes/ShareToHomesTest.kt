@@ -33,7 +33,10 @@ class ShareToHomesTest {
     @Test
     fun keptSaysHomesLineAndTheNote() {
         val r = ApiClient.merkenOutcome(200, """{"titel":"Kürbissuppe","art":"rezept","kurz":"Rezept gemerkt: Kürbissuppe, 2 Zutaten, 1 Schritt.","schon":false,"teilweise":false,"notiz":"https://homes.box/notizen/kuerbissuppe.md"}""")
-        assertEquals(Merken.Kept("Rezept gemerkt: Kürbissuppe, 2 Zutaten, 1 Schritt.", "https://homes.box/notizen/kuerbissuppe.md", false), r)
+        assertEquals(
+            Merken.Kept("Rezept gemerkt: Kürbissuppe, 2 Zutaten, 1 Schritt.", "https://homes.box/notizen/kuerbissuppe.md", false, "rezept", "Kürbissuppe"),
+            r,
+        )
         val again = ApiClient.merkenOutcome(200, """{"kurz":"Das ist schon gemerkt: „X“.","schon":true,"notiz":""}""")
         assertEquals(Merken.Kept("Das ist schon gemerkt: „X“.", null, true), again)
         // a note address that is not https is no link to open

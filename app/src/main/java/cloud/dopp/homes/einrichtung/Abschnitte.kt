@@ -163,6 +163,7 @@ object Bilder {
         "geraete" to R.drawable.ic_modul_geraete,
         "kontakte" to R.drawable.ic_modul_kontakte,
         "notizen" to R.drawable.ic_modul_notizen,
+        "rezepte" to R.drawable.ic_modul_rezepte, // the shared recipes, owner 2026-11-27
         "werkstatt" to R.drawable.ic_modul_werkstatt,
         "nutzung" to R.drawable.ic_modul_nutzung,
         "gesehen" to R.drawable.ic_modul_gesehen,

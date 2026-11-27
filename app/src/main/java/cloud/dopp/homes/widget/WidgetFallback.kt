@@ -43,7 +43,17 @@ object WidgetFallback {
     fun weg(context: Context, appWidgetId: Int, key: String): Boolean {
         val kann = KannStore.kann(context) ?: return false
         if (kann.hat(Liste.WIDGETS, key)) return false
-        val grund = kann.spurVon(Liste.WIDGETS, key)?.grund ?: context.getString(R.string.spur_widget_weg)
+        zeigeWeg(context, appWidgetId, kann.spurVon(Liste.WIDGETS, key)?.grund ?: context.getString(R.string.spur_widget_weg))
+        return true
+    }
+
+    /**
+     * A widget the app took out (owner 2026-11-27: Notizen, Dokumente): the app cannot take it off the home
+     * screen, so it says how, quietly, and fetches nothing.
+     */
+    fun ausgebaut(context: Context, appWidgetId: Int) = zeigeWeg(context, appWidgetId, context.getString(R.string.widget_ausgebaut))
+
+    private fun zeigeWeg(context: Context, appWidgetId: Int, grund: String) {
         runCatching {
             val v = RemoteViews(context.packageName, R.layout.widget_error)
             v.setViewVisibility(R.id.we_icon, View.GONE)
@@ -55,7 +65,6 @@ object WidgetFallback {
             v.setOnClickPendingIntent(R.id.we_root, open)
             AppWidgetManager.getInstance(context).updateAppWidget(appWidgetId, v)
         }
-        return true
     }
 
     private const val WEG_CODE = 700_000

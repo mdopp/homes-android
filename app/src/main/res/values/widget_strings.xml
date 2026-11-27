@@ -58,7 +58,9 @@
 
     <!-- Generic schema-driven .tool widget (#70/#72): one provider for every tool. -->
     <string name="tool_widget_label">Homes · Tool</string>
-    <string name="tool_widget_description">Liste aus Homes: Dokumente oder Notizen</string>
+    <string name="tool_widget_description">Liste aus Homes</string>
+    <!-- a Notizen or Dokumente widget placed before they went (owner 2026-11-27) -->
+    <string name="widget_ausgebaut">Dieses Widget gibt es nicht mehr – lange drücken und entfernen.</string>
     <!-- %1$s = Tool-Name, %2$d = Anzahl Einträge. -->
     <string name="tool_title_count">%1$s · %2$d</string>
     <string name="tool_empty">Keine Einträge</string>

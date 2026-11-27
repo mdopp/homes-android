@@ -33,8 +33,8 @@ contacts and calendar are on the phone.
   with a slider.
 - **Widgets:** one device per widget (its state as a picture, a tap
   switches it), an energy widget (solar, battery, grid and house now, and
-  today), and a widget for one of Homes' tools, such as notes or
-  documents.
+  today). The notes and documents widgets went (2026-11-27): one already
+  on the home screen says to remove it.
 - **Live while you look:** while the screen is on, the widgets stay
   current through one live connection to Homes. When the screen goes off,
   the app stops listening. No polling.

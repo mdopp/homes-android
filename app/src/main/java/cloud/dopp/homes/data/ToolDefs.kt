@@ -63,7 +63,7 @@ data class ToolDef(
      * keeps working.
      */
     val isOffered: Boolean
-        get() = isListable && id !in ToolDefs.NOT_OFFERED
+        get() = isListable && id !in ToolDefs.NOT_OFFERED && id !in ToolDefs.AUSGEBAUT
 }
 
 /**
@@ -106,9 +106,15 @@ object ToolDefs {
     /**
      * Tools Homes lists that the app does not offer as a widget: contacts
      * (owner, 2026-11-02) and reminders (2026-11-03, they go into the phone's
-     * calendar). Dokumente and Notizen stay.
+     * calendar). A placed one keeps working.
      */
     val NOT_OFFERED = setOf(Napi.TOOL_CONTACTS, Napi.TOOL_TASKS)
+
+    /**
+     * Tools whose widget the app took out (owner 2026-11-27: „Widget für Notizen brauche ich nicht mehr“,
+     * Dokumente „kann ganz weg“): never offered, and a placed one fetches nothing and says to remove it.
+     */
+    val AUSGEBAUT = setOf(Napi.TOOL_DOC, Napi.TOOL_NOTE)
 
     /**
      * A def's declared data path, as the app may call it: Homes names its rows

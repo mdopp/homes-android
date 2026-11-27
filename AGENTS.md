@@ -12,8 +12,9 @@ This repo is the **Homes app**: native Kotlin home-screen widgets, the
 pairing with **Homes** (`https://www.<domain>`, repo `mdopp/homes`), the
 family's surface of the box Laib runs, and on the app's start screen the
 person's favorite devices (the owner's calls, 2026-11-02 and 2026-11-03: the
-widgets are one device per widget, one energy widget and the tools Dokumente
-and Notizen; no Box widgets; every confirmation is the one dialog,
+widgets are one device per widget and one energy widget; the tools Dokumente
+and Notizen went on 2026-11-27 („Kann ganz weg“: a placed one only says to
+remove it, `ToolDefs.AUSGEBAUT`, no network); no Box widgets; every confirmation is the one dialog,
 `widget/ActionDialog.kt`). It is a widget client (laib ADR 0022):
 no web shell, no messages, no approvals, no diagnostics, and for the widgets
 no network while the screen is off. The widgets stay live through one
