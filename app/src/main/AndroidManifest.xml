@@ -287,8 +287,9 @@
              /.well-known/assetlinks.json); tags written before (cloud.dopp.homes://tag/<id>) and by
              HA's app (https://www.home-assistant.io/tag/<id>) keep working. It reports the tag once,
              says what came of it in one line and closes: translucent, its own empty task, not in the
-             recents. Touched it is NDEF_DISCOVERED; the box's address opened as a link (VIEW) acts
-             only on „Auslösen“, never by itself. The path is /tag/homes-…, so Homes' other pages
+             recents. Touched it is NDEF_DISCOVERED, or a VIEW from Android's NFC service (Android 12+
+             hands a touched tag's web address over as VIEW): reported at once. The box's address
+             opened as a link (a VIEW from anyone else) acts only on „Auslösen“, never by itself. The path is /tag/homes-…, so Homes' other pages
              under /tag/ (a wish's decision, /tag/freigabe/<id>) stay the browser's.
              ${homesHost} is the box's public host, a manifestPlaceholder (app/build.gradle). -->
         <activity
@@ -330,6 +331,25 @@
                     android:host="${homesHost}"
                     android:pathPattern="/tag/homes-.*" />
             </intent-filter>
+        </activity>
+
+        <!-- A blank tag touched anywhere (owner 2026-11-27: „kann sich Homes für neue Tags registrieren?“):
+             TECH_DISCOVERED for a tag that can be formatted or is Ndef (@xml/nfc_leer); Android offers it
+             after NDEF_DISCOVERED, so a tag with Homes' or HA's address still goes to TagActivity. A blank
+             one opens the Auslöser screen's form for it; one with records is not ours and nothing shows. -->
+        <activity
+            android:name=".ausloeser.LeerTagActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_leer" />
         </activity>
 
         <!-- Mehr → Auslöser (homes ADR 0004): HA's tags, a new tag written, „Ladestation melden“. -->

@@ -17,6 +17,9 @@
     <string name="ausloeser_legt_an">Legt an …</string>
     <string name="ausloeser_legt_an_satz">Legt „%1$s“ in Home Assistant an …</string>
     <string name="ausloeser_halte">Halte den Tag ans Telefon … („%1$s“)</string>
+    <!-- a blank tag touched anywhere (owner 2026-11-27): written at once while Android still holds it -->
+    <string name="ausloeser_schreibt_direkt">Beschreibt „%1$s“ …</string>
+    <string name="ausloeser_halte_nochmal">Halte „%1$s“ noch einmal ans Telefon …</string>
     <string name="ausloeser_abbrechen">Abbrechen</string>
     <string name="ausloeser_abgebrochen">Abgebrochen. Der Name steht schon in Home Assistant; „Noch einmal versuchen“ beschreibt einen Tag dafür.</string>
     <string name="ausloeser_kein_tag">Kein Tag gekommen. Tippe noch einmal und halte ihn ans Telefon.</string>

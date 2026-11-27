@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Parcelable
 import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.IntentCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.isVisible
 import cloud.dopp.homes.R
@@ -71,6 +73,9 @@ class AusloeserActivity : AppCompatActivity() {
     /** The tag's automations, while one of HA's tags is changed (§8). */
     private lateinit var automationen: TagAutomationen
 
+    /** A blank tag Android handed over (LeerTagActivity), not written yet. */
+    private var gehalten: Parcelable? = null
+
     private val zuSpaet = Runnable {
         warteAus()
         stand(getString(R.string.ausloeser_kein_tag))
@@ -98,6 +103,11 @@ class AusloeserActivity : AppCompatActivity() {
             if (schreiber.bereit(this) == TagSchreiber.Bereit.AUS) runCatching { startActivity(Intent(Settings.ACTION_NFC_SETTINGS)) }
         }
         intent?.getStringExtra(EXTRA_TAG)?.let { bearbeite(AusloeserClient.Tag(it, ""), false) }
+        // a blank tag touched anywhere (LeerTagActivity): the form for it, the tag kept to write it at once
+        intent?.let { IntentCompat.getParcelableExtra(it, EXTRA_LEER, Parcelable::class.java) }?.let {
+            gehalten = it
+            leerAngeboten()
+        }
     }
 
     override fun onResume() {
@@ -284,7 +294,7 @@ class AusloeserActivity : AppCompatActivity() {
         aufklappen(true)
         findViewById<TextView>(R.id.ausloeser_name_titel).text = titel
         stand("")
-        findViewById<EditText>(R.id.ausloeser_name).requestFocus()
+        findViewById<EditText>(R.id.ausloeser_name).let { name -> name.post { name.requestFocus() } } // also from onCreate: once laid out
     }
 
     /** Back to the list: nothing changed, the form closed. */
@@ -422,6 +432,27 @@ class AusloeserActivity : AppCompatActivity() {
         stand(getString(R.string.ausloeser_halte, tag.first))
         main.removeCallbacks(zuSpaet)
         main.postDelayed(zuSpaet, WARTEN_MS)
+        gehalten?.let { direkt(it, tag) }
+    }
+
+    /**
+     * The blank tag Android handed over, written at once while it still holds it; once only. Gone (not held
+     * any more) the wait goes on: the person holds it to the phone again, as for any new tag.
+     */
+    private fun direkt(g: Parcelable, tag: Pair<String, Ausgang.Angelegt>) {
+        gehalten = null
+        stand(getString(R.string.ausloeser_schreibt_direkt, tag.first))
+        thread(name = "tag-direkt") {
+            val e = schreiber.direkt(g, tag.second.uri)
+            runOnUiThread {
+                if (isFinishing || !wartet || offen !== tag) return@runOnUiThread
+                when (e) {
+                    TagSchreiber.Ergebnis.Fertig -> geschrieben(e)
+                    is TagSchreiber.Ergebnis.Fehler -> stand(e.satz) // the wait goes on: held again, it is written
+                    else -> stand(getString(R.string.ausloeser_halte_nochmal, tag.first))
+                }
+            }
+        }
     }
 
     /** A tag came, from NFC's thread: written while waiting, else looked at. */
@@ -485,6 +516,9 @@ class AusloeserActivity : AppCompatActivity() {
     companion object {
         /** A touched unknown tag's id: „Benennen“ names it here (§2). */
         const val EXTRA_TAG = "cloud.dopp.homes.ausloeser.TAG"
+
+        /** A blank tag touched anywhere (LeerTagActivity): Android's Tag, to write it without holding it again. */
+        const val EXTRA_LEER = "cloud.dopp.homes.ausloeser.LEER"
 
         /** The tag the person holds to the phone; replaced in tests. */
         @VisibleForTesting

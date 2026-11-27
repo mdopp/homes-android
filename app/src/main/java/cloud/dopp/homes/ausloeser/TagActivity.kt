@@ -2,10 +2,12 @@ package cloud.dopp.homes.ausloeser
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.nfc.NfcAdapter
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -27,9 +29,11 @@ import kotlin.concurrent.thread
  * the Auslöser screen, the tag is not written again), or why not — and closes. A tag
  * asking for whom to scan (§8, `scanner-fragen`) opens Homes' Scannen with its line.
  * The tag's own address `https://<homes>/tag/<id>` (§5, an App Link) comes two
- * ways: touched (NDEF_DISCOVERED), reported at once as every tag; opened as a link
- * (VIEW, from a chat or a page), reported only after „Auslösen“ — a link never
- * acts by itself, as Homes' page acts only on its button. Translucent,
+ * ways: touched, reported at once as every tag; opened as a link (from a chat or
+ * a page), reported only after „Auslösen“ — a link never acts by itself, as
+ * Homes' page acts only on its button. Touched is NDEF_DISCOVERED, or a VIEW
+ * Android's NFC service sent ([weg]): Android 12+ hands a touched tag's web
+ * address over as VIEW (seen on a Samsung, 2026-11-27). Translucent,
  * not in the recents, its own empty task: nothing is left behind.
  */
 class TagActivity : Activity() {
@@ -71,7 +75,9 @@ class TagActivity : Activity() {
         main.removeCallbacks(schliessen)
         findViewById<Button>(R.id.tag_benennen).visibility = View.GONE
         findViewById<Button>(R.id.tag_ausloesen).visibility = View.GONE
-        val link = intent?.action != NfcAdapter.ACTION_NDEF_DISCOVERED
+        val weg = weg(intent?.action, intent?.extras?.keySet().orEmpty(), referrer)
+        Log.i(LOG, "tag: $weg") // which way it came, nothing of the tag or the person
+        val link = weg == WEG_LINK
         val tag = Ausloeser.tagAus(intent?.dataString, ServerStore.host(this))
         val base = ServerStore.baseUrl(this)
         val token = TokenStore.get(this)
@@ -139,6 +145,31 @@ class TagActivity : Activity() {
     }
 
     companion object {
+        private const val LOG = "HomesTag"
+        private const val WEG_NFC = "nfc"
+        private const val WEG_NFC_VIEW = "nfc-view"
+        private const val WEG_LINK = "link"
+
+        /** Android's NFC service, as an activity's referrer names its sender. */
+        private const val NFC_PAKET = "com.android.nfc"
+
+        /** What NfcAdapter puts on an intent for a touched tag; a vendor's VIEW may carry them too. */
+        private val NFC_EXTRAS = setOf(NfcAdapter.EXTRA_TAG, NfcAdapter.EXTRA_NDEF_MESSAGES, NfcAdapter.EXTRA_ID)
+
+        /**
+         * How an intent came: touched ([WEG_NFC], [WEG_NFC_VIEW]: a VIEW from Android's NFC service, by its
+         * [referrer] or the NFC extras [extras] names) or a link ([WEG_LINK]: a chat, a browser, nobody known).
+         * Any app could send either (the activity is exported for NDEF_DISCOVERED anyway); what a person taps
+         * in a chat or a page never says it is the NFC service.
+         */
+        @VisibleForTesting
+        fun weg(action: String?, extras: Set<String>, referrer: Uri?): String = when {
+            action == NfcAdapter.ACTION_NDEF_DISCOVERED -> WEG_NFC
+            extras.any { it in NFC_EXTRAS } -> WEG_NFC_VIEW
+            referrer != null && referrer.scheme == "android-app" && referrer.host == NFC_PAKET -> WEG_NFC_VIEW
+            else -> WEG_LINK
+        }
+
         /** Long enough to read one line. */
         @VisibleForTesting
         const val ZEIGEN_MS = 2_500L

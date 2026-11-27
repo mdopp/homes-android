@@ -259,7 +259,8 @@ class ManifestTest {
      * (`autoVerify`) against Homes' `/.well-known/assetlinks.json`, its host the build's `homesHost`
      * placeholder (app/build.gradle) — never `home-assistant.io`, never the app's scheme, never a path but
      * `/tag/homes-…` (Homes' `/tag/freigabe/…` stays the browser's). A link reports nothing by itself: the
-     * activity asks for „Auslösen“ first (TagStandardTest's link tests).
+     * activity asks for „Auslösen“ first (TagStandardTest's link tests) — unless Android's NFC service sent the
+     * VIEW, as Android 12+ does for a touched tag's web address (TagBeruehrtTest).
      */
     @Test
     fun aTouchedTagOpensOneActivityAndNfcIsOptional() {
@@ -279,6 +280,18 @@ class ManifestTest {
         }
         assertEquals("NDEF_DISCOVERED nowhere else", 3, Regex("android.nfc.action.NDEF_DISCOVERED").findAll(manifest).count())
         assertEquals("autoVerify nowhere else", 1, Regex("android:autoVerify").findAll(manifest).count())
+        // a blank tag touched anywhere (owner 2026-11-27): one TECH_DISCOVERED, on LeerTagActivity, for the
+        // tags that can be formatted or are Ndef; never TAG_DISCOVERED (every tag at all)
+        assertEquals("TECH_DISCOVERED once", 2, Regex("android.nfc.action.TECH_DISCOVERED").findAll(manifest).count())
+        val leer = manifest.substringAfter("""android:name=".ausloeser.LeerTagActivity"""").substringBefore("</activity>")
+        assertTrue(leer, leer.contains("""<action android:name="android.nfc.action.TECH_DISCOVERED" />"""))
+        assertTrue(leer, leer.contains("""android:resource="@xml/nfc_leer""""))
+        listOf("""android:excludeFromRecents="true"""", """android:noHistory="true"""", """android:taskAffinity=""""", "Translucent").forEach {
+            assertTrue("$it: $leer", leer.contains(it))
+        }
+        assertFalse("no TAG_DISCOVERED", manifest.contains("android.nfc.action.TAG_DISCOVERED"))
+        val techs = Regex("<tech>([^<]+)</tech>").findAll(File(RepoFiles.main, "res/xml/nfc_leer.xml").readText()).map { it.groupValues[1] }.toSet()
+        assertEquals(setOf("android.nfc.tech.NdefFormatable", "android.nfc.tech.Ndef"), techs)
         assertTrue(manifest.contains("""<uses-feature android:name="android.hardware.nfc" android:required="false" />"""))
     }
 

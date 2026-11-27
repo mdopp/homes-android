@@ -85,7 +85,9 @@ These rules apply to every session, human or agent.
   automations, without HA's companion app. A touched NFC tag opens
   `ausloeser/TagActivity` (`NDEF_DISCOVERED`: the box's own address, Homes'
   older form and HA's app's; the box's address opened as a link, an App Link
-  for the build's `homesHost` placeholder, acts only on „Auslösen“), which reports it once, says one line and closes („Benennen“ for
+  for the build's `homesHost` placeholder, acts only on „Auslösen“ — unless Android's NFC service sent
+  that VIEW, as Android 12+ does for a touched tag's web address: then it is a touch; a blank tag touched
+  anywhere opens the new-tag form through `ausloeser/LeerTagActivity`, TECH_DISCOVERED), which reports it once, says one line and closes („Benennen“ for
   an unknown one); Mehr → Auslöser lists HA's tags, writes a new one, and
   names, renames or removes one (§2: the name lives in HA only, the id is
   never shown, a rename never rewrites the tag). **„Ladestation melden“ is a second

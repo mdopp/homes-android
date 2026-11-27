@@ -9,6 +9,7 @@ import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
+import android.os.Parcelable
 import java.io.IOException
 
 /**
@@ -44,6 +45,18 @@ interface TagSchreiber {
 
     /** Stop reading tags. */
     fun aus(activity: Activity)
+
+    /**
+     * Write [uri] onto [tag], a blank tag Android handed over ([LeerTagActivity]) and may still hold; null when
+     * this writer cannot (the person holds it to the phone again, as for any new tag). Blocking.
+     */
+    fun direkt(tag: Parcelable, uri: String): Ergebnis? = null
+
+    companion object {
+        /** Blank: one Ndef can format ([formatierbar]), or an Ndef tag whose message is none or empty records only. */
+        fun leer(formatierbar: Boolean, ndef: Boolean, nachricht: NdefMessage?): Boolean =
+            formatierbar || ndef && nachricht?.records.orEmpty().all { it.tnf == NdefRecord.TNF_EMPTY }
+    }
 }
 
 /** The phone's own NFC. */
@@ -73,9 +86,10 @@ object NfcSchreiber : TagSchreiber {
     private fun ansehen(tag: Tag): TagSchreiber.Ergebnis {
         val ndef = Ndef.get(tag) ?: return if (NdefFormatable.get(tag) != null) TagSchreiber.Ergebnis.Leer else TagSchreiber.Ergebnis.Fehler(KEIN_NDEF)
         // a new sticker often carries one empty record
-        val leer = ndef.cachedNdefMessage?.records.orEmpty().all { it.tnf == NdefRecord.TNF_EMPTY }
-        return if (leer) TagSchreiber.Ergebnis.Leer else TagSchreiber.Ergebnis.Beschrieben
+        return if (TagSchreiber.leer(false, true, ndef.cachedNdefMessage)) TagSchreiber.Ergebnis.Leer else TagSchreiber.Ergebnis.Beschrieben
     }
+
+    override fun direkt(tag: Parcelable, uri: String): TagSchreiber.Ergebnis? = (tag as? Tag)?.let { schreiben(it, uri) }
 
     override fun aus(activity: Activity) {
         runCatching { NfcAdapter.getDefaultAdapter(activity)?.disableReaderMode(activity) }
