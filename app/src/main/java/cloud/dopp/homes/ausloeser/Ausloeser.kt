@@ -7,6 +7,9 @@ import cloud.dopp.homes.HomesConfig
 import cloud.dopp.homes.data.Napi
 import org.json.JSONObject
 import java.net.URI
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 /**
  * The phone as a trigger for Home Assistant's automations (homes ADR 0004 §1,
@@ -78,6 +81,50 @@ object Ausloeser {
     }
 
     fun merke(ctx: Context, satz: String, um: Long) = prefs(ctx).edit { putString(ZULETZT, satz).putLong(ZULETZT_UM, um) }
+
+    // --- when a tag last ran (§9) ------------------------------------------------------
+
+    private val RFC3339 = Regex("""(\d{4})-(\d\d)-(\d\d)[Tt ](\d\d):(\d\d):(\d\d)(?:\.(\d+))?([Zz]|[+-]\d\d:\d\d)""")
+
+    /** [wert] as epoch ms: an RFC 3339 time, or a number (ms, or seconds when it is that small); null for neither. */
+    fun zeitpunkt(wert: Any?): Long? = when (wert) {
+        is Number -> wert.toLong().let { if (it < SEKUNDEN_BIS) it * 1000L else it }.takeIf { it > 0 }
+        is String -> rfc3339(wert.trim())
+        else -> null
+    }
+
+    private fun rfc3339(text: String): Long? {
+        val m = RFC3339.matchEntire(text) ?: return null
+        val g = m.groupValues
+        val c = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.ROOT).apply {
+            clear()
+            set(g[1].toInt(), g[2].toInt() - 1, g[3].toInt(), g[4].toInt(), g[5].toInt(), g[6].toInt())
+        }
+        val ms = g[7].take(3).padEnd(3, '0').toInt()
+        val versatz = g[8].takeIf { it.length > 1 }?.let { o ->
+            val minuten = o.substring(1, 3).toInt() * 60 + o.substring(4, 6).toInt()
+            (if (o[0] == '-') -minuten else minuten) * 60_000L
+        } ?: 0L
+        return c.timeInMillis + ms - versatz
+    }
+
+    /** [ms] as a person says it, against [jetzt]: „heute 18:12“, „gestern 07:30“, else „26.11., 18:12“. */
+    fun wann(ms: Long, jetzt: Long = System.currentTimeMillis(), zone: TimeZone = TimeZone.getDefault()): String {
+        fun tag(t: Long) = Calendar.getInstance(zone, Locale.GERMANY).apply { timeInMillis = t }
+        val d = tag(ms)
+        val uhr = String.format(Locale.GERMANY, "%02d:%02d", d.get(Calendar.HOUR_OF_DAY), d.get(Calendar.MINUTE))
+        val heute = tag(jetzt)
+        val gestern = tag(jetzt).apply { add(Calendar.DAY_OF_YEAR, -1) }
+        fun gleich(a: Calendar, b: Calendar) = a.get(Calendar.YEAR) == b.get(Calendar.YEAR) && a.get(Calendar.DAY_OF_YEAR) == b.get(Calendar.DAY_OF_YEAR)
+        return when {
+            gleich(d, heute) -> "heute $uhr"
+            gleich(d, gestern) -> "gestern $uhr"
+            else -> String.format(Locale.GERMANY, "%02d.%02d., %s", d.get(Calendar.DAY_OF_MONTH), d.get(Calendar.MONTH) + 1, uhr)
+        }
+    }
+
+    /** Below this a number is seconds since 1970, not ms (that is before 2001 in ms). */
+    private const val SEKUNDEN_BIS = 1_000_000_000_000L
 
     // --- wishes that wait for an admin (§8) ------------------------------------------
 

@@ -660,7 +660,8 @@ object Napi {
     /**
      * `GET /napi/ausloeser/tags`: `{ok, tags: [{tag, name, aktion, automationen: [{id, name}]}], vorschlaege,
      * aktionen: [{id, titel}]}`, HA's tag registry with the automations that trigger on each tag (§8), names to
-     * offer (§2), and the actions this box offers a tag, in order, HA's (`""`) first (§4, §8).
+     * offer (§2), and the actions this box offers a tag, in order, HA's (`""`) first (§4, §8); per tag its last
+     * run [ZULETZT] `{wann, person?, text}` (§9), absent before the first.
      */
     object TagsJson {
         const val TAGS = "tags"
@@ -672,6 +673,10 @@ object Napi {
         const val AKTIONEN = "aktionen"
         const val ID = "id"
         const val TITEL = ModulJson.TITEL
+        const val ZULETZT = "zuletzt"
+        const val WANN = "wann"
+        const val PERSON = "person"
+        const val TEXT = GemeldetJson.TEXT
     }
 
     /** `GET /napi/automationen?q=` (§8): `{ok, automationen: [{id, name, an}]}`, HA's automations to link a tag to. */

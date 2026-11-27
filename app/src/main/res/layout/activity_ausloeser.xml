@@ -31,9 +31,6 @@
             android:layout_height="wrap_content"
             android:text="@string/ausloeser_intro" />
 
-        <!-- A new tag, or one named or renamed (§2): its name with the house's suggestions, the
-             button that answers at once, „Entfernen“ and „Abbrechen“ while one is changed, the
-             line that says how it ended. -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,83 +40,119 @@
             android:padding="@dimen/card_padding">
 
             <TextView
-                android:id="@+id/ausloeser_name_titel"
                 style="@style/Text.Homes.Title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/space_xs"
-                android:text="@string/ausloeser_neu_titel" />
+                android:text="@string/ausloeser_tags_titel" />
 
-            <EditText
-                android:id="@+id/ausloeser_name"
+            <LinearLayout
+                android:id="@+id/ausloeser_liste"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/ausloeser_name_hinweis"
-                android:importantForAutofill="no"
-                android:inputType="textCapSentences"
-                android:maxLength="60"
-                tools:targetApi="o" />
+                android:orientation="vertical" />
 
-            <!-- The house's rooms from HA and a few places, one tap each. -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xs"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:id="@+id/ausloeser_vorschlaege"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
-            </HorizontalScrollView>
-
-            <!-- „Was soll der Tag tun?“ (homes ADR 0004 §4): one choice per action the box lists. -->
+            <!-- The list's last row (owner 2026-11-27: „Neu nimmt zu viel Platz ein“): a tap opens the
+                 form below in place; a blank tag held to the phone opens it too. -->
             <TextView
-                android:id="@+id/ausloeser_aktion_frage"
+                android:id="@+id/ausloeser_neu_zeile"
                 style="@style/Text.Homes.Body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_sm"
-                android:text="@string/ausloeser_aktion_frage"
-                android:visibility="gone" />
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingBottom="@dimen/space_xs"
+                android:text="@string/ausloeser_neu_zeile"
+                android:textColor="@color/homes_accent" />
 
-            <RadioGroup
-                android:id="@+id/ausloeser_aktion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/ausloeser_schreiben"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_sm"
-                android:text="@string/ausloeser_schreiben" />
-
+            <!-- A new tag, or one named or renamed (§2), closed until asked for: its name with the
+                 house's suggestions, „Was soll der Tag tun?“, the button that answers at once,
+                 „Entfernen“ while one is changed, „Abbrechen“ that closes it. -->
             <LinearLayout
-                android:id="@+id/ausloeser_aendern"
+                android:id="@+id/ausloeser_formular"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xs"
+                android:layout_marginTop="@dimen/space_sm"
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <Button
-                    android:id="@+id/ausloeser_entfernen"
-                    style="@style/Widget.Homes.Button.Ghost"
+                <TextView
+                    android:id="@+id/ausloeser_name_titel"
+                    style="@style/Text.Homes.Title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/ausloeser_entfernen" />
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/ausloeser_neu_titel" />
 
-                <Button
-                    android:id="@+id/ausloeser_zurueck"
-                    style="@style/Widget.Homes.Button.Ghost"
+                <EditText
+                    android:id="@+id/ausloeser_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/ausloeser_name_hinweis"
+                    android:importantForAutofill="no"
+                    android:inputType="textCapSentences"
+                    android:maxLength="60"
+                    tools:targetApi="o" />
+
+                <!-- The house's rooms from HA and a few places, one tap each. -->
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/ausloeser_abbrechen" />
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/ausloeser_vorschlaege"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+
+                <!-- „Was soll der Tag tun?“ (homes ADR 0004 §4): one choice per action the box lists. -->
+                <TextView
+                    android:id="@+id/ausloeser_aktion_frage"
+                    style="@style/Text.Homes.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/ausloeser_aktion_frage"
+                    android:visibility="gone" />
+
+                <RadioGroup
+                    android:id="@+id/ausloeser_aktion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/ausloeser_schreiben"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/ausloeser_schreiben" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/ausloeser_entfernen"
+                        style="@style/Widget.Homes.Button.Ghost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ausloeser_entfernen" />
+
+                    <Button
+                        android:id="@+id/ausloeser_zurueck"
+                        style="@style/Widget.Homes.Button.Ghost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/ausloeser_abbrechen" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- How it stands; with NFC off a tap opens Android's NFC settings. -->
@@ -129,7 +162,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_sm"
-                android:background="?android:attr/selectableItemBackground" />
+                android:background="?android:attr/selectableItemBackground"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- The tag being changed and its automations (homes ADR 0004 §8): each with „Lösen“, one to
@@ -218,27 +252,6 @@
                 android:layout_marginTop="@dimen/space_sm" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:background="@drawable/card_homes"
-            android:orientation="vertical"
-            android:padding="@dimen/card_padding">
-
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_xs"
-                android:text="@string/ausloeser_tags_titel" />
-
-            <LinearLayout
-                android:id="@+id/ausloeser_liste"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

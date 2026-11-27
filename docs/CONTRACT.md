@@ -747,6 +747,16 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   `{"ok":false,"error":"<German sentence>"}`; a 404 `{"reason":"not_found"}`
   means the box has no Home Assistant; a 401 says to pair again; no answer
   in 12 s, or no Homes, is said in the app's words. Unpaired, nothing goes.
+- **The screen, short** (owner 2026-11-27: „Neu nimmt zu viel Platz
+  ein“). „Eure Tags“ comes first; the form for a new tag is closed behind
+  the list's last row „+ Neuen Tag beschreiben“, which opens it in place;
+  „Abbrechen“ closes it, and so does a tag written, named or removed (the
+  line under the list says what came of it, and is gone while it says
+  nothing). Tapping a tag opens the same form for it. A blank tag held to
+  the phone while the screen is open opens the form by itself, „Neuer Tag
+  erkannt – wie soll er heißen?“, the name field focused. A written tag
+  held to it says „Schon beschrieben. Zum Melden die Seite schließen.“ for
+  four seconds. The charger's card is as before.
 - **A new tag.** On the Auslöser screen: a name (the list's `vorschlaege`,
   the house's rooms from HA and a few places, as one-tap words under the
   field) → `POST /napi/ausloeser/tag {"name":"Bürotür"}` →
@@ -834,6 +844,18 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   (`{"ok":false,"error"}`: 404, 409, 502, 503, 504) is said as it comes.
   The read waits up to 65 s (the Bote drafts; Homes answers 504 when it is
   too late).
+- **What a tag did** (ADR 0004 §9; mdopp/homes feat/tag-ergebnis, the
+  contract as agreed — its handler lines are pinned when that PR exists).
+  `POST /napi/ausloeser` `{art: nfc}` waits for the automations the tag
+  started and answers `ergebnisse:[{automation,name,lief,grund}]` and a
+  ready `text`; the touched tag's line is that `text` (it may take a few
+  seconds: „Meldet …“ stays until then; the read waits 12 s). The app reads
+  `text` only, not `ergebnisse`. `GET /napi/ausloeser/tags` gives each tag
+  `zuletzt:{wann,person?,text}` when it ran before: the row says „zuletzt
+  heute 18:12, Anna – Bürolicht aus“ („gestern …“, else „26.11., …“, the
+  phone's time zone); without `person` „zuletzt heute 18:12 – …“; with a
+  `wann` the app cannot read, `text` alone. `wann` is read as RFC 3339 (or a
+  number, ms or seconds).
 - **Waiting for an admin.** A wish's id is kept on the phone with its tag
   (the row says „Wartet auf Freigabe“) and asked after with `GET
   /napi/ausloeser/freigabe/{id}` → `{"ok":true,"stand","satz","wunsch"}`

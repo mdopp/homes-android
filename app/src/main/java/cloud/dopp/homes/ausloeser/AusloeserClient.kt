@@ -39,7 +39,16 @@ class AusloeserClient(
      * One of HA's tags: its id, its name there (`""` when it has none), what it does (`""`: report to HA, §4), and
      * the automations that trigger on it (§8).
      */
-    data class Tag(val tag: String, val name: String, val aktion: String = "", val automationen: List<Automation> = emptyList())
+    data class Tag(
+        val tag: String,
+        val name: String,
+        val aktion: String = "",
+        val automationen: List<Automation> = emptyList(),
+        val zuletzt: Zuletzt? = null,
+    )
+
+    /** When a tag last ran (§9): [wann] epoch ms (null when Homes' time is unreadable), who touched it, what came of it. */
+    data class Zuletzt(val wann: Long?, val person: String, val text: String)
 
     /** One of HA's automations: its config id, its name, and whether it is on (unknown under a tag: on). */
     data class Automation(val id: String, val name: String, val an: Boolean = true)
@@ -232,12 +241,19 @@ class AusloeserClient(
                     Tag(
                         it, HomesHttp.text(t, TagsJson.NAME).orEmpty(), HomesHttp.text(t, TagsJson.AKTION).orEmpty(),
                         automationenAus(t?.optJSONArray(TagsJson.AUTOMATIONEN), null),
+                        zuletztAus(t?.optJSONObject(TagsJson.ZULETZT)),
                     )
                 }
             }
             val v = o.optJSONArray(TagsJson.VORSCHLAEGE)
             val vorschlaege = (0 until (v?.length() ?: 0)).mapNotNull { v?.optString(it)?.trim()?.ifBlank { null } }.distinct()
             return Ausgang.Tags(tags, vorschlaege, aktionenAus(o))
+        }
+
+        /** `zuletzt: {wann, person?, text}`; null without it or without a text to show. */
+        private fun zuletztAus(o: JSONObject?): Zuletzt? {
+            val text = HomesHttp.text(o, TagsJson.TEXT) ?: return null
+            return Zuletzt(Ausloeser.zeitpunkt(o?.opt(TagsJson.WANN)), HomesHttp.text(o, TagsJson.PERSON).orEmpty(), text)
         }
 
         /** `aktionen: [{id, titel}]`, as Homes lists them; HA's id is `""`, an entry without a title is left out. */

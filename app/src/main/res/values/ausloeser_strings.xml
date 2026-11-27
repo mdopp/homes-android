@@ -22,8 +22,10 @@
     <string name="ausloeser_kein_tag">Kein Tag gekommen. Tippe noch einmal und halte ihn ans Telefon.</string>
     <string name="ausloeser_nochmal">Noch einmal versuchen</string>
     <string name="ausloeser_fertig">„%1$s“ ist fertig. Kleb ihn hin und sag in der Werkstatt, was er tun soll. Schreib den Namen auch auf den Aufkleber – der Tag selbst trägt ihn nicht.</string>
-    <string name="ausloeser_leer">Ein leerer Tag. Gib ihm oben einen Namen und tippe „Tag beschreiben“.</string>
-    <string name="ausloeser_schon_beschrieben">Dieser Tag ist schon beschrieben. Zum Melden schließe diese Seite und halte ihn noch einmal ans Telefon.</string>
+    <!-- the form is closed until asked for (owner 2026-11-27): the list's last row, or a blank tag held to the phone -->
+    <string name="ausloeser_neu_zeile">+ Neuen Tag beschreiben</string>
+    <string name="ausloeser_neu_erkannt">Neuer Tag erkannt – wie soll er heißen?</string>
+    <string name="ausloeser_schon_beschrieben">Schon beschrieben. Zum Melden die Seite schließen.</string>
 
     <string name="ausloeser_sichern">Sichern</string>
     <string name="ausloeser_sichert">Sichert …</string>
@@ -47,6 +49,9 @@
     <!-- a tag's automations (§8), under its name in the list -->
     <string name="ausloeser_tag_startet">startet: %1$s</string>
     <string name="ausloeser_tag_wartet">Wartet auf Freigabe</string>
+    <!-- when it last ran (§9): „zuletzt heute 18:12, Anna – Bürolicht aus“ -->
+    <string name="ausloeser_tag_zuletzt">zuletzt %1$s, %2$s – %3$s</string>
+    <string name="ausloeser_tag_zuletzt_ohne">zuletzt %1$s – %2$s</string>
 
     <string name="ausloeser_auto_titel">Automationen</string>
     <string name="ausloeser_auto_keine">Noch keine Automation startet mit diesem Tag.</string>

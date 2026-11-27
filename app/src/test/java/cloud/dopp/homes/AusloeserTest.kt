@@ -523,11 +523,16 @@ class AusloeserTest {
         a.ersteZeile().performClick() // renaming: the blank tag goes back to a new one
         schreiber.ergebnis!!(TagSchreiber.Ergebnis.Leer)
         shadowOf(Looper.getMainLooper()).idle()
-        assertEquals("Ein leerer Tag. Gib ihm oben einen Namen und tippe „Tag beschreiben“.", a.stand())
-        assertEquals("Neuen Tag beschreiben", a.findViewById<TextView>(R.id.ausloeser_name_titel).text.toString())
+        // the form opens by itself for it (owner 2026-11-27), asking its name
+        assertEquals("Neuer Tag erkannt – wie soll er heißen?", a.findViewById<TextView>(R.id.ausloeser_name_titel).text.toString())
+        assertEquals(android.view.View.VISIBLE, a.findViewById<android.view.View>(R.id.ausloeser_formular).visibility)
+        assertTrue("the name asked for", a.findViewById<EditText>(R.id.ausloeser_name).hasFocus())
+        assertEquals("Tag beschreiben", a.knopf().text.toString())
         schreiber.ergebnis!!(TagSchreiber.Ergebnis.Beschrieben)
         shadowOf(Looper.getMainLooper()).idle()
-        assertTrue(a.stand(), a.stand().startsWith("Dieser Tag ist schon beschrieben."))
+        assertEquals("short", "Schon beschrieben. Zum Melden die Seite schließen.", a.stand())
+        shadowOf(Looper.getMainLooper()).idleFor(5, TimeUnit.SECONDS)
+        assertEquals("and gone again", "", a.stand())
         assertTrue("nothing was sent", homes.anfragen.none { it.first.startsWith("POST") })
     }
 }

@@ -368,8 +368,11 @@ class NapiContractTest {
             ),
             Route(
                 "GET", "/napi/ausloeser/tags", "internal/napi/ausloeser.go:206-224, a tag's automationen {id, name} :219",
+                // §9, a tag's zuletzt {wann, person?, text}: the contract mdopp/homes feat/tag-ergebnis builds (owner
+                // 2026-11-27), not pushed when this row was written — its lines come when that PR exists
                 sends = setOf(
-                    "ok", "tags", "tag", "name", "aktion", "automationen", "id", "vorschlaege", "aktionen", "titel", "error", "reason",
+                    "ok", "tags", "tag", "name", "aktion", "automationen", "id", "vorschlaege", "aktionen", "titel",
+                    "zuletzt", "wann", "person", "text", "error", "reason",
                 ),
             ),
             // A tag's automations (§8): internal/napi/ausloeser_automationen.go; the sentence first, then bestaetigt.
