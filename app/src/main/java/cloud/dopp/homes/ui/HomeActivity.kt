@@ -160,6 +160,7 @@ class HomeActivity : AppCompatActivity() {
         render()
         if (paired()) refreshDevices()
         KannLeser.lesen(this) // what the box can do, at most once a minute
+        claim()
         cloud.dopp.homes.hochladen.Hochladen.anstossen(applicationContext) // files wait: Android 15 gives the job new hours now
         // The app-icon long-press menu (#97): picks up a widget removed while away.
         if (paired()) AppShortcuts.refreshAsync(applicationContext)
@@ -176,6 +177,12 @@ class HomeActivity : AppCompatActivity() {
     private fun paired() = ServerStore.isConfigured(this) && TokenStore.isPaired(this)
 
     /** targetSdk 35 is edge-to-edge: keep the content below the status bar and above the navigation bar. */
+
+    /** The claim under the logo (owner 2026-11-27): „Deinem Zuhause geht es gut.“ only while Homes says so, else neutral. */
+    private fun claim() {
+        val app = applicationContext
+        thread { val gut = BoxApiClient(app).gut(); runOnUiThread { if (!isFinishing) findViewById<TextView>(R.id.home_claim).setText(if (gut) R.string.home_claim_gut else R.string.home_claim) } }
+    }
 
     private fun render() {
         val connected = paired()
