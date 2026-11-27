@@ -113,7 +113,7 @@ object WlanTag {
             val typ = (b[i].toInt() and 0xFF shl 8) or (b[i + 1].toInt() and 0xFF)
             val laenge = (b[i + 2].toInt() and 0xFF shl 8) or (b[i + 3].toInt() and 0xFF)
             if (i + 4 + laenge > b.size) break
-            out.putIfAbsent(typ, b.copyOfRange(i + 4, i + 4 + laenge))
+            if (typ !in out) out[typ] = b.copyOfRange(i + 4, i + 4 + laenge)
             i += 4 + laenge
         }
         return out
