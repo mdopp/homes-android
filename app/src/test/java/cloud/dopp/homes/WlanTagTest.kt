@@ -238,7 +238,7 @@ class WlanTagTest {
         a.ausfuellen()
         a.knopf().performClick()
         val satz = schreiber.zuKlein!!(160, 137)
-        assertTrue(satz, satz.contains("160 Bytes") && satz.contains("137") && satz.contains("NTAG215"))
+        assertTrue(satz, satz.contains("Bytes nötig: 160") && satz.contains("auf dem Tag: 137") && satz.contains("NTAG215"))
         schreiber.ergebnis!!(TagSchreiber.Ergebnis.Fehler(satz))
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals("failed: said in the form", satz, a.wlanStand())

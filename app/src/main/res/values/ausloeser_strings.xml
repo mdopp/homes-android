@@ -104,7 +104,7 @@
     <string name="wlan_offen">Offen, ohne Passwort</string>
     <string name="wlan_halte">Halte den Tag ans Telefon … („%1$s“)</string>
     <string name="wlan_fertig">WLAN-Tag „%1$s“ ist fertig. Ein Android-Telefon fragt beim Berühren, ob es sich verbinden soll.</string>
-    <string name="wlan_zu_klein">Auf diesen Tag passt das WLAN nicht: es braucht %1$d Bytes, der Tag hat %2$d. Nimm einen größeren, etwa einen NTAG215, oder einen kürzeren Namen oder ein kürzeres Passwort.</string>
+    <string name="wlan_zu_klein">Auf diesen Tag passt das WLAN nicht (Bytes nötig: %1$d, auf dem Tag: %2$d). Nimm einen größeren, etwa einen NTAG215, oder einen kürzeren Namen oder ein kürzeres Passwort.</string>
     <string name="wlan_kein_tag">Kein Tag gekommen. Tippe noch einmal auf „Tag beschreiben“ und halte ihn ans Telefon.</string>
     <string name="wlan_abgebrochen">Abgebrochen. Es wurde nichts geschrieben.</string>
 </resources>
