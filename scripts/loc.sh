@@ -50,7 +50,7 @@ budget ui        3912  # 3,026: the activities: start screen, pairing, settings 
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
                        # 3500 -> 3513 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut, and shared recipes shown —
                        #   owner approved 2026-11-27 („Bau alles“)): the recipe's „als Rezept gemerkt“ with „Ansehen“ (ShareActivity.gemerkt)
-                       # 3513 -> 3897 (owner approved 2026-11-27 („Bitte umsetzen“), the start screen redesign): „Jetzt“
+                       # 3513 -> 3897 (owner approved 2026-11-27 („Bau alles“), the start screen redesign the owner asked for: „Bitte umsetzen“): „Jetzt“
                        #   (ui/Jetzt.kt), „Alles auf einen Blick“ (ui/Ueberblick.kt), „Dieses Telefon“ (ui/TelefonActivity.kt)
                        # 3897 -> 3912 (owner approved 2026-11-27 („Bau alles“), mdopp/homes#391): a tile's line and „neu: …“ from Homes' bereiche,
                        #   seen once opened; Jetzt reads a card's achtung instead of guessing from its words (net)
