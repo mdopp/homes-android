@@ -64,7 +64,10 @@ class LevelSheetTest {
         ShadowLooper.idleMainLooper()
     }
 
-    private fun rows(a: HomeActivity): List<View> = Kacheln.of(a)
+    /** The tiles in the favourites' order: the start screen puts what wants attention first (owner 2026-11-27). */
+    private fun rows(a: HomeActivity): List<View> = Kacheln.of(a).sortedBy { t ->
+        listOf("Küchenlicht", "Flurlicht", "Rollo", "Stehlampe", "Kellerlicht").indexOfFirst { t.contentDescription?.startsWith("$it,") == true }
+    }
 
     /** A tile's words under its name, null when its picture says it all. */
     private fun words(tile: View): String? = tile.findViewById<TextView>(R.id.row_room).takeIf { it.visibility == View.VISIBLE }?.text?.toString()

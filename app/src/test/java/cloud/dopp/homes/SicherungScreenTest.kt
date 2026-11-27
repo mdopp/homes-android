@@ -22,6 +22,7 @@ import cloud.dopp.homes.ui.HomesKontoActivity
 import cloud.dopp.homes.ui.HomeActivity
 import cloud.dopp.homes.ui.SicherungActivity
 import cloud.dopp.homes.ui.StandortActivity
+import cloud.dopp.homes.ui.TelefonActivity
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -71,26 +72,31 @@ class SicherungScreenTest {
     @Test
     fun homeLeadsToIt() {
         val a = Robolectric.buildActivity(HomeActivity::class.java).setup().get()
-        val mehr = a.findViewById<ViewGroup>(R.id.mehr_group)
-        assertEquals("Daten sichern, Standortverlauf, Auslöser and Homes auf dem Handy", 4, mehr.childCount)
-        val row = mehr.getChildAt(0)
-        assertEquals("Daten sichern", row.findViewById<TextView>(R.id.type_label).text.toString())
-        row.performClick()
-        val next = shadowOf(a).nextStartedActivity
-        assertEquals(SicherungActivity::class.java.name, next.component?.className)
-        val standort = mehr.getChildAt(1)
-        assertEquals("Standortverlauf", standort.findViewById<TextView>(R.id.type_label).text.toString())
-        standort.performClick()
-        assertEquals(StandortActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)
-        // homes ADR 0004: with what the box can do unknown, Auslöser is offered as every row is
-        val ausloeser = mehr.getChildAt(2)
-        assertEquals("Auslöser", ausloeser.findViewById<TextView>(R.id.type_label).text.toString())
+        // the start screen (owner 2026-11-27): „Dieses Telefon“ holds Daten sichern, the Homes account and what it reports
+        a.findViewById<View>(R.id.telefon_zeile).performClick()
+        assertEquals(TelefonActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)
+        val t = Robolectric.buildActivity(TelefonActivity::class.java).setup().get()
+        fun titel(g: ViewGroup) = (0 until g.childCount).map { g.getChildAt(it).findViewById<TextView>(R.id.einr_titel)?.text?.toString() }
+        val sichert = t.findViewById<ViewGroup>(R.id.telefon_sichert)
+        assertEquals(listOf("Daten sichern"), titel(sichert))
+        sichert.getChildAt(0).performClick()
+        assertEquals(SicherungActivity::class.java.name, shadowOf(t).nextStartedActivity.component?.className)
+        val verbunden = t.findViewById<ViewGroup>(R.id.telefon_verbunden)
+        assertEquals(listOf("Homes auf dem Handy"), titel(verbunden))
+        verbunden.getChildAt(0).performClick()
+        assertEquals(HomesKontoActivity::class.java.name, shadowOf(t).nextStartedActivity.component?.className)
+        val meldet = t.findViewById<ViewGroup>(R.id.telefon_meldet)
+        assertEquals(listOf("Standortverlauf", "Ladestation melden"), titel(meldet))
+        meldet.getChildAt(0).performClick()
+        assertEquals(StandortActivity::class.java.name, shadowOf(t).nextStartedActivity.component?.className)
+        meldet.getChildAt(1).performClick()
+        assertEquals(AusloeserActivity::class.java.name, shadowOf(t).nextStartedActivity.component?.className)
+        // homes ADR 0004: with what the box can do unknown, Auslöser is offered: a tile of „Alles auf einen Blick“
+        val raster = a.findViewById<ViewGroup>(R.id.ueberblick_group)
+        val kacheln = (0 until raster.childCount).flatMap { r -> (raster.getChildAt(r) as ViewGroup).let { z -> (0 until z.childCount).map { z.getChildAt(it) } } }
+        val ausloeser = kacheln.first { it.findViewById<TextView>(R.id.bereich_name)?.text?.toString() == "Auslöser" }
         ausloeser.performClick()
         assertEquals(AusloeserActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)
-        val konto = mehr.getChildAt(3)
-        assertEquals("Homes auf dem Handy", konto.findViewById<TextView>(R.id.type_label).text.toString())
-        konto.performClick()
-        assertEquals(HomesKontoActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)
     }
 
     @Test

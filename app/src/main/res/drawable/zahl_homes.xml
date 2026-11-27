@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- The number of open tasks beside „Deine Aufgaben“, a pill in the accent, as
-     Homes' pages show it beside Mehr and Aufgaben. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="@color/homes_accent" />
-    <corners android:radius="12dp" />
-    <size android:height="24dp" />
-</shape>

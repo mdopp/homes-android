@@ -100,9 +100,10 @@ class KannPreviewTest {
     @Test
     fun drawTheTracesInEveryState() {
         val a = paired()
-        val mehr = texts(a.findViewById(R.id.mehr_group))
-        assertFalse("Standortverlauf's row gave way to its trace: $mehr", "Standortverlauf" in mehr)
-        assertTrue("Homes auf dem Handy stays", mehr.isNotEmpty())
+        // the start screen (owner 2026-11-27): no Mehr; the areas are tiles, the phone's own things on „Dieses Telefon“
+        val bereiche = texts(a.findViewById(R.id.ueberblick_group))
+        assertFalse("Standortverlauf's area gave way to its trace: $bereiche", "Standortverlauf" in bereiche)
+        assertTrue("„Dieses Telefon“ stays", texts(a.findViewById(R.id.telefon_zeile)).first().startsWith("Dieses Telefon · "))
         val section = a.findViewById<View>(R.id.spuren_section)
         assertEquals(View.VISIBLE, section.visibility)
         val spuren = texts(a.findViewById(R.id.spuren_group))

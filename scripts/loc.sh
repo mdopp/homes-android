@@ -41,7 +41,7 @@ budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
                        #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
                        #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
-budget ui        3513  # 3,026: the activities: start screen, pairing, settings screens;
+budget ui        3890  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
                        # 3220 -> 3320: the account's and the backup's missing parts as disabled switches with their trace, homes-android#233
@@ -50,6 +50,8 @@ budget ui        3513  # 3,026: the activities: start screen, pairing, settings 
                        #   widgets' pictures, ▲ ■ ▼ on a cover's tile, the part-way blind; today's rows removed (net +178)
                        # 3500 -> 3513 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut, and shared recipes shown —
                        #   owner approved 2026-11-27 („Bau alles“)): the recipe's „als Rezept gemerkt“ with „Ansehen“ (ShareActivity.gemerkt)
+                       # 3513 -> 3890 (owner approved 2026-11-27 („Bitte umsetzen“), the start screen redesign): „Jetzt“
+                       #   (ui/Jetzt.kt), „Alles auf einen Blick“ (ui/Ueberblick.kt), „Dieses Telefon“ (ui/TelefonActivity.kt)
 budget data      3351  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
@@ -82,7 +84,7 @@ budget kann      469  #   340 on 2026-11-04: what the box can do, /napi/kann kep
                        # 420 -> 460: the widget providers switched by widgets, homes-android#233
                        # 460 -> 469 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut — owner approved 2026-11-27 („Bau alles“)): the tool
                        #   widget's provider leaves the picker while no tool is offered (Anbieter.werkzeug)
-budget einrichtung 618 #   617 on 2026-11-14, the first three tasks and „Alle N Aufgaben“ (owner: „immer nur die ersten mit Verweis auf alle“); 574 on 2026-11-04, a new package (owner): /napi/einrichtung kept and read, „Öffnen“ and „Deine Aufgaben“
+budget einrichtung 571 #   571 on 2026-11-27: „Öffnen“ became tiles of ui/Ueberblick, „Deine Aufgaben“ one row;   617 on 2026-11-14, the first three tasks and „Alle N Aufgaben“ (owner: „immer nur die ersten mit Verweis auf alle“); 574 on 2026-11-04, a new package (owner): /napi/einrichtung kept and read, „Öffnen“ and „Deine Aufgaben“
                        # on the start screen, the launcher's four shortcuts and their trampoline
 budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochladen job — music and Takeout ZIPs, with the screen off;
                        # 583 -> 741 (owner, 2026-11-04: what shows as a notification shows in the open app): hochladen/Stand.kt, the row

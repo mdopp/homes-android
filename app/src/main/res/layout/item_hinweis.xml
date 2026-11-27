@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A hint of „Jetzt“ (owner 2026-11-27, ui/Jetzt): one line of what wants attention, a tap leads to
+     its area, × puts it away until it says something else. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_xs"
+    android:background="@drawable/card_homes"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="56dp"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/card_padding">
+
+    <TextView
+        android:id="@+id/hinweis_text"
+        style="@style/Text.Homes.Body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/homes_text" />
+
+    <TextView
+        android:id="@+id/hinweis_weg"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/jetzt_weg"
+        android:gravity="center"
+        android:text="@string/jetzt_x"
+        android:textColor="@color/homes_text_muted"
+        android:textSize="20sp" />
+</LinearLayout>

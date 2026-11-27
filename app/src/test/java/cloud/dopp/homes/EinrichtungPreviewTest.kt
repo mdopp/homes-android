@@ -143,23 +143,32 @@ class EinrichtungPreviewTest {
         val content = a.findViewById<ViewGroup>(R.id.home_root).getChildAt(0) as ViewGroup
         content.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
         content.layout(0, 0, content.measuredWidth, content.measuredHeight)
-        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.oeffnen_section).visibility)
-        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.aufgaben_section).visibility)
-        val oeffnen = a.findViewById<ViewGroup>(R.id.oeffnen_group)
-        assertEquals("the three, then Homes", 4, oeffnen.childCount)
-        val titel = (0 until oeffnen.childCount).map { oeffnen.getChildAt(it).findViewById<TextView>(R.id.einr_titel).text.toString() }
-        assertEquals(listOf("Dokumente", "Zeitleiste", "Musik verwalten", "Homes"), titel)
-        val unter = (0 until oeffnen.childCount).map { oeffnen.getChildAt(it).findViewById<TextView>(R.id.einr_unter) }
-        assertEquals("the row says where it stands", "Zuletzt aufgezeichnet heute 08:40", unter[1].text.toString())
-        assertEquals(listOf(View.GONE, View.VISIBLE, View.GONE, View.GONE), unter.map { it.visibility })
+        // „Alles auf einen Blick“ (owner 2026-11-27): the three Homes lists, Auslöser (what the box can do is
+        // unknown here: offered as before), then Homes, three to a row
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.ueberblick_section).visibility)
+        val raster = a.findViewById<ViewGroup>(R.id.ueberblick_group)
+        val kacheln = (0 until raster.childCount).flatMap { r -> (raster.getChildAt(r) as ViewGroup).let { z -> (0 until z.childCount).map { z.getChildAt(it) } } }
+            .filter { it.findViewById<TextView>(R.id.bereich_name) != null }
+        assertEquals("two rows of three", 2, raster.childCount)
+        val titel = kacheln.map { it.findViewById<TextView>(R.id.bereich_name).text.toString() }
+        assertEquals(listOf("Dokumente", "Zeitleiste", "Musik verwalten", "Auslöser", "Homes"), titel)
+        val unter = kacheln.map { it.findViewById<TextView>(R.id.bereich_stand) }
+        assertEquals("the tile says where it stands", "Zuletzt aufgezeichnet heute 08:40", unter[1].text.toString())
+        assertEquals(listOf(View.GONE, View.VISIBLE, View.GONE, View.GONE, View.GONE), unter.map { it.visibility })
         if (!offline) {
-            oeffnen.getChildAt(1).performClick()
+            kacheln[1].performClick()
             assertEquals("the timeline itself, not Homes' page about it", "https://reitti.example", shadowOf(a).nextStartedActivity?.dataString)
-            oeffnen.getChildAt(3).performClick()
+            kacheln[4].performClick()
             assertEquals("Homes' start page", "https://homes.example/start", shadowOf(a).nextStartedActivity?.dataString)
         }
-        assertEquals(2, a.findViewById<ViewGroup>(R.id.aufgaben_group).childCount)
+        // „Deine Aufgaben“ in one row: the number open, the next task
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.aufgaben_section).visibility)
         assertEquals("2", a.findViewById<TextView>(R.id.aufgaben_zahl).text.toString())
+        assertEquals("Fotos auf dem Handy einrichten", a.findViewById<TextView>(R.id.aufgaben_naechste).text.toString())
+        if (!offline) {
+            a.findViewById<View>(R.id.aufgaben_section).performClick()
+            assertEquals("Homes' list of all", "https://homes.example/aufgaben", shadowOf(a).nextStartedActivity?.dataString)
+        }
         // from the line about the box (offline) or „Deine Geräte“ down to the end of the tasks
         val top = top(content, if (offline) a.findViewById(R.id.verbindung) else a.findViewById<ViewGroup>(R.id.devices_group).let { g ->
             (g.parent as ViewGroup).getChildAt((g.parent as ViewGroup).indexOfChild(g) - 2)

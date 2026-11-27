@@ -592,7 +592,7 @@ there.
   kept, and with nothing kept the app offers everything, as before.
 - **Nothing is hidden (§10):** a feature the box lacks leaves a quiet trace
   — grey, no red, no warning sign. The widget list shows a missing type as
-  a muted entry that cannot be placed; Mehr shows its own rows by `mehr`
+  a muted entry that cannot be placed; the start screen's tiles and „Dieses Telefon“ show the app's own areas by `mehr` (no Mehr list since 2026-11-27)
   and ends with „Gibt es hier noch nicht“, one trace per off module (not
   the `admins` ones), each with „Hier anfordern“ while `anfordern` is true.
   A placed widget whose type went shows the module's `grund`; a tap opens

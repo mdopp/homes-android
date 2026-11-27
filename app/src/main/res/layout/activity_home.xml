@@ -136,6 +136,30 @@
                 android:textColor="@color/homes_text"
                 android:visibility="gone" />
 
+            <!-- Jetzt (owner 2026-11-27): at most two hints while something wants attention, each with ×;
+                 gone without one (ui/Jetzt). -->
+            <LinearLayout
+                android:id="@+id/jetzt_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_lg"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/Text.Homes.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/jetzt_titel" />
+
+                <LinearLayout
+                    android:id="@+id/jetzt_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
             <!-- The section's head: the title and „Alle →“, Homes' devices page (owner, 2026-11-04).
                  The link keeps its 48 dp; the hint below moves up into the head's spare room. -->
             <LinearLayout
@@ -185,53 +209,27 @@
                 android:layout_marginBottom="@dimen/space_lg"
                 android:orientation="vertical" />
 
-            <!-- Öffnen (owner, 2026-11-04): the modules without a phone app of their own,
-                 each in a Custom Tab; gone without /napi/einrichtung (einrichtung/Abschnitte). -->
-            <LinearLayout
-                android:id="@+id/oeffnen_section"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_lg"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    style="@style/Text.Homes.Title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/oeffnen_titel" />
-
-                <TextView
-                    style="@style/Text.Homes.Label"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_xs"
-                    android:text="@string/oeffnen_hinweis" />
-
-                <LinearLayout
-                    android:id="@+id/oeffnen_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/card_homes"
-                    android:orientation="vertical" />
-            </LinearLayout>
-
-            <!-- Deine Aufgaben: the open setup tasks, the number open beside the title as
-                 on Homes' pages; gone while none is open. -->
+            <!-- Deine Aufgaben (owner 2026-11-27): one row — the title, the number open (orange while one
+                 is urgent, else grey), the next task as its line; a tap opens Homes' list of all. Gone
+                 while none is open. -->
             <LinearLayout
                 android:id="@+id/aufgaben_section"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/space_lg"
-                android:orientation="vertical"
+                android:background="@drawable/card_homes"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:minHeight="56dp"
+                android:orientation="horizontal"
+                android:padding="@dimen/card_padding"
                 android:visibility="gone">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_xs"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <TextView
                         style="@style/Text.Homes.Title"
@@ -240,26 +238,115 @@
                         android:text="@string/aufgaben_titel" />
 
                     <TextView
-                        android:id="@+id/aufgaben_zahl"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/aufgaben_naechste"
+                        style="@style/Text.Homes.Label"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/space_sm"
-                        android:background="@drawable/zahl_homes"
-                        android:gravity="center"
-                        android:minWidth="24dp"
-                        android:paddingStart="7dp"
-                        android:paddingEnd="7dp"
-                        android:textColor="@color/homes_bg"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:ellipsize="end"
+                        android:maxLines="1" />
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/aufgaben_zahl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:background="@drawable/zahl_grau"
+                    android:gravity="center"
+                    android:minWidth="24dp"
+                    android:paddingStart="7dp"
+                    android:paddingEnd="7dp"
+                    android:textColor="@color/homes_bg"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Alles auf einen Blick (owner 2026-11-27): every area as a tile, three in a row (ui/Ueberblick). -->
+            <LinearLayout
+                android:id="@+id/ueberblick_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_md"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/Text.Homes.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/ueberblick_titel" />
+
                 <LinearLayout
-                    android:id="@+id/aufgaben_group"
+                    android:id="@+id/ueberblick_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="-4dp"
+                    android:layout_marginEnd="-4dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <!-- What the box lacks (homes ADR 0001 §10): quiet, one trace per module,
+                 each with „Hier anfordern“; gone while the box lacks nothing or
+                 what it can do is unknown. -->
+            <LinearLayout
+                android:id="@+id/spuren_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/Text.Homes.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:textColor="@color/homes_text_muted"
+                    android:text="@string/spuren_titel" />
+
+                <TextView
+                    style="@style/Text.Homes.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_xs"
+                    android:text="@string/spuren_hinweis" />
+
+                <LinearLayout
+                    android:id="@+id/spuren_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/card_homes"
                     android:orientation="vertical" />
+            </LinearLayout>
+
+            <!-- Dieses Telefon (owner 2026-11-27): what this phone backs up, is connected with and reports,
+                 and its pairing, on one page; here one line, orange while a backup is overdue. -->
+            <LinearLayout
+                android:id="@+id/telefon_zeile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:layout_marginBottom="@dimen/space_lg"
+                android:background="@drawable/card_homes"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:minHeight="56dp"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <TextView
+                    android:id="@+id/telefon_zeile_titel"
+                    style="@style/Text.Homes.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+
+                <TextView
+                    android:id="@+id/telefon_zeile_stand"
+                    style="@style/Text.Homes.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <TextView
@@ -342,80 +429,9 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Mehr (#194): what the app does beyond the widgets. -->
-            <TextView
-                style="@style/Text.Homes.Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_lg"
-                android:layout_marginBottom="@dimen/space_xs"
-                android:text="@string/home_mehr" />
 
-            <LinearLayout
-                android:id="@+id/mehr_group"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/card_homes"
-                android:orientation="vertical" />
 
-            <!-- What the box lacks (homes ADR 0001 §10): quiet, one trace per module,
-                 each with „Hier anfordern“; gone while the box lacks nothing or
-                 what it can do is unknown. -->
-            <LinearLayout
-                android:id="@+id/spuren_section"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    style="@style/Text.Homes.Title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_lg"
-                    android:textColor="@color/homes_text_muted"
-                    android:text="@string/spuren_titel" />
-
-                <TextView
-                    style="@style/Text.Homes.Label"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_xs"
-                    android:text="@string/spuren_hinweis" />
-
-                <LinearLayout
-                    android:id="@+id/spuren_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/card_homes"
-                    android:orientation="vertical" />
-            </LinearLayout>
-
-            <!-- Where the app is paired, beside the way to unpair (owner, 2026-11-03). -->
-            <TextView
-                android:id="@+id/status"
-                style="@style/Text.Homes.Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xl"
-                android:layout_marginBottom="@dimen/space_sm"
-                android:gravity="center_horizontal" />
-
-            <Button
-                android:id="@+id/logout_btn"
-                style="@style/Widget.Homes.Button.Ghost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/home_logout" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/app_version"
-            style="@style/Text.Homes.Label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:gravity="center"
-            android:text="@string/app_version_placeholder" />
     </LinearLayout>
 </ScrollView>
