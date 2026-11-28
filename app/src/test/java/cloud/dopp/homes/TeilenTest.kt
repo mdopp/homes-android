@@ -229,9 +229,9 @@ class TeilenTest {
 
     @Test
     fun keptTagsKeepTheirBytesAndGo() {
-        Behalten.behalten(ctx(), "Speisekarte", uri)
+        Behalten.dazu(ctx(), "Speisekarte", uri)
         val wlan = WlanTag.nachricht("Gast", "geheim123", WlanTag.Schutz.WPA2)
-        Behalten.behalten(ctx(), "Gast-WLAN", wlan)
+        Behalten.dazu(ctx(), "Gast-WLAN", wlan)
         val alle = Behalten.alle(ctx())
         assertEquals(listOf("Speisekarte", "Gast-WLAN"), alle.map { it.name })
         assertArrayEquals(wlan.toByteArray(), alle[1].nachricht.toByteArray())
@@ -243,7 +243,7 @@ class TeilenTest {
     @Test
     fun theChoiceListsTheCardTheKeptTagsAndNichts() {
         Behalten.setzeVisitenkarte(ctx(), Visitenkarte.vcard(anna, setOf(Visitenkarte.Feld.NAME)))
-        Behalten.behalten(ctx(), "Gast-WLAN", WlanTag.nachricht("Gast", "geheim123", WlanTag.Schutz.WPA2))
+        Behalten.dazu(ctx(), "Gast-WLAN", WlanTag.nachricht("Gast", "geheim123", WlanTag.Schutz.WPA2))
         val a = Robolectric.buildActivity(TeilenActivity::class.java).setup().get()
         val liste = a.findViewById<ViewGroup>(R.id.teilen_liste)
         val titel = (0 until liste.childCount).map { liste.getChildAt(it).findViewById<TextView>(R.id.einr_titel).text.toString() }

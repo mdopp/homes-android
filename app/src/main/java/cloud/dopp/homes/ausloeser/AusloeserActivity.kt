@@ -534,7 +534,7 @@ class AusloeserActivity : AppCompatActivity() {
             .setView(feld)
             .setPositiveButton(R.string.inhalt_behalten_ok) { _, _ ->
                 val name = feld.text.toString().trim().ifEmpty { vorschlag }
-                Behalten.behalten(this, name, n)
+                Behalten.dazu(this, name, n)
                 fertig(getString(R.string.inhalt_behalten_fertig, name))
             }
             .setNegativeButton(R.string.ausloeser_abbrechen) { _, _ -> fertig("") }

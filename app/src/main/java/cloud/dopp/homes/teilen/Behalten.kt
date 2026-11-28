@@ -25,7 +25,7 @@ object Behalten {
 
     fun alle(ctx: Context): List<Tag> = aus(Tresor.lesen(ctx, TAGS))
 
-    fun behalten(ctx: Context, name: String, n: NdefMessage) = Tresor.schreiben(ctx, TAGS, text(alle(ctx) + Tag(name, n)))
+    fun dazu(ctx: Context, name: String, n: NdefMessage) = Tresor.schreiben(ctx, TAGS, text(alle(ctx) + Tag(name, n)))
 
     fun weg(ctx: Context, i: Int) = Tresor.schreiben(ctx, TAGS, text(alle(ctx).filterIndexed { j, _ -> j != i }))
 
