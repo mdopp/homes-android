@@ -53,9 +53,9 @@ class TeilenActivity : AppCompatActivity() {
         val iphone: Boolean = false,
         val festlegen: (() -> Unit)? = null,
         val keinQr: String? = null,
-        val holen: (View, (Inhalt) -> Unit) -> Unit = { _, _ -> },
         /** „Kontakt austauschen“: its buttons open „Was teilen?“ ([AustauschActivity]), which starts the session. */
         val austausch: Boolean = false,
+        val holen: (View, (Inhalt) -> Unit) -> Unit = { _, _ -> },
     )
 
     /** The row whose answer is armed now; one at a time. */
