@@ -1,11 +1,13 @@
 package cloud.dopp.homes
 
 import android.app.Dialog
+import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.nfc.NdefMessage
 import android.os.Looper
+import android.os.PowerManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -24,6 +26,7 @@ import cloud.dopp.homes.teilen.Teilen
 import cloud.dopp.homes.teilen.TeilenActivity
 import cloud.dopp.homes.teilen.Tresor
 import cloud.dopp.homes.teilen.Visitenkarte
+import cloud.dopp.homes.teilen.Vorne
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -303,6 +306,43 @@ class AustauschTest {
         val a = was(null)
         assertEquals("one session, not two", 1, homes.anfragen.count { it.first == "POST /napi/teilen" })
         assertTrue(a.stand(), a.stand().startsWith("Link geteilt"))
+    }
+
+    @Test
+    fun aTouchWhileAScreenOfTheAppIsInFrontOpensWasTeilenAtOnce() {
+        val vorn = Robolectric.buildActivity(TeilenActivity::class.java).setup().get()
+        assertEquals("the resumed screen counts, screen on and unlocked", vorn, Vorne.aktivitaet())
+        Teilen.zuletzt = 0
+        Teilen.anfrage(ctx(), 92_000_000)
+        warte { shadowOf(vorn).peekNextStartedActivity() != null }
+        assertEquals(AustauschActivity::class.java.name, shadowOf(vorn).nextStartedActivity.component?.className)
+        assertTrue("no notification needed", shadowOf(ctx().getSystemService(NotificationManager::class.java)).allNotifications.isEmpty())
+        assertEquals("https://www.box.test/t/tok", NdefMessage(WlanAngebot.nachricht()!!).records.single().toUri().toString())
+    }
+
+    @Test
+    fun aScreenGoneToTheBackgroundOnlyGetsTheNotification() {
+        val c = Robolectric.buildActivity(TeilenActivity::class.java).setup()
+        c.pause().stop()
+        assertNull("paused: not in front", Vorne.aktivitaet())
+        Teilen.zuletzt = 0
+        Teilen.anfrage(ctx(), 93_000_000)
+        val nm = shadowOf(ctx().getSystemService(NotificationManager::class.java))
+        warte { nm.allNotifications.isNotEmpty() }
+        assertEquals("Kontakt austauschen: Was teilen?", shadowOf(nm.allNotifications.single()).contentTitle.toString())
+        assertNull("nothing started from the background", shadowOf(c.get()).peekNextStartedActivity())
+    }
+
+    @Test
+    fun aLockedPhoneIsNotInFront() {
+        val vorn = Robolectric.buildActivity(TeilenActivity::class.java).setup().get()
+        shadowOf(ctx().getSystemService(KeyguardManager::class.java)).setIsKeyguardLocked(true)
+        assertNull(Vorne.aktivitaet())
+        shadowOf(ctx().getSystemService(KeyguardManager::class.java)).setIsKeyguardLocked(false)
+        shadowOf(ctx().getSystemService(PowerManager::class.java)).setIsInteractive(false)
+        assertNull("screen off", Vorne.aktivitaet())
+        shadowOf(ctx().getSystemService(PowerManager::class.java)).setIsInteractive(true)
+        assertEquals(vorn, Vorne.aktivitaet())
     }
 
     @Test

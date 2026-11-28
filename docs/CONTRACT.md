@@ -1070,7 +1070,10 @@ is its person's alone, in Homes' memory only, 30 minutes at most.)
   session starts in the background, its link answers the reader still held
   to the phone (once, two minutes, screen on), and the question „Kontakt
   austauschen: Was teilen?“ opens „Was teilen?“ for it (at most every 30 s,
-  no activity started from the background). Off, or not paired, or the
+  no activity started from the background) — or, while one of the app's own
+  screens is in front (resumed, screen on, unlocked; owner approved
+  2026-11-28, `teilen/Vorne.kt`), „Was teilen?“ opens at once, without the
+  notification. Off, or not paired, or the
   start refused: the plain question of (k).
 - **The start:** `POST /napi/teilen {"vorname"}` (the first name of „Meine
   Visitenkarte“; none: Homes takes the login's) → 201 `{"ok":true,"id","link",

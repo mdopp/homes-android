@@ -142,19 +142,22 @@ budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        # 3246 -> 3329 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“), Teilen per Berührung): the service
                        #   listens while unlocked and asks when read with nothing chosen, an offer answered once
                        #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
-budget teilen     1566  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
+budget teilen     1630  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
                        # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
                        # 530 -> 904 (owner's request 2026-11-28 (Teilen: WLAN und Einladen), owner approved 2026-11-28 „Passt“): „Teilen“ as one row per topic with NFC and QR in place (TeilenActivity),
                        #   the guest Wi-Fi's form (GastWlanActivity), the invitation link's client (EinladenClient), a kept tag's QR
                        # 904 -> 1566 (owner's request 2026-11-28 (Kontakt austauschen), owner approved 2026-11-28 „Ja“): „Was teilen?“ (AustauschActivity), the session's client and state
                        #   (AustauschClient, Austausch), the touch that starts one (Teilen), the offer and the QR code shared (Anbieten),
                        #   Mobil and Geburtstag on the card and the card read back (Visitenkarte)
+                       # 1566 -> 1630 (owner approved 2026-11-28 (Was teilen? vorne öffnen)): the foreground tracker (Vorne) and
+                       #   the touch's „Was teilen?“ opened at once while a screen of the app is in front (Teilen)
 budget fragen     442  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“): Share →
                        # „Homes: Daten erfragen“ — a shared vCard read (2.1 quoted-printable, 3.0), the contact looked for on Homes,
                        # the link sent by WhatsApp, SMS or any app
 budget verbindung 236  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)
-budget .           35  #    33: HomesConfig.kt
+budget .           45  #    33: HomesConfig.kt
+                       # 35 -> 45 (owner approved 2026-11-28 (Was teilen? vorne öffnen)): HomesApp, the Application that registers Vorne
 for d in "$src"/*/; do
   p=$(basename "$d")
   case " $known " in *" $p "*) ;; *) echo "error: package $p has no cap in scripts/loc.sh"; bad=1 ;; esac
