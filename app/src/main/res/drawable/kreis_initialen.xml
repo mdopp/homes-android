@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A contact's initials sit on a round of the accent's tint (Daten erfragen, owner 2026-11-28). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/homes_accent_faint" />
+</shape>
