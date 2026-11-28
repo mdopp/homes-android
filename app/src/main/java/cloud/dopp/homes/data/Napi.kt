@@ -507,7 +507,7 @@ object Napi {
     object TeilenKarte {
         const val NAME = "name"
         const val MOBIL = "mobil"
-        const val TELEFON = "telefon"
+        const val TELEFON = FragenJson.TELEFON
         const val MAIL = "mail"
         const val ADRESSE = "adresse"
         const val GEBURTSTAG = "geburtstag"
@@ -949,18 +949,18 @@ object Napi {
     val KONTAKT_EINLADEN = Endpoint(Method.POST, "/napi/kontakte/einladen", reply = listOf(EinladenJson))
 
     /** Kontakt austauschen: a session, its link for the other phone; `vorname` the name its page shows. */
-    val TEILEN_NEU = Endpoint(Method.POST, "/napi/teilen", body = listOf("vorname"), reply = listOf(TeilenNeuJson))
+    val TEILEN_NEU = Endpoint(Method.POST, "/napi/teilen", body = listOf(FragenJson.VORNAME), reply = listOf(TeilenNeuJson))
 
     /** What the session's page shows, all of it each time: a part left out or null is taken back. */
     val TEILEN_SETZEN = Endpoint(
-        Method.PUT, "/napi/teilen/{id}", body = listOf("vorname", "karte", "wlan", "eintragen"), reply = listOf(TeilenOkJson),
+        Method.PUT, "/napi/teilen/{id}", body = listOf(FragenJson.VORNAME, "karte", "wlan", "eintragen"), reply = listOf(TeilenOkJson),
     )
 
     /** Whether the page was opened and the form sent. */
-    val TEILEN_STAND = Endpoint(Method.GET, "/napi/teilen/{id}", reply = listOf(TeilenStandJson))
+    val TEILEN_STAND = Endpoint(Method.GET, TEILEN_SETZEN.path, reply = listOf(TeilenStandJson))
 
     /** „Beenden“: the page says it ended. */
-    val TEILEN_ENDE = Endpoint(Method.DELETE, "/napi/teilen/{id}", reply = listOf(TeilenOkJson))
+    val TEILEN_ENDE = Endpoint(Method.DELETE, TEILEN_SETZEN.path, reply = listOf(TeilenOkJson))
 
     /**
      * The Homes account (#206): the household's shared contacts, as [VCARD].

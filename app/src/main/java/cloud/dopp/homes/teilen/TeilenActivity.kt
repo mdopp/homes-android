@@ -44,13 +44,12 @@ class TeilenActivity : AppCompatActivity() {
 
     /**
      * One row: [festlegen] set, it only says „Festlegen“; [keinQr] set, its QR button is off and this says why;
-     * [iphone]: „iPhone: QR-Code“ under it; [holen] gets what it shares, then goes on with it.
+     * [holen] gets what it shares, then goes on with it ([mitIphone]: „iPhone: QR-Code“ in [unter]).
      */
     private class Thema(
         val titel: String,
         @DrawableRes val bild: Int,
         val unter: String?,
-        val iphone: Boolean = false,
         val festlegen: (() -> Unit)? = null,
         val keinQr: String? = null,
         /** „Kontakt austauschen“: its buttons open „Was teilen?“ ([AustauschActivity]), which starts the session. */
@@ -118,7 +117,7 @@ class TeilenActivity : AppCompatActivity() {
                     startActivity(Intent(this@TeilenActivity, VisitenkarteActivity::class.java))
                 })
             } else {
-                Thema(getString(R.string.teilen_kontakt), R.drawable.ic_modul_kontakte, null, iphone = true) { _, weiter ->
+                Thema(getString(R.string.teilen_kontakt), R.drawable.ic_modul_kontakte, mitIphone(null)) { _, weiter ->
                     weiter(Inhalt(Visitenkarte.ndef(karte), karte))
                 }
             },
@@ -133,13 +132,13 @@ class TeilenActivity : AppCompatActivity() {
             val inhalt = TagInhalt.lesen(t.nachricht, null)
             val qr = Visitenkarte.qrText(t.nachricht)
             val iphone = inhalt is TagInhalt.Wlan || t.nachricht.records.firstOrNull()?.toMimeType() == Visitenkarte.MIME
-            add(Thema(t.name, R.drawable.ic_ausloeser, art(inhalt), iphone, keinQr = getString(R.string.teilen_kein_qr).takeIf { qr == null }) { _, weiter ->
+            add(Thema(t.name, R.drawable.ic_ausloeser, if (iphone) mitIphone(art(inhalt)) else art(inhalt), keinQr = getString(R.string.teilen_kein_qr).takeIf { qr == null }) { _, weiter ->
                 weiter(Inhalt(t.nachricht, qr))
             })
         }
     }
 
-    private fun gast(n: WlanTag.Netz) = Thema(getString(R.string.gast_titel), R.drawable.ic_ausloeser, getString(R.string.teilen_art_wlan, n.ssid), iphone = true) { _, weiter ->
+    private fun gast(n: WlanTag.Netz) = Thema(getString(R.string.gast_titel), R.drawable.ic_ausloeser, mitIphone(getString(R.string.teilen_art_wlan, n.ssid))) { _, weiter ->
         weiter(Inhalt(WlanTag.nachricht(n.ssid, n.passwort, n.schutz), Visitenkarte.wifi(n)))
     }
 
@@ -194,7 +193,7 @@ class TeilenActivity : AppCompatActivity() {
     private fun reihe(g: ViewGroup, t: Thema): View = layoutInflater.inflate(R.layout.item_teilen, g, false).also { r ->
         r.findViewById<ImageView>(R.id.teile_bild).setImageResource(t.bild)
         r.findViewById<TextView>(R.id.teile_titel).text = t.titel
-        val unter = listOfNotNull(t.unter, getString(R.string.teilen_iphone).takeIf { t.iphone && t.festlegen == null }, t.keinQr)
+        val unter = listOfNotNull(t.unter, t.keinQr)
         r.findViewById<TextView>(R.id.teile_unter).apply {
             text = unter.joinToString(" · ")
             isVisible = unter.isNotEmpty()
@@ -216,6 +215,9 @@ class TeilenActivity : AppCompatActivity() {
         aktiv?.let { stand(it, "") }
         startActivity(Intent(this, AustauschActivity::class.java).putExtra(AustauschActivity.WIE, wie))
     }
+
+    /** Under a WLAN or vCard row: an iPhone takes neither over NFC. */
+    private fun mitIphone(unter: String?) = listOfNotNull(unter, getString(R.string.teilen_iphone)).joinToString(" · ")
 
     private fun knoepfe(r: View, an: Boolean) {
         r.findViewById<Button>(R.id.teile_nfc).isEnabled = an
