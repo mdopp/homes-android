@@ -364,7 +364,6 @@
             column="9"/>
     </issue>
 
-
     <issue
         id="UseAppTint"
         message="Must use `app:tint` instead of `android:tint`"
@@ -520,50 +519,6 @@
     </issue>
 
     <issue
-        id="NestedWeights"
-        message="Nested weights are bad for performance"
-        errorLine1="                    android:layout_weight=&quot;1&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="70"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="NestedWeights"
-        message="Nested weights are bad for performance"
-        errorLine1="                    android:layout_weight=&quot;1&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="104"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="NestedWeights"
-        message="Nested weights are bad for performance"
-        errorLine1="                    android:layout_weight=&quot;1&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="138"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="NestedWeights"
-        message="Nested weights are bad for performance"
-        errorLine1="                    android:layout_weight=&quot;1&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="173"
-            column="21"/>
-    </issue>
-
-    <issue
         id="Overdraw"
         message="Possible overdraw: Root element paints background `@color/terminal_ground` with a theme that also paints a background (inferred theme is `@style/Theme.Homes`)"
         errorLine1="    android:background=&quot;@color/terminal_ground&quot;"
@@ -629,62 +584,6 @@
             column="5"/>
     </issue>
 
-
-    <issue
-        id="UnusedIds"
-        message="The resource `R.id.e_autarkie_l` appears to be unused"
-        errorLine1="                    android:id=&quot;@+id/e_autarkie_l&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="182"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="SmallSp"
-        message="Avoid using sizes smaller than `11sp`: `10sp`"
-        errorLine1="                    android:textSize=&quot;10sp&quot; />"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="89"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="SmallSp"
-        message="Avoid using sizes smaller than `11sp`: `10sp`"
-        errorLine1="                    android:textSize=&quot;10sp&quot; />"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="123"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="SmallSp"
-        message="Avoid using sizes smaller than `11sp`: `10sp`"
-        errorLine1="                    android:textSize=&quot;10sp&quot; />"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="157"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="SmallSp"
-        message="Avoid using sizes smaller than `11sp`: `10sp`"
-        errorLine1="                    android:textSize=&quot;10sp&quot; />"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="193"
-            column="21"/>
-    </issue>
-
     <issue
         id="ReportShortcutUsage"
         message="Calling this method indicates use of dynamic shortcuts, but there are no calls to methods that track shortcut usage, such as `pushDynamicShortcut` or `reportShortcutUsed`. Calling these methods is recommended, as they track shortcut usage and allow launchers to adjust which shortcuts appear based on activation history. Please see https://developer.android.com/develop/ui/views/launch/shortcuts/managing-shortcuts#track-usage"
@@ -727,17 +626,6 @@
             file="src/main/java/cloud/dopp/homes/data/Assistent.kt"
             line="36"
             column="9"/>
-    </issue>
-
-    <issue
-        id="UseKtx"
-        message="Use the KTX function `createBitmap` instead?"
-        errorLine1="        val bmp = Bitmap.createBitmap(max(1, (wDp * scale).roundToInt()), max(1, (hDp * scale).roundToInt()), Bitmap.Config.ARGB_8888)"
-        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/cloud/dopp/homes/widget/EnergyPicture.kt"
-            line="356"
-            column="19"/>
     </issue>
 
     <issue
@@ -1271,17 +1159,6 @@
     <issue
         id="UseKtx"
         message="Use the KTX extension function `SharedPreferences.edit` instead?"
-        errorLine1="        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putStringSet(KEY_ENERGY, now).apply()"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/cloud/dopp/homes/realtime/WatchSet.kt"
-            line="60"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="UseKtx"
-        message="Use the KTX extension function `SharedPreferences.edit` instead?"
         errorLine1="        runCatching { p(ctx).edit().putString(&quot;card_$id&quot;, o.toString()).apply() }"
         errorLine2="                      ~~~~~~~~~~~~~">
         <location
@@ -1433,7 +1310,6 @@
             column="64"/>
     </issue>
 
-
     <issue
         id="HardcodedText"
         message="Hardcoded string &quot;—&quot;, should use `@string` resource"
@@ -1452,72 +1328,6 @@
         errorLine2="                ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/widget_device_wide.xml"
-            line="57"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="HardcodedText"
-        message="Hardcoded string &quot;—&quot;, should use `@string` resource"
-        errorLine1="                    android:text=&quot;—&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="73"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="HardcodedText"
-        message="Hardcoded string &quot;—&quot;, should use `@string` resource"
-        errorLine1="                    android:text=&quot;—&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="107"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="HardcodedText"
-        message="Hardcoded string &quot;—&quot;, should use `@string` resource"
-        errorLine1="                    android:text=&quot;—&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="141"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="HardcodedText"
-        message="Hardcoded string &quot;—&quot;, should use `@string` resource"
-        errorLine1="                    android:text=&quot;—&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy.xml"
-            line="176"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="HardcodedText"
-        message="Hardcoded string &quot;Netz&quot;, should use `@string` resource"
-        errorLine1="                android:text=&quot;Netz&quot;"
-        errorLine2="                ~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy_small.xml"
-            line="46"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="HardcodedText"
-        message="Hardcoded string &quot;—&quot;, should use `@string` resource"
-        errorLine1="                android:text=&quot;—&quot;"
-        errorLine2="                ~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/widget_energy_small.xml"
             line="57"
             column="17"/>
     </issue>

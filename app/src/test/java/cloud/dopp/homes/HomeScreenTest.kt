@@ -82,10 +82,10 @@ class HomeScreenTest {
         val a = open()
         assertEquals(View.GONE, a.findViewById<View>(R.id.connect_section).visibility)
         assertEquals(View.VISIBLE, a.findViewById<View>(R.id.connected_section).visibility)
-        // one list, no groups (owner, 2026-11-03): one device and the energy, then the tools
+        // one list, no groups (owner, 2026-11-03): one device, then the tools; the energy is a tile (owner 2026-11-28)
         val list = a.findViewById<ViewGroup>(R.id.widgets_group)
         assertEquals(WidgetTypes.ALL.size, list.childCount)
-        assertEquals(listOf("Ein Gerät", "Energie"), (0 until list.childCount).map { texts(list.getChildAt(it)).single() })
+        assertEquals(listOf("Ein Gerät"), (0 until list.childCount).map { texts(list.getChildAt(it)).single() })
         assertNull("no Box group", a.findViewById<View>(ctx().resources.getIdentifier("box_group", "id", ctx().packageName).takeIf { it != 0 } ?: View.NO_ID))
         val all = texts(a.window.decorView)
         listOf("Box", "Haushalt").forEach { assertTrue("a group heading: $it", it !in all) }

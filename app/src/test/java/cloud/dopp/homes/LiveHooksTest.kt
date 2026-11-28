@@ -1,6 +1,5 @@
 package cloud.dopp.homes
 
-import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
@@ -14,7 +13,6 @@ import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.ui.HomeActivity
 import cloud.dopp.homes.widget.WidgetActionReceiver
-import cloud.dopp.homes.widget.EnergyWidgetProvider
 import cloud.dopp.homes.widget.ToolWidgetProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -51,7 +49,7 @@ class LiveHooksTest {
         ServerStore.setBaseUrl(ctx(), "https://homes.example")
         TokenStore.backend = ctx().getSharedPreferences("test_tokens", Context.MODE_PRIVATE)
         TokenStore.save(ctx(), "homes_device_T1")
-        shadowOf(AppWidgetManager.getInstance(ctx())).createWidget(EnergyWidgetProvider::class.java, R.layout.widget_energy)
+        shadowOf(AppWidgetManager.getInstance(ctx())).createWidget(ToolWidgetProvider::class.java, R.layout.widget_tool)
         drain()
     }
 
@@ -71,13 +69,11 @@ class LiveHooksTest {
     @Test
     fun everyWidgetTapStartsIt() {
         val taps = listOf(
-            EnergyWidgetProvider::class.java to EnergyWidgetProvider.ACTION_REFRESH,
             ToolWidgetProvider::class.java to ToolWidgetProvider.ACTION_REFRESH,
             // the device widget's tile: its tap goes to the device receiver
             WidgetActionReceiver::class.java to WidgetActionReceiver.ACTION_TAP,
         )
         val layouts = mapOf(
-            EnergyWidgetProvider::class.java to R.layout.widget_energy,
             ToolWidgetProvider::class.java to R.layout.widget_tool,
         )
         val shadow = shadowOf(AppWidgetManager.getInstance(ctx()))
@@ -107,19 +103,6 @@ class LiveHooksTest {
             val done = src.substringBefore("setResult(RESULT_OK, resultIntent())").substringAfterLast("fun ")
             assertTrue("$f does not start the live service where it binds", done.contains("Live.ensure("))
         }
-    }
-
-    /** The shared no-UI configure screen: it starts the service and says OK at once. */
-    @Test
-    fun theNoUiConfigureScreenStartsItAndConfirmsAtOnce() {
-        @Suppress("UNCHECKED_CAST")
-        val cls = Class.forName("cloud.dopp.homes.widget.LiveConfigActivity") as Class<Activity>
-        val intent = Intent(ctx(), cls).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, 42)
-        val a = Robolectric.buildActivity(cls, intent).setup().get()
-        assertTrue("it did not finish", a.isFinishing)
-        assertEquals(Activity.RESULT_OK, shadowOf(a).resultCode)
-        assertEquals(42, shadowOf(a).resultIntent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1))
-        assertTrue("it did not start the live service", started())
     }
 
     /** The row asking for the exemption (so a restart after a killed process goes live by itself): its tap asks; granted, it is gone. */

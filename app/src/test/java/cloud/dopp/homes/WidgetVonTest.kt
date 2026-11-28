@@ -41,7 +41,7 @@ class WidgetVonTest {
     @Test
     fun theKinds() {
         assertEquals(
-            listOf("device", "energy", "tool"),
+            listOf("device", "tool"), // the energy widget went (owner 2026-11-28)
             WidgetKind.values().map { it.kind },
         )
         WidgetKind.values().forEach {
@@ -53,8 +53,8 @@ class WidgetVonTest {
     @Test
     fun aPageWithoutAQueryGetsOne() {
         assertEquals(
-            "https://homes.example/start?von=widget.energy",
-            HomesPages.url("https://homes.example/", HomesPages.START, WidgetKind.ENERGY),
+            "https://homes.example/start?von=widget.tool",
+            HomesPages.url("https://homes.example/", HomesPages.START, WidgetKind.TOOL),
         )
     }
 
@@ -95,7 +95,7 @@ class WidgetVonTest {
 
     @Test
     fun unpairedATapStillOpensTheApp() {
-        val saved = shadowOf(HomesPages.tap(ctx, 9_500, HomesPages.START, WidgetKind.ENERGY)).savedIntent
+        val saved = shadowOf(HomesPages.tap(ctx, 9_500, HomesPages.START, WidgetKind.TOOL)).savedIntent
         assertEquals(HomeActivity::class.java.name, saved.component?.className)
     }
 
@@ -135,7 +135,6 @@ class WidgetVonTest {
         val widget = File(RepoFiles.main, "java/cloud/dopp/homes/widget")
         val expected = mapOf(
             "DeviceWidgetProvider.kt" to WidgetKind.DEVICE,
-            "EnergyWidgetProvider.kt" to WidgetKind.ENERGY,
             "ToolWidgetProvider.kt" to WidgetKind.TOOL,
         )
         val call = Regex("""(HomesPages\.tap|ToolActionActivity\.template)\(([^\n]*)\)""")

@@ -11,7 +11,7 @@ import cloud.dopp.homes.widget.ToolWidgetProvider
 import cloud.dopp.homes.widget.WidgetStore
 
 /**
- * The device and energy widgets in the system's widget picker follow the box
+ * The device widget in the system's widget picker follows the box
  * (homes ADR 0001 §3): a provider is disabled while the box lacks its key
  * *and* none of its widgets is placed — disabling it would take a placed one
  * off the home screen, so a placed one keeps it, showing the module's reason
@@ -23,18 +23,16 @@ import cloud.dopp.homes.widget.WidgetStore
  */
 object Anbieter {
 
-    private val PROVIDER = linkedMapOf(
-        KannKey.GERAET to DeviceWidgetProvider::class.java,
-        KannKey.ENERGIE to EnergyWidgetProvider::class.java,
-    )
-
-    /** Switch both providers to what [kann] offers; true when one changed. */
+    /**
+     * Switch the device provider to what [kann] offers; the energy provider (taken out, owner 2026-11-28) is
+     * never offered and stays only while one is placed. True when one changed.
+     */
     fun schalten(ctx: Context, kann: Kann?): Boolean {
         val mgr = AppWidgetManager.getInstance(ctx)
         val pm = ctx.packageManager
-        var changed = false
-        PROVIDER.forEach { (key, cls) -> if (folgen(ctx, mgr, pm, cls, kann.hat(Liste.WIDGETS, key))) changed = true }
-        return changed
+        val geraet = folgen(ctx, mgr, pm, DeviceWidgetProvider::class.java, kann.hat(Liste.WIDGETS, KannKey.GERAET))
+        val energie = folgen(ctx, mgr, pm, EnergyWidgetProvider::class.java, false)
+        return geraet || energie
     }
 
     /** The tool widget in the system's picker: only while a tool is offered, or one of its widgets is placed. */

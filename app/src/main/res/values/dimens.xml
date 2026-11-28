@@ -29,7 +29,4 @@
     <dimen name="text_body">15sp</dimen>
     <dimen name="text_label">13sp</dimen>
 
-    <!-- The energy widget's Heute column beside the flow picture. -->
-    <dimen name="energy_today_width">110dp</dimen>
-
 </resources>

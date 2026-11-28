@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The energy widget, taken out (owner 2026-11-28): kept for widgets already placed, which say so
+     (WidgetFallback.ausgebaut); never offered in the picker (Anbieter). -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="40dp"
@@ -9,7 +11,6 @@
     android:description="@string/energy_widget_description"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
-    android:initialLayout="@layout/widget_energy"
-    android:previewLayout="@layout/widget_energy"
-    android:configure="cloud.dopp.homes.widget.LiveConfigActivity"
+    android:initialLayout="@layout/widget_error"
+    android:previewLayout="@layout/widget_error"
     android:updatePeriodMillis="0" />

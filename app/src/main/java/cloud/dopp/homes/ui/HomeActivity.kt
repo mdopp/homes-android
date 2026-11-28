@@ -347,6 +347,7 @@ class HomeActivity : AppCompatActivity() {
      */
     private fun renderBereiche() {
         Ueberblick.zeichnen(this, findViewById(R.id.ueberblick_section), findViewById(R.id.ueberblick_group))
+        if (Ueberblick.energie(KannStore.kann(this))) EnergieKachel.lesen(this, ::renderBereiche) // the Energie tile's line
         val spuren = StartAngebot(this, KannStore.kann(this), ::renderWidgetTypes).spuren(findViewById(R.id.spuren_group))
         findViewById<View>(R.id.spuren_section).visibility = if (spuren) View.VISIBLE else View.GONE
     }

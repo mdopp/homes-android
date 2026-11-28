@@ -216,19 +216,27 @@ class KannTeileTest {
 
     @Test
     fun aProviderGoesOnlyWhileItsKeyIsMissingAndNoneIsPlaced() {
-        assertFalse("unknown: as before", Anbieter.schalten(app, null))
-        assertTrue(Anbieter.schalten(app, Kann.lesen(ohneKalender)))
-        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DISABLED, state(EnergyWidgetProvider::class.java))
-        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, state(DeviceWidgetProvider::class.java))
+        Anbieter.schalten(app, null)
+        assertEquals("unknown: the device widget as before", PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, state(DeviceWidgetProvider::class.java))
+        assertFalse("nothing changes again", Anbieter.schalten(app, null))
         Anbieter.schalten(app, Kann.lesen(alles))
-        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, state(EnergyWidgetProvider::class.java))
+        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, state(DeviceWidgetProvider::class.java))
+    }
+
+    /** The energy widget went (owner 2026-11-28): never in the picker, even with the energy on the box. */
+    @Test
+    fun theEnergyWidgetIsNeverOffered() {
+        Anbieter.schalten(app, Kann.lesen(alles))
+        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DISABLED, state(EnergyWidgetProvider::class.java))
+        Anbieter.schalten(app, null)
+        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DISABLED, state(EnergyWidgetProvider::class.java))
     }
 
     @Test
     fun aProviderWithAPlacedWidgetIsNeverDisabled() {
-        shadowOf(AppWidgetManager.getInstance(app)).createWidget(EnergyWidgetProvider::class.java, R.layout.widget_energy)
-        assertFalse(Anbieter.schalten(app, Kann.lesen(ohneKalender)))
-        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, state(EnergyWidgetProvider::class.java))
+        shadowOf(AppWidgetManager.getInstance(app)).createWidget(EnergyWidgetProvider::class.java, R.layout.widget_error)
+        Anbieter.schalten(app, Kann.lesen(ohneKalender))
+        assertEquals("a placed one keeps it: it says it is gone", PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, state(EnergyWidgetProvider::class.java))
     }
 
     private fun draw(root: View, name: String) {

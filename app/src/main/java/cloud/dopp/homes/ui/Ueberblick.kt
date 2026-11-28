@@ -20,6 +20,7 @@ import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.einrichtung.Abschnitte
 import cloud.dopp.homes.einrichtung.Bilder
 import cloud.dopp.homes.einrichtung.EinrichtungStore
+import cloud.dopp.homes.kann.Kann
 import cloud.dopp.homes.kann.KannStore
 import cloud.dopp.homes.kann.Liste
 import cloud.dopp.homes.kann.hat
@@ -31,7 +32,8 @@ import cloud.dopp.homes.widget.HomesPages
  * „Alles auf einen Blick“ (the owner, 2026-11-27): one grid of tiles, three
  * in a row, for every area the person can open — the modules Homes lists
  * under „Öffnen“ (Dokumente, Zeitleiste, Musik, Rezepte, …, each with the
- * line Homes says where it stands), Auslöser and Dein Archiv as the box
+ * line Homes says where it stands), Energie (Homes' page, the house's power
+ * and today's yield as its line, [EnergieKachel]), Auslöser and Dein Archiv as the box
  * offers them, Homes itself, and „Dokumente-Adresse“ for whom Homes gives
  * one. Each only while it is there, as the rows were. A small green dot
  * marks an area the person has never opened on this phone; the areas there
@@ -65,6 +67,11 @@ object Ueberblick {
         val archiv = StartAngebot.archiv(kann, base)?.let { url ->
             Bereich(KannKey.ARCHIV, R.drawable.ic_archiv, a.getString(R.string.archiv_title), ar?.stand, ar?.neu) { Abschnitte.oeffnen(a, url.toUri()) }
         }
+        // the energy as a link (owner 2026-11-28, the widget gone): Homes' Energie page, the widget's numbers as its
+        // line; only while the box says it has the energy (unknown: no link to a page that may not be there)
+        val energie = base?.takeIf { energie(kann) }?.let { HomesPages.url(it, HomesPages.ENERGIE) }?.let { url ->
+            Bereich(KannKey.ENERGIE, R.drawable.ic_bolt, a.getString(R.string.bereich_energie), EnergieKachel.gemerkt(a)) { Abschnitte.oeffnen(a, url.toUri()) }
+        }
         val homes = base?.takeIf { e != null }?.let { HomesPages.url(it, HomesPages.START) }?.let { url ->
             Bereich(HOMES, R.drawable.ic_stat_homes, a.getString(R.string.oeffnen_homes), null, null) { Abschnitte.oeffnen(a, url.toUri()) }
         }
@@ -72,8 +79,11 @@ object Ueberblick {
         val adresse = DokumenteAdresse.muster(dok)?.let { muster ->
             Bereich(ADRESSE, R.drawable.ic_modul_dokumente, a.getString(R.string.dokumente_adresse_kurz), muster, null) { DokumenteAdresse.kopieren(a, dok) }
         }
-        return module + listOfNotNull(ausloeser, archiv, homes, adresse)
+        return module + listOfNotNull(energie, ausloeser, archiv, homes, adresse)
     }
+
+    /** The box has the energy (`widgets` `energie`, the energie module on); false while unknown. */
+    fun energie(kann: Kann?): Boolean = kann != null && kann.hat(Liste.WIDGETS, KannKey.ENERGIE)
 
     /** Draw the grid into [group], [section] gone without a tile; faint while what it shows is the last thing known. */
     fun zeichnen(a: Activity, section: View?, group: ViewGroup?) {

@@ -7,8 +7,6 @@
     <ID>ComplexCondition:ToolCells.kt$ToolCells$!d.isNaN() &amp;&amp; !d.isInfinite() &amp;&amp; d == Math.floor(d) &amp;&amp; Math.abs(d) &lt; 1e15</ID>
     <ID>CyclomaticComplexMethod:ConfirmVerb.kt$ConfirmVerb.Companion$fun of(service: String?): ConfirmVerb</ID>
     <ID>CyclomaticComplexMethod:DeviceLook.kt$DeviceLook$fun tint(domain: String?, deviceClass: String?, card: Card?): Int</ID>
-    <ID>CyclomaticComplexMethod:EnergyPicture.kt$EnergyPicture$fun single(f: EnergyFluss?, sizeDp: Int, density: Float): Bitmap</ID>
-    <ID>CyclomaticComplexMethod:EnergyPicture.kt$EnergyPicture$private fun pill(c: Canvas, f: EnergyFluss?, key: String, l: Lage)</ID>
     <ID>CyclomaticComplexMethod:Handy.kt$HandyKontakte$override fun exportieren(datei: File): Int</ID>
     <ID>CyclomaticComplexMethod:Handy.kt$HandyKontakte.Companion$fun dazu(k: Kontakt, c: Cursor): Kontakt</ID>
     <ID>CyclomaticComplexMethod:Handy.kt$HandyTelefon$override fun nachrichten(datei: File, seitSms: Long, seitMms: Long): Auszug?</ID>
@@ -37,8 +35,6 @@
     <ID>LongMethod:NachrichtenLauf.kt$NachrichtenLauf$fun laufen(): Lauf.Ergebnis</ID>
     <ID>LongMethod:SicherungWorker.kt$SicherungWorker$override fun doWork(): Result</ID>
     <ID>LongParameterList:ActionDialog.kt$ActionDialog$( activity: Activity, title: CharSequence, message: CharSequence?, sheet: ActionSheet, onPick: (Int) -&gt; Unit, onCancel: () -&gt; Unit, /** The neutral footer's word; null: no footer (a dialog that waits for an answer). */ footer: CharSequence? = activity.getString(R.string.widget_confirm_no), /** A translucent action activity paints its window ([scrim]); a screen of the app does not. */ paintScrim: Boolean = true, cancelable: Boolean = true, )</ID>
-    <ID>LongParameterList:EnergyFluss.kt$EnergyFluss$( /** The nodes the house has, by key: solar, haus, netz, akku. */ val da: Set&lt;String&gt;, /** The nodes whose sensor said a number now. */ val known: Set&lt;String&gt;, val solar: Double, val haus: Double, val bezug: Double, val einsp: Double, val laden: Double, val entladen: Double, /** How full the battery is, in percent, or null. */ val charge: Double?, )</ID>
-    <ID>LongParameterList:EnergyRender.kt$EnergyRender$( ctx: Context, e: Energy?, paired: Boolean, onTap: PendingIntent, h: Int, showSub: Boolean, showToday: Boolean, side: Boolean, )</ID>
     <ID>LongParameterList:Lauf.kt$Lauf$( private val client: SicherungClient, private val gedaechtnis: Gedaechtnis, /** The granted folder of a source, or null when none was granted. */ private val ordner: (Quelle) -&gt; Ordner?, halt: () -&gt; Boolean = { false }, private val melde: (Fortschritt) -&gt; Unit = {}, private val uhr: () -&gt; Long = System::currentTimeMillis, frist: Long = FRIST_MS, teil: Int = Uploader.TEIL, )</ID>
     <ID>LongParameterList:NachrichtenLauf.kt$NachrichtenLauf$( private val client: SicherungClient, private val gedaechtnis: Gedaechtnis, private val marken: Marken, private val telefon: Telefon, /** The app's own folder for the files under way (in the cache). */ private val ordner: File, private val halt: () -&gt; Boolean = { false }, private val melde: (Fortschritt) -&gt; Unit = {}, private val uhr: () -&gt; Long = System::currentTimeMillis, teil: Int = Uploader.TEIL, )</ID>
     <ID>LongParameterList:Napi.kt$Napi.Endpoint$( val method: Method, val path: String, val query: List&lt;String&gt; = emptyList(), val allowed: Map&lt;String, List&lt;String&gt;&gt; = emptyMap(), val body: List&lt;String&gt; = emptyList(), val reply: List&lt;Any&gt; = emptyList(), val accept: String? = null, val events: List&lt;String&gt; = emptyList(), /** Request headers the client sends, by name; [NapiRequest] sends no others. */ val headers: List&lt;String&gt; = emptyList(), /** Reply headers the client reads. */ val replyHeaders: List&lt;String&gt; = emptyList(), )</ID>
@@ -51,11 +47,6 @@
     <ID>NestedBlockDepth:NachrichtenLauf.kt$NachrichtenLauf$fun laufen(): Lauf.Ergebnis</ID>
     <ID>StringLiteralDuplication:DeviceLook.kt$DeviceLook$"cover"</ID>
     <ID>StringLiteralDuplication:DeviceLook.kt$DeviceLook$"light"</ID>
-    <ID>StringLiteralDuplication:EnergyFluss.kt$EnergyFluss$"solar"</ID>
-    <ID>StringLiteralDuplication:EnergyPicture.kt$EnergyPicture$"solar"</ID>
-    <ID>StringLiteralDuplication:EnergyStyle.kt$EnergyStyle$"battery"</ID>
-    <ID>StringLiteralDuplication:EnergyStyle.kt$EnergyStyle$"export"</ID>
-    <ID>StringLiteralDuplication:EnergyStyle.kt$EnergyStyle$"import"</ID>
     <ID>StringLiteralDuplication:Handy.kt$HandyKontakte.Companion$"voice"</ID>
     <ID>StringLiteralDuplication:Handy.kt$HandyTelefon$"address"</ID>
     <ID>StringLiteralDuplication:IcalLeser.kt$IcalLeser$"BEGIN"</ID>
@@ -162,6 +153,5 @@
     <ID>TooGenericExceptionCaught:WidgetConfigActivity.kt$WidgetConfigActivity$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WidgetFallback.kt$WidgetFallback$t: Throwable</ID>
     <ID>TooGenericExceptionCaught:ZurueckholenActivity.kt$ZurueckholenActivity$e: Exception</ID>
-    <ID>VariableNaming:EnergyWidgetPreviewTest.kt$EnergyWidgetPreviewTest$private val CHARGE = "\"charge\":{\"entity_id\":\"sensor.akku_soc\",\"label\":\"Akku-Füllstand\",\"state\":\"83\",\"unit\":\"%\"},"</ID>
   </CurrentIssues>
 </SmellBaseline>

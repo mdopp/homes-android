@@ -125,7 +125,8 @@
             </intent-filter>
         </activity>
 
-        <!-- The one energy widget (owner, 2026-11-02): jetzt and heute together. -->
+        <!-- The energy widget, taken out (owner 2026-11-28: the start screen's „Energie“ tile instead):
+             kept so placed ones say „Dieses Widget gibt es nicht mehr“; never offered (Anbieter). -->
         <receiver
             android:name=".widget.EnergyWidgetProvider"
             android:exported="true"
@@ -593,18 +594,5 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
-
-        <!-- The configure step of the fed widgets without a choice: no UI, it starts
-             the live service (an allowed start) and confirms at once. -->
-        <activity
-            android:name=".widget.LiveConfigActivity"
-            android:exported="true"
-            android:excludeFromRecents="true"
-            android:noHistory="true"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
     </application>
 </manifest>

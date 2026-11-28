@@ -113,7 +113,7 @@ class KannPreviewTest {
         ).forEach { assertTrue("$it missing in $spuren", it in spuren) }
         assertFalse("the admins' trace is on Homes' Box page", "Werkstatt" in spuren)
         val widgets = texts(a.findViewById(R.id.widgets_group))
-        assertTrue("energy is a muted entry: $widgets", "Energie" in widgets || widgets.any { it.startsWith("Energie") })
+        assertFalse("the energy widget went (owner 2026-11-28): no entry: $widgets", widgets.any { it.startsWith("Energie") })
         // the Dokumente and Notizen widgets went (owner 2026-11-27): no entry, not even a muted one
         assertFalse("dokumente's tool is no entry any more: $widgets", "Dokumente" in widgets || "Notizen" in widgets)
         draw(a, "app-start-spuren", content(a))

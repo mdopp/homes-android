@@ -5,10 +5,9 @@
 #
 #   1 the app starts the service: foreground (specialUse on 34+), OPEN and WATCH
 #   2 screen off: CLOSE within 5 s; forced idle for 90 s: no OPEN, no WATCH
-#   3 screen on: exactly one OPEN, a WATCH that names the energy widget's sensor
-#     and the device widget's device;
-#     a pushed frame of that sensor makes the energy widget read again, a frame
-#     of anything else reads nothing
+#   3 screen on: exactly one OPEN, a WATCH that names the device widget's device
+#     and no energy sensor (the energy widget went, owner 2026-11-28); a pushed
+#     frame of the device reaches the stream
 #   4 the process killed: with the battery exemption a new OPEN within 30 s;
 #     without it, no notification of a dead service. An app update starts it.
 #   5 a real reboot: OPEN within 60 s of boot
@@ -128,20 +127,13 @@ sleep 8
 [ "$(since "$m" OPEN)" -eq 1 ] && pass "3 screen on opens exactly one stream" || fail "3 $(since "$m" OPEN) OPENs after screen on"
 [ "$(since "$m" WATCH)" -ge 1 ] && pass "3 screen on posts the watch set" || fail "3 no WATCH after screen on"
 tail -n +$(( m + 1 )) "$LOG" | cut -d' ' -f2- | grep "^WATCH" | grep -q 'sensor.e2e_power' \
-  && pass "3 the watch names the energy sensor" || fail "3 the watch does not name the energy sensor"
+  && fail "3 the watch names an energy sensor (the energy widget went)" || pass "3 the watch names no energy sensor"
 tail -n +$(( m + 1 )) "$LOG" | cut -d' ' -f2- | grep "^WATCH" | grep -q 'light.e2e' \
   && pass "3 the watch names the device widget's device" || fail "3 the watch does not name the device widget's device"
 sleep 5 # the screen-on reads land
 # each push must reach the open stream, or "no read" would prove nothing
 frame() { curl -sk -X POST "https://127.0.0.1:8443/ctl/frame?entity_id=$1&state=$2" | grep -q '"streams": [1-9]'; }
-m=$(mark)
-frame light.e2e on || fail "3 the light's frame reached no stream"
-sleep 12 # past the energy widget's 10 s coalescing
-n=$(since "$m" "GET /napi/portal/energy")
-[ "$n" -eq 0 ] && pass "3 a frame of no watched sensor: no read" || fail "3 a frame of no watched sensor: $n reads"
-m=$(mark)
-frame sensor.e2e_power 900 || fail "3 the sensor's frame reached no stream"
-wait_for "$m" "GET /napi/portal/energy" 1 15 && pass "3 the sensor's frame reads the energy widget again" || fail "3 no energy read after the sensor's frame"
+frame light.e2e on && pass "3 the device's frame reaches the stream" || fail "3 the light's frame reached no stream"
 
 # 4 --------------------------------------------------------------------------
 on dumpsys deviceidle whitelist +$PKG >/dev/null
