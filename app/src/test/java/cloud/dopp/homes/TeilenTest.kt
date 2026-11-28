@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.os.Looper
