@@ -82,6 +82,22 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_md"
             android:layout_marginBottom="@dimen/space_xs"
+            android:text="@string/teilen_unterwegs" />
+
+        <!-- „Teilen per Berührung“ (owner 2026-11-28): Was teilen?, Meine Visitenkarte, Behaltene Tags. -->
+        <LinearLayout
+            android:id="@+id/telefon_teilt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_homes"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/Text.Homes.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginBottom="@dimen/space_xs"
             android:text="@string/telefon_kopplung" />
 
         <!-- Where the app is paired, beside the way to unpair, and the app's version (moved from the start screen). -->

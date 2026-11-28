@@ -34,10 +34,14 @@ class WlanAnbietenActivity : AppCompatActivity() {
     private lateinit var knopf: Button
     private var vorbei = false
 
+    /** „Teilen per Berührung“: one reader, then „Geteilt.“ (owner 2026-11-28). */
+    private var einmal = false
+
     private val tick = object : Runnable {
         override fun run() {
+            if (WlanAngebot.geteilt) return ende(getString(R.string.teilen_geteilt))
             val rest = WlanAngebot.bis - SystemClock.elapsedRealtime()
-            if (rest <= 0) return ende(getString(R.string.anbieten_vorbei))
+            if (rest <= 0) return ende(getString(if (einmal) R.string.teilen_abgelaufen else R.string.anbieten_vorbei))
             stand.text = getString(R.string.anbieten_noch, dauer(rest))
             main.postDelayed(this, minOf(SEKUNDE, rest))
         }
@@ -54,7 +58,9 @@ class WlanAnbietenActivity : AppCompatActivity() {
             finish()
         }
         val ssid = WlanAngebot.ssid
-        findViewById<TextView>(R.id.anbieten_netz).text = ssid?.let { getString(R.string.inhalt_wlan_name, it) }.orEmpty()
+        einmal = WlanAngebot.einmal
+        if (einmal) findViewById<TextView>(R.id.anbieten_titel).setText(R.string.teilen_titel)
+        findViewById<TextView>(R.id.anbieten_netz).text = ssid?.let { if (einmal) it else getString(R.string.inhalt_wlan_name, it) }.orEmpty()
         if (ssid == null) ende(getString(R.string.anbieten_nichts)) // the process was gone: the credential with it
     }
 
@@ -62,7 +68,7 @@ class WlanAnbietenActivity : AppCompatActivity() {
         super.onResume()
         if (vorbei) return
         warum(this)?.let { return ende(it) }
-        if (!WlanAngebot.anfangen()) return ende(getString(R.string.anbieten_vorbei))
+        if (!WlanAngebot.anfangen()) return ende(getString(if (einmal) R.string.teilen_abgelaufen else R.string.anbieten_vorbei))
         bevorzugt(true)
         main.post(tick)
     }
@@ -117,9 +123,9 @@ class WlanAnbietenActivity : AppCompatActivity() {
             }
         }
 
-        /** Offer [n] ([name]): held in memory, the screen opened. */
-        fun oeffnen(ctx: Context, name: String, n: NdefMessage) {
-            WlanAngebot.vorbereiten(name, n)
+        /** Offer [n] ([name]): held in memory, the screen opened; [einmal]: to one reader only („Teilen“). */
+        fun oeffnen(ctx: Context, name: String, n: NdefMessage, einmal: Boolean = false) {
+            WlanAngebot.vorbereiten(name, n, einmal)
             ctx.startActivity(Intent(ctx, WlanAnbietenActivity::class.java))
         }
     }

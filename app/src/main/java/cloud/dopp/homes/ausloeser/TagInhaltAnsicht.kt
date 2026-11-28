@@ -35,7 +35,9 @@ internal class TagInhaltAnsicht(private val a: Activity) {
     private val pwZeile = a.findViewById<View>(R.id.inhalt_passwort_zeile)
     private val pw = a.findViewById<TextView>(R.id.inhalt_passwort)
     private val zeigen = a.findViewById<Button>(R.id.inhalt_zeigen)
-    private val knoepfe = listOf(a.findViewById<Button>(R.id.inhalt_eins), a.findViewById<Button>(R.id.inhalt_zwei))
+    private val knoepfe = listOf(
+        a.findViewById<Button>(R.id.inhalt_eins), a.findViewById<Button>(R.id.inhalt_zwei), a.findViewById<Button>(R.id.inhalt_drei),
+    )
     private val stand = a.findViewById<TextView>(R.id.inhalt_stand)
     private val daten = a.findViewById<TextView>(R.id.inhalt_daten)
     private val datenRahmen = a.findViewById<View>(R.id.inhalt_daten_rahmen)
@@ -68,6 +70,15 @@ internal class TagInhaltAnsicht(private val a: Activity) {
         sage("")
         karte.isVisible = true
         karte.post { karte.requestRectangleOnScreen(Rect(0, 0, karte.width, karte.height)) } // under the list: into view
+    }
+
+    /** One more button after what [zeige] showed: the last slot („Im Telefon behalten“). */
+    fun dazu(k: Knopf) {
+        val b = knoepfe.last()
+        b.isVisible = true
+        b.isEnabled = true
+        b.text = k.text
+        b.setOnClickListener { druecke(b, k) }
     }
 
     /** Closed, its password forgotten. */

@@ -8,10 +8,11 @@ package cloud.dopp.homes.ausloeser
  * nothing is offered, each one is 6A82 (not found), as if no tag were there.
  * One instance per reader session ([zuruecksetzen] between them).
  */
-class Typ4Tag(private val ndef: () -> ByteArray?) {
+class Typ4Tag(private val ndef: () -> ByteArray?, private val gelesen: () -> Unit = {}) {
 
     private var gewaehlt = false
     private var datei: ByteArray? = null
+    private var istNdef = false
 
     /** The reader went: the next one starts from SELECT. */
     fun zuruecksetzen() {
@@ -42,7 +43,12 @@ class Typ4Tag(private val ndef: () -> ByteArray?) {
                 gewaehlt = true
                 datei = null
             }
-            p1 == NACH_ID && gewaehlt -> datei(wert, n)?.let { d -> OK.also { datei = d } } ?: NICHT_DA
+            p1 == NACH_ID && gewaehlt -> datei(wert, n)?.let { d ->
+                OK.also {
+                    datei = d
+                    istNdef = wert.contentEquals(NDEF)
+                }
+            } ?: NICHT_DA
             else -> NICHT_DA
         }
     }
@@ -58,10 +64,16 @@ class Typ4Tag(private val ndef: () -> ByteArray?) {
         val d = datei ?: return NICHT_ERLAUBT
         if (ab > d.size) return FALSCHER_BEREICH
         val le = apdu.getOrNull(KOPF)?.toInt()?.and(0xFF)?.takeIf { it != 0 } ?: MAX_LE
-        return d.copyOfRange(ab, minOf(d.size, ab + le)) + OK
+        val bis = minOf(d.size, ab + le)
+        if (istNdef && bis == d.size && ab > 0) gelesen() // the message read to its end (after its length)
+        return d.copyOfRange(ab, bis) + OK
     }
 
     companion object {
+        /** A reader asks for the NDEF application: SELECT by name with its AID. */
+        fun waehltNdef(apdu: ByteArray): Boolean = apdu.size >= KOPF + 1 + AID.size && apdu[1] == SELECT &&
+            apdu[2].toInt() == NACH_NAME && apdu.copyOfRange(KOPF + 1, KOPF + 1 + AID.size).contentEquals(AID)
+
         /** The NDEF Tag Application's name (T4T 2.0). */
         val AID = bytes(0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01)
         val CC = bytes(0xE1, 0x03)

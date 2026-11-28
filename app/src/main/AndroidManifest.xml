@@ -386,6 +386,25 @@
                 android:resource="@xml/apduservice" />
         </service>
 
+        <!-- „Teilen per Berührung“ (owner approved 2026-11-28): what to share with a phone held to this one,
+             the person's own card, the tags kept on this phone. -->
+        <activity
+            android:name=".teilen.TeilenActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:label="@string/teilen_titel"
+            android:theme="@style/Theme.Homes" />
+        <activity
+            android:name=".teilen.VisitenkarteActivity"
+            android:exported="false"
+            android:label="@string/karte_titel_visitenkarte"
+            android:theme="@style/Theme.Homes" />
+        <activity
+            android:name=".teilen.BehalteneActivity"
+            android:exported="false"
+            android:label="@string/behalten_titel"
+            android:theme="@style/Theme.Homes" />
+
         <!-- Mehr → Auslöser (homes ADR 0004): HA's tags, a new tag written, „Ladestation melden“. -->
         <activity
             android:name=".ausloeser.AusloeserActivity"
