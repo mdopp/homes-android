@@ -3,13 +3,15 @@ package cloud.dopp.homes.teilen
 import android.content.Context
 import android.nfc.NdefMessage
 import android.util.Base64
+import cloud.dopp.homes.ausloeser.WlanTag
 import org.json.JSONArray
 import org.json.JSONObject
 
 /**
  * The tags kept on this phone to share again („Im Telefon behalten“, owner
  * 2026-11-28), each with its name and its NDEF message as read, and the
- * person's own card („Meine Visitenkarte“) — both in the [Tresor].
+ * person's own card („Meine Visitenkarte“) and the guest Wi-Fi („Gast-WLAN“) —
+ * all in the [Tresor].
  */
 object Behalten {
 
@@ -20,6 +22,7 @@ object Behalten {
 
     private const val TAGS = "tags"
     private const val KARTE = "visitenkarte"
+    private const val GAST = "gastwlan"
     private const val NAME = "name"
     private const val NDEF = "ndef"
 
@@ -33,6 +36,14 @@ object Behalten {
     fun visitenkarte(ctx: Context): String? = Tresor.lesen(ctx, KARTE)
 
     fun setzeVisitenkarte(ctx: Context, vcard: String?) = Tresor.schreiben(ctx, KARTE, vcard)
+
+    /** The guest Wi-Fi, kept as its WSC credential ([WlanTag]); null while none is set. */
+    fun gastWlan(ctx: Context): WlanTag.Netz? =
+        Tresor.lesen(ctx, GAST)?.let { runCatching { WlanTag.lesen(Base64.decode(it, Base64.NO_WRAP)) }.getOrNull() }
+
+    /** [n] as the guest Wi-Fi; null removes it. */
+    fun setzeGastWlan(ctx: Context, n: WlanTag.Netz?) =
+        Tresor.schreiben(ctx, GAST, n?.let { Base64.encodeToString(WlanTag.nutzlast(it.ssid, it.passwort, it.schutz), Base64.NO_WRAP) })
 
     fun text(tags: List<Tag>): String = JSONArray(
         tags.map { JSONObject().put(NAME, it.name).put(NDEF, Base64.encodeToString(it.nachricht.toByteArray(), Base64.NO_WRAP)) },

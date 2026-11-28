@@ -586,7 +586,11 @@ class AusloeserActivity : AppCompatActivity() {
             inhalt.schliessen()
             WlanAnbietenActivity.oeffnen(this, n.ssid, gelesen)
         }
-        val uebernehmen = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_uebernehmen), getString(R.string.inhalt_uebernimmt), anbieten) { fertig ->
+        val gast = TagInhaltAnsicht.Knopf(getString(R.string.gast_merken), danach = anbieten) { fertig -> // owner 2026-11-28: „Teilen“'s Gast-WLAN
+            Behalten.setzeGastWlan(this, n)
+            fertig(getString(R.string.gast_gemerkt, n.ssid))
+        }
+        val uebernehmen = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_uebernehmen), getString(R.string.inhalt_uebernimmt), gast) { fertig ->
             uebernehmen(n, fertig)
         }
         val zeilen = listOf(getString(R.string.inhalt_wlan_name, n.ssid), getString(R.string.inhalt_wlan_schutz, n.art))

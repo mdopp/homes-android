@@ -76,6 +76,7 @@ each row naming the Homes file and lines it came from.
 | Share → Musik, Hochladen | `POST /napi/musik`, multipart, one `file` part a request, streamed from the app's copy: see (j) |
 | Share → Homes, photos | `POST /napi/upload`, multipart `filename` then `file`, one photo a request → `{ok, id}`: the camera app's photos (one or several, `image/*`) into the folder Paperless consumes (owner, 2026-11-02). JPEG, PNG, WebP and GIF of at most 25 MB go as they are; HEIC/HEIF or anything larger is made a JPEG on the phone (long edge ≤ 4096). At most 20 a share. Homes' refusals are codes; the app says them in German by status (404 no folder, 413, 415, 429 busy, 503, 507 full) |
 | Share → Daten erfragen | `POST /napi/kontakte/fragen` `{name, telefon: [...], mail: [...], anlegen?, uid?}`: a contact's vCard from the contacts app, Homes answers the link that asks its person for what is missing: see (l) |
+| Teilen → Kontaktdaten eintragen lassen | `POST /napi/kontakte/einladen` `{}`: a one-time link a person fills in their contact on, fetched on the tap, handed on by NFC or QR: see (m) |
 | Share → Homes | `POST /napi/merken` `{text}`: what the share sheet sent (title and link); Homes keeps the page as a note and answers `{kurz, notiz, schon, …}` or `{error}` with a German sentence (homes#120); the share sheet's Direct Share target carries the assistant's name (#188) |
 | tools | `GET /napi/defs/tool`, `POST /napi/action-callback`; the app offers no tool widget any more: `contacts` and `task` went on 2026-11-02 and 2026-11-03, `doc` (`/napi/portal/documents`) and `note` (`/napi/portal/notes`) on 2026-11-27 („Widget für Notizen brauche ich nicht mehr“, Dokumente „kann ganz weg“). A placed `doc` or `note` widget fetches nothing and says „Dieses Widget gibt es nicht mehr – lange drücken und entfernen.“ (the app cannot take it off the home screen); a placed `contacts` or `task` one keeps its rows (`/napi/portal/{contacts,tasks}`). The tool widget leaves the system's widget picker while no tool is offered and none is placed |
 | Rezepte | „Öffnen“'s `rezepte` entry of `/napi/einrichtung` (its icon the app's own, its `stand` the count line Homes sends) opens `<homes>/rezepte` in a Custom Tab. Share → Homes: `POST /napi/merken`'s `{"art":"rezept","titel","notiz"}` says „‚<titel>‘ als Rezept gemerkt“ with „Ansehen“, opening `notiz`; any `notiz` is opened only as an https address on the paired Homes |
@@ -826,22 +827,34 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   then it stops by itself and says so. At any other time every command is
   6A82. The credential lives in memory only (`WlanAngebot`), never stored,
   and is forgotten when the offer ends or the screen closes.
-- **Teilen per Berührung** (owner approved 2026-11-28; no `/napi`, nothing
-  leaves the phone but over NFC to the phone held to it). The same service
-  listens whenever the phone is unlocked; with nothing chosen it answers 6A82
-  and, on a reader's SELECT of the NDEF application, posts „Ein Telefon möchte
-  etwas von dir. Was teilen?“ (heads-up, at most every 30 s, no activity
-  started from the background). „Was teilen?“ offers „Meine Kontaktdaten“
-  (NDEF MIME `text/vcard`, vCard 3.0 of the ticked fields of the person's own
-  contact, set under „Dieses Telefon“ → „Meine Visitenkarte“), each kept tag
-  by its name (its NDEF message as read), „Nichts“, and the card or a kept
-  WLAN as a QR code (vCard, `WIFI:`) for an iPhone. A choice answers exactly
-  one reader within two minutes (the NDEF file read to its end), then the
-  screen says „Geteilt.“, else „Nicht geteilt – abgelaufen.“ „Im Telefon
-  behalten“ on the Tag-Inhalt card keeps any NDEF tag under a name; a card
-  with data of its own says „Diese Karte kann ein Telefon nicht
-  nachspielen.“ Kept tags („Dieses Telefon“ → „Behaltene Tags“, deletable)
-  and the card are encrypted on the phone (Android Keystore AES-GCM).
+- **Teilen per Berührung** (owner approved 2026-11-28; nothing leaves the
+  phone but over NFC to the phone held to it, or on its screen as a QR code;
+  the one call is (m)'s). The same service listens whenever the phone is
+  unlocked; with nothing armed it answers 6A82 and, on a reader's SELECT of
+  the NDEF application, posts „Ein Telefon möchte etwas von dir. Was
+  teilen?“ (heads-up, at most every 30 s, no activity started from the
+  background), whose tap opens „Teilen“. Its rows (owner 2026-11-28: „eine
+  Zeile pro Thema und dann rechts einen Button für NFC und einen für das
+  Anzeigen eines QR-Codes“): „Meine Kontaktdaten“ (NDEF MIME `text/vcard`,
+  vCard 3.0 of the ticked fields of the person's own contact, „Dieses
+  Telefon“ → „Meine Visitenkarte“), „Gast-WLAN“ (the WLAN tag's record,
+  `application/vnd.wfa.wsc`; set in its form — SSID, Kennwort with „zeigen“,
+  Mit Passwort / Offen — or by „Als Gast-WLAN merken“ on a read WLAN tag's
+  card after „Ins Telefon übernehmen“), „Kontaktdaten eintragen lassen“ (an
+  NDEF URI record of (m)'s link), and each kept tag by its name (its NDEF
+  message as read). [NFC] answers exactly one reader within two minutes
+  (the NDEF file read to its end), and only while „Teilen“ is in front; the
+  row says „Halte das andere Telefon an deins … noch 1:43“, then „Geteilt.“
+  or „Abgelaufen.“ [QR] shows the code full-screen at full brightness:
+  vCard 3.0, `WIFI:`, the link; a kept tag without such a form has it off
+  with „Nur per NFC, ohne QR-Code“. Under a WLAN or vCard row „iPhone:
+  QR-Code“ (an iPhone takes neither over NFC; a link it does). A row not set
+  up shows „Festlegen“ instead (the guest Wi-Fi's form, once saved, arms it
+  at once). „Im Telefon behalten“ on the Tag-Inhalt card keeps any NDEF tag
+  under a name; a card with data of its own says „Diese Karte kann ein
+  Telefon nicht nachspielen.“ Kept tags („Behaltene Tags“, deletable), the
+  card and the guest Wi-Fi („Gast-WLAN“, changeable and deletable) are
+  encrypted on the phone (Android Keystore AES-GCM).
 - **A new tag.** On the Auslöser screen: a name (the list's `vorschlaege`,
   the house's rooms from HA and a few places, as one-tap words under the
   field) → `POST /napi/ausloeser/tag {"name":"Bürotür"}` →
@@ -1021,3 +1034,25 @@ module is on, and while that is unknown; Homes names no `teilen` key for it) tak
   - 401: pair again; 403 (not an admin), 400, 502, 503 and any other: Homes' `error`, else „Homes hat nicht
     lesbar geantwortet (<code>) …“; no answer in 20 s or no line: the app's
     own sentence.
+
+## (m) Kontaktdaten eintragen lassen: a one-time link over NFC or QR
+
+(The owner's request, 2026-11-28: „eine URL, in der die Person ihre
+Kontaktdaten eintragen kann“. Homes' side is being built in mdopp/homes
+branch `feat/kontakt-einladen`; the row in `NapiContractTest` is the agreed
+contract until its handler exists, then its file and lines.) „Teilen“'s row
+„Kontaktdaten eintragen lassen“ is there while the phone is paired and
+`/napi/kann`'s `kontakte` module is on (or that is unknown); who may use it
+Homes decides.
+
+- **The call**, on [NFC] or [QR] only — each link is good once, so nothing is
+  fetched ahead: the row says „Homes macht einen Link …“ with its buttons
+  off, then `POST /napi/kontakte/einladen` with `{}`:
+  - 200 `{"ok":true,"link","text","gueltig_bis"}` → [NFC]: an NDEF URI record
+    of `link` answers the next reader, as every row does (two minutes, once);
+    [QR]: `link` as a QR code. A `link` that is not https is no link.
+  - 403 (not an admin), 503, 502 and any other: `{"ok":false,"error"}`, Homes'
+    sentence in the row, else „Homes hat nicht lesbar geantwortet (<code>)
+    …“; 401: pair again; no answer in 15 s or no line: the app's own sentence.
+    Nothing is armed then; the buttons work again.
+

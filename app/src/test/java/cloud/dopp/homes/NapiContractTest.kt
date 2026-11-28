@@ -235,6 +235,13 @@ class NapiContractTest {
                 body = setOf("name", "telefon", "mail", "anlegen", "uid"),
                 sends = setOf("ok", "kontakt", "vorname", "link", "text", "fehlt", "telefon", "neu", "error", "anlegen", "kandidaten", "uid"),
             ),
+            // Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): mdopp/homes branch feat/kontakt-einladen, not
+            // pushed yet when this was written — the contract as agreed: 200 {ok, link, text, gueltig_bis}, 403/503/502
+            // {ok: false, error}, no body. File and lines follow once Homes' handler exists.
+            Route(
+                "POST", "/napi/kontakte/einladen", "internal/napi/ (mdopp/homes feat/kontakt-einladen, not pushed yet): the agreed contract",
+                sends = setOf("ok", "link", "text", "gueltig_bis", "error"),
+            ),
             // Kontakt prüfen lassen (owner 2026-11-07 and 2026-11-08; mdopp/homes feat/kontakt-v2, homes#304; registered korrekturen.go:101-107, napi.go:329)
             Route(
                 "GET", "/napi/kontakte/korrekturen",
@@ -445,7 +452,7 @@ class NapiContractTest {
             "POST /napi/merken",
             "GET /napi/sicherung/stand", "POST /napi/sicherung/fehlend", "POST /napi/sicherung/uploads",
             "HEAD /napi/sicherung/uploads/{id}", "PATCH /napi/sicherung/uploads/{id}",
-            "GET /napi/sicherung/schluessel", "POST /napi/kontakte", "POST /napi/kontakte/fragen",
+            "GET /napi/sicherung/schluessel", "POST /napi/kontakte", "POST /napi/kontakte/fragen", "POST /napi/kontakte/einladen",
             "GET /napi/sicherung/letzte", "GET /napi/sicherung/letzte/{quelle}/{pfad...}",
             "GET /napi/standort", "POST /napi/standort",
             "POST /napi/standort/import", "HEAD /napi/standort/import/{id}",
@@ -489,6 +496,7 @@ class NapiContractTest {
             "app/src/main/java/cloud/dopp/homes/hochladen/MusikClient.kt",
             "app/src/main/java/cloud/dopp/homes/ausloeser/AusloeserClient.kt",
             "app/src/main/java/cloud/dopp/homes/fragen/FragenClient.kt",
+            "app/src/main/java/cloud/dopp/homes/teilen/EinladenClient.kt",
         )
 
         private val literal = Regex(""""((?:[^"\\]|\\.)*)"""")

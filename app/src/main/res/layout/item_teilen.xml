@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A row of „Teilen“ (owner 2026-11-28: „eine Zeile pro Thema und dann rechts einen Button für NFC und einen
+     für das Anzeigen eines QR-Codes“): picture, name, what it is, where it stands; NFC and QR, or „Festlegen“. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="64dp"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="10dp">
+
+    <ImageView
+        android:id="@+id/teile_bild"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:layout_marginEnd="14dp"
+        android:contentDescription="@null"
+        app:tint="@color/homes_accent" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/teile_titel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/homes_text"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/teile_unter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/homes_text_muted"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/teile_stand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/homes_accent"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/teile_nfc"
+        style="@style/Widget.Homes.Button.Control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/teilen_nfc" />
+
+    <Button
+        android:id="@+id/teile_qr"
+        style="@style/Widget.Homes.Button.Control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:text="@string/teilen_qr_knopf" />
+
+    <Button
+        android:id="@+id/teile_festlegen"
+        style="@style/Widget.Homes.Button.Control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/teilen_festlegen"
+        android:visibility="gone" />
+</LinearLayout>

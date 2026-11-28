@@ -43,7 +43,7 @@ budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
                        #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
                        #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
-budget ui        4043  # 3,026: the activities: start screen, pairing, settings screens;
+budget ui        4050  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
                        # 3220 -> 3320: the account's and the backup's missing parts as disabled switches with their trace, homes-android#233
@@ -64,7 +64,8 @@ budget ui        4043  # 3,026: the activities: start screen, pairing, settings 
                        #   numbers as its line, read at most every five minutes with the screen on (ui/EnergieKachel.kt)
                        # 4029 -> 4043 (owner approved 2026-11-28 (Gerät-Widget oben)): „+ Gerät als Widget …“ atop „Deine Geräte“,
                        #   „Widget hinzufügen“ only for tools, gone without one; the „Dokumente-Adresse“ tile gone (net)
-budget data      3394  # 2,780: Homes' calls (Napi), clients, models, the token store;
+                       # 4043 -> 4050 (owner's request 2026-11-28 (Teilen: WLAN und Einladen) — the raise to be OK'd in the PR): „Dieses Telefon“'s Gast-WLAN row, the start screen's „Teilen“ tile
+budget data      3410  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -89,6 +90,7 @@ budget data      3394  # 2,780: Homes' calls (Napi), clients, models, the token 
                        #   and the answer's bereiche, their keys and docs
                        # 3364 -> 3394 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“):
                        #   POST /napi/kontakte/fragen, its reply shape and the share key kontakt-fragen
+                       # 3394 -> 3410 (owner's request 2026-11-28 (Teilen: WLAN und Einladen) — the raise to be OK'd in the PR): POST /napi/kontakte/einladen and its reply shape
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
@@ -139,8 +141,10 @@ budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        # 3246 -> 3329 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“), Teilen per Berührung): the service
                        #   listens while unlocked and asks when read with nothing chosen, an offer answered once
                        #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
-budget teilen     530  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
+budget teilen     904  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
                        # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
+                       # 530 -> 904 (owner's request 2026-11-28 (Teilen: WLAN und Einladen) — the raise to be OK'd in the PR): „Teilen“ as one row per topic with NFC and QR in place (TeilenActivity),
+                       #   the guest Wi-Fi's form (GastWlanActivity), the invitation link's client (EinladenClient), a kept tag's QR
 budget fragen     442  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“): Share →
                        # „Homes: Daten erfragen“ — a shared vCard read (2.1 quoted-printable, 3.0), the contact looked for on Homes,
                        # the link sent by WhatsApp, SMS or any app

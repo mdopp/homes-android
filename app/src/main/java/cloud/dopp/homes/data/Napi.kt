@@ -463,6 +463,19 @@ object Napi {
     }
 
     /**
+     * `POST /napi/kontakte/einladen` (Teilen: Kontaktdaten eintragen lassen, owner 2026-11-28): `{ok, link, text,
+     * gueltig_bis}`, a one-time link a person fills in their contact on; a refusal (403 not an admin, 503, 502)
+     * `{ok: false, error}`, a German sentence.
+     */
+    object EinladenJson {
+        const val OK = KorrekturErledigtJson.OK
+        const val LINK = FragenJson.LINK
+        const val TEXT = FragenJson.TEXT
+        const val GUELTIG_BIS = "gueltig_bis"
+        const val ERROR = MerkenJson.ERROR
+    }
+
+    /**
      * A refused `GET /napi/gemeinsam/…` (the Homes account, #206): `{fehler}`
      * with Homes' German sentence; the answer itself is vCard or iCalendar.
      */
@@ -885,6 +898,9 @@ object Napi {
     val KONTAKT_FRAGEN = Endpoint(
         Method.POST, "/napi/kontakte/fragen", body = listOf("name", "telefon", "mail", "anlegen", "uid"), reply = listOf(FragenJson),
     )
+
+    /** Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): a one-time link, fetched only when chosen. */
+    val KONTAKT_EINLADEN = Endpoint(Method.POST, "/napi/kontakte/einladen", reply = listOf(EinladenJson))
 
     /**
      * The Homes account (#206): the household's shared contacts, as [VCARD].

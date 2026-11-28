@@ -84,7 +84,7 @@
             android:layout_marginBottom="@dimen/space_xs"
             android:text="@string/teilen_unterwegs" />
 
-        <!-- „Teilen per Berührung“ (owner 2026-11-28): Was teilen?, Meine Visitenkarte, Behaltene Tags. -->
+        <!-- „Teilen per Berührung“ (owner 2026-11-28): Teilen, Meine Visitenkarte, Gast-WLAN, Behaltene Tags. -->
         <LinearLayout
             android:id="@+id/telefon_teilt"
             android:layout_width="match_parent"

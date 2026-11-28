@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- „Gast-WLAN festlegen“ (owner 2026-11-28): name, password, open or not; kept encrypted on this phone only. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/gast_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingEnd="@dimen/screen_gutter"
+        android:paddingBottom="@dimen/space_xl">
+
+        <TextView
+            style="@style/Text.Homes.Headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_sm"
+            android:text="@string/gast_festlegen" />
+
+        <TextView
+            style="@style/Text.Homes.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/gast_hinweis" />
+
+        <EditText
+            android:id="@+id/gast_ssid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:hint="@string/wlan_ssid"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLength="32"
+            tools:targetApi="o" />
+
+        <EditText
+            android:id="@+id/gast_passwort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:hint="@string/gast_kennwort"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:maxLength="64"
+            android:saveEnabled="false"
+            tools:targetApi="o" />
+
+        <CheckBox
+            android:id="@+id/gast_zeigen"
+            style="@style/Text.Homes.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/gast_zeigen" />
+
+        <RadioGroup
+            android:id="@+id/gast_schutz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checkedButton="@+id/gast_wpa2"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/gast_wpa2"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/gast_mit_passwort" />
+
+            <RadioButton
+                android:id="@+id/gast_offen"
+                style="@style/Text.Homes.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/gast_offen" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/gast_sichern"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:text="@string/karte_sichern" />
+
+        <Button
+            android:id="@+id/gast_entfernen"
+            style="@style/Widget.Homes.Button.Ghost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/gast_entfernen"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/gast_stand"
+            style="@style/Text.Homes.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm" />
+    </LinearLayout>
+</ScrollView>

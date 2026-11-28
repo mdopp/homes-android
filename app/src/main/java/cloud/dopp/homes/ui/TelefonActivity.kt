@@ -27,6 +27,7 @@ import cloud.dopp.homes.sicherung.SicherungStore
 import cloud.dopp.homes.standort.StandortStore
 import cloud.dopp.homes.teilen.Behalten
 import cloud.dopp.homes.teilen.BehalteneActivity
+import cloud.dopp.homes.teilen.GastWlanActivity
 import cloud.dopp.homes.teilen.TeilenActivity
 import cloud.dopp.homes.teilen.VisitenkarteActivity
 
@@ -142,6 +143,8 @@ class TelefonActivity : AppCompatActivity() {
             zeile(TEILEN, R.drawable.ic_ausloeser, R.string.teilen_titel, TeilenActivity::class.java) to null,
             zeile(TEILEN, R.drawable.ic_modul_kontakte, R.string.karte_titel_visitenkarte, VisitenkarteActivity::class.java) to
                 getString(if (Behalten.visitenkarte(this) != null) R.string.telefon_an else R.string.telefon_aus),
+            zeile(TEILEN, R.drawable.ic_ausloeser, R.string.gast_titel, GastWlanActivity::class.java) to
+                (Behalten.gastWlan(this)?.ssid ?: getString(R.string.telefon_aus)),
             zeile(TEILEN, R.drawable.ic_ausloeser, R.string.behalten_titel, BehalteneActivity::class.java) to
                 resources.getQuantityString(R.plurals.behalten_anzahl, behalten, behalten),
         ).forEach { (z, stand) -> teilt.addView(reihe(teilt, z, stand)) }

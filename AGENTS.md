@@ -71,7 +71,7 @@ These rules apply to every session, human or agent.
   phone unlocked (`@xml/apduservice`). It listens whenever the phone is
   unlocked (owner approved 2026-11-28) but answers only after an explicit
   choice: the WLAN offer while its screen is in front, or „Teilen per
-  Berührung“ once, for at most two minutes; else 6A82, and a reader asking
+  Berührung“'s [NFC] once, for at most two minutes, while „Teilen“ is in front; else 6A82, and a reader asking
   then only makes it post that question. Recovery after a killed process rests
   on the battery-optimization exemption the person grants. `ManifestTest`
   holds this; `e2e/` proves it on emulators (`.github/workflows/live-e2e.yml`).
@@ -140,17 +140,26 @@ These rules apply to every session, human or agent.
   übernehmen“ hands it to Android's own WLAN settings; Homes keeps a WLAN
   only when the person keeps the tag („Im Telefon behalten“, encrypted).
 - Teilen per Berührung (owner approved 2026-11-28: „Ja, aber auch Karten die
-  ich ausgelesen habe“): a phone held to this one, with nothing chosen, gets
-  nothing, and this one asks „Was teilen?“ (`teilen/TeilenActivity.kt`):
-  „Meine Kontaktdaten“ (a vCard 3.0 of the fields ticked under „Dieses
-  Telefon“ → „Meine Visitenkarte“), each tag kept on this phone („Im Telefon
+  ich ausgelesen habe“; the screen as the owner drew it the same day: „eine
+  Zeile pro Thema und dann rechts einen Button für NFC und einen für das
+  Anzeigen eines QR-Codes“): a phone held to this one, with nothing armed,
+  gets nothing, and this one posts the question whose tap opens „Teilen“
+  (`teilen/TeilenActivity.kt`; also from „Dieses Telefon“ and the start
+  screen's tile). One row per topic: „Meine Kontaktdaten“ (a vCard 3.0 of the
+  fields ticked under „Meine Visitenkarte“), „Gast-WLAN“ (set under „Dieses
+  Telefon“ → „Gast-WLAN“, or by „Festlegen“ in its row, or „Als Gast-WLAN
+  merken“ on a read WLAN tag), „Kontaktdaten eintragen lassen“ (a one-time
+  link from Homes, `POST /napi/kontakte/einladen`, fetched only on the tap;
+  docs/CONTRACT.md (m)) and each tag kept on this phone („Im Telefon
   behalten“ on the Tag-Inhalt card, NDEF tags only — a card with data of its
-  own „kann ein Telefon nicht nachspielen“), „Nichts“, and a QR code of the
-  card or a WLAN for an iPhone. A choice answers one reader within two
-  minutes, then nothing again („Geteilt.“ / „Nicht geteilt – abgelaufen.“).
-  The card and the kept tags are encrypted with a Keystore AES-GCM key
-  (`teilen/Tresor.kt`, not EncryptedSharedPreferences), on this phone only:
-  never sent, backed up or logged (`TeilenTest`).
+  own „kann ein Telefon nicht nachspielen“). [NFC] answers one reader within
+  two minutes while the screen is in front, in the row („Geteilt.“ /
+  „Abgelaufen.“); [QR] shows the code full-screen at full brightness (vCard,
+  `WIFI:`, the link; off, with the reason, for a tag without one). A row not
+  set up says „Festlegen“. The card, the guest Wi-Fi and the kept tags are
+  encrypted with a Keystore AES-GCM key (`teilen/Tresor.kt`, not
+  EncryptedSharedPreferences), on this phone only: never sent, backed up or
+  logged (`TeilenTest`).
 - Standortverlauf (the owner's call, 2026-11-02; docs/CONTRACT.md (f)):
   behind its own switch and the background-location permission,
   Android's own LocationManager delivers by PendingIntent to
@@ -293,6 +302,8 @@ app/src/main/java/cloud/dopp/homes/
   standort/    location recording (Plan, Ruhe, Puffer) and the history import
   konto/       the Homes account: two sync adapters, vCard and iCal readers
   kann/        what the box can do (/napi/kann, homes ADR 0001): kept, read, „Hier anfordern“
+  teilen/      „Teilen“: one row per topic with [NFC] and [QR] — the person's card, the guest Wi-Fi, the
+               invitation link, the kept tags — and the Keystore Tresor that keeps them
   hochladen/   the Hochladen job (WorkManager, dataSync while it uploads): music, Takeout ZIPs
   archiv/      Share → „Ins Archiv“: a Facebook or LinkedIn export told by its structure, its one
                file age-encrypted to the person's archive and uploaded while the share's dialog is open

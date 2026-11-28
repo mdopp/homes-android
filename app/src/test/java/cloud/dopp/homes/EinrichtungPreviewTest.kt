@@ -144,21 +144,21 @@ class EinrichtungPreviewTest {
         content.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
         content.layout(0, 0, content.measuredWidth, content.measuredHeight)
         // „Alles auf einen Blick“ (owner 2026-11-27): the three Homes lists, Auslöser (what the box can do is
-        // unknown here: offered as before), then Homes, three to a row
+        // unknown here: offered as before), Teilen, then Homes, three to a row
         assertEquals(View.VISIBLE, a.findViewById<View>(R.id.ueberblick_section).visibility)
         val raster = a.findViewById<ViewGroup>(R.id.ueberblick_group)
         val kacheln = (0 until raster.childCount).flatMap { r -> (raster.getChildAt(r) as ViewGroup).let { z -> (0 until z.childCount).map { z.getChildAt(it) } } }
             .filter { it.findViewById<TextView>(R.id.bereich_name) != null }
         assertEquals("two rows of three", 2, raster.childCount)
         val titel = kacheln.map { it.findViewById<TextView>(R.id.bereich_name).text.toString() }
-        assertEquals(listOf("Dokumente", "Zeitleiste", "Musik verwalten", "Auslöser", "Homes"), titel)
+        assertEquals(listOf("Dokumente", "Zeitleiste", "Musik verwalten", "Auslöser", "Teilen", "Homes"), titel)
         val unter = kacheln.map { it.findViewById<TextView>(R.id.bereich_stand) }
         assertEquals("the tile says where it stands", "Zuletzt aufgezeichnet heute 08:40", unter[1].text.toString())
-        assertEquals(listOf(View.GONE, View.VISIBLE, View.GONE, View.GONE, View.GONE), unter.map { it.visibility })
+        assertEquals(listOf(View.GONE, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE), unter.map { it.visibility })
         if (!offline) {
             kacheln[1].performClick()
             assertEquals("the timeline itself, not Homes' page about it", "https://reitti.example", shadowOf(a).nextStartedActivity?.dataString)
-            kacheln[4].performClick()
+            kacheln[5].performClick()
             assertEquals("Homes' start page", "https://homes.example/start", shadowOf(a).nextStartedActivity?.dataString)
         }
         // „Deine Aufgaben“ in one row: the number open, the next task

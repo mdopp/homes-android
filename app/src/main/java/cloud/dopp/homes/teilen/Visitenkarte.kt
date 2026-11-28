@@ -57,6 +57,16 @@ object Visitenkarte {
     fun wifi(n: WlanTag.Netz): String =
         if (n.schutz == WlanTag.Schutz.OFFEN) "WIFI:T:nopass;S:${qr(n.ssid)};;" else "WIFI:T:WPA;S:${qr(n.ssid)};P:${qr(n.passwort)};;"
 
+    /** A kept tag's QR code: its WLAN as `WIFI:`, a card as its vCard, a link as itself; null when it has none. */
+    fun qrText(n: NdefMessage): String? {
+        val r = n.records.firstOrNull() ?: return null
+        return when (r.toMimeType()) {
+            WlanTag.MIME -> WlanTag.lesen(r.payload)?.let(::wifi)
+            MIME -> String(r.payload, Charsets.UTF_8)
+            else -> r.toUri()?.toString()?.takeIf { it.startsWith("https://") || it.startsWith("http://") }
+        }
+    }
+
     /** [text] as a QR code, black on white, [px] square. */
     fun qrBild(text: String, px: Int): Bitmap {
         val m = QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, px, px, mapOf(EncodeHintType.CHARACTER_SET to "UTF-8", EncodeHintType.MARGIN to 1))

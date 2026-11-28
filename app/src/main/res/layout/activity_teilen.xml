@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- „Was teilen?“ (owner 2026-11-28), and „Behaltene Tags“: a title, one line, the rows. -->
+<!-- „Teilen“ (owner 2026-11-28), and „Behaltene Tags“: a title, one line, the rows. -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/teilen_root"
     android:layout_width="match_parent"
