@@ -75,6 +75,7 @@ each row naming the Homes file and lines it came from.
 | Öffnen, Deine Aufgaben | `GET /napi/einrichtung`, `POST /napi/einrichtung/apps`: see (i) |
 | Share → Musik, Hochladen | `POST /napi/musik`, multipart, one `file` part a request, streamed from the app's copy: see (j) |
 | Share → Homes, photos | `POST /napi/upload`, multipart `filename` then `file`, one photo a request → `{ok, id}`: the camera app's photos (one or several, `image/*`) into the folder Paperless consumes (owner, 2026-11-02). JPEG, PNG, WebP and GIF of at most 25 MB go as they are; HEIC/HEIF or anything larger is made a JPEG on the phone (long edge ≤ 4096). At most 20 a share. Homes' refusals are codes; the app says them in German by status (404 no folder, 413, 415, 429 busy, 503, 507 full) |
+| Share → Daten erfragen | `POST /napi/kontakte/fragen` `{name, telefon: [...], mail: [...], anlegen?, uid?}`: a contact's vCard from the contacts app, Homes answers the link that asks its person for what is missing: see (l) |
 | Share → Homes | `POST /napi/merken` `{text}`: what the share sheet sent (title and link); Homes keeps the page as a note and answers `{kurz, notiz, schon, …}` or `{error}` with a German sentence (homes#120); the share sheet's Direct Share target carries the assistant's name (#188) |
 | tools | `GET /napi/defs/tool`, `POST /napi/action-callback`; the app offers no tool widget any more: `contacts` and `task` went on 2026-11-02 and 2026-11-03, `doc` (`/napi/portal/documents`) and `note` (`/napi/portal/notes`) on 2026-11-27 („Widget für Notizen brauche ich nicht mehr“, Dokumente „kann ganz weg“). A placed `doc` or `note` widget fetches nothing and says „Dieses Widget gibt es nicht mehr – lange drücken und entfernen.“ (the app cannot take it off the home screen); a placed `contacts` or `task` one keeps its rows (`/napi/portal/{contacts,tasks}`). The tool widget leaves the system's widget picker while no tool is offered and none is placed |
 | Rezepte | „Öffnen“'s `rezepte` entry of `/napi/einrichtung` (its icon the app's own, its `stand` the count line Homes sends) opens `<homes>/rezepte` in a Custom Tab. Share → Homes: `POST /napi/merken`'s `{"art":"rezept","titel","notiz"}` says „‚<titel>‘ als Rezept gemerkt“ with „Ansehen“, opening `notiz`; any `notiz` is opened only as an https address on the paired Homes |
@@ -601,9 +602,11 @@ there.
   A placed widget whose type went shows the module's `grund`; a tap opens
   the app.
 - **Share targets** (`teilen`: `merken` text, `dokument` images,
-  `standort-import` history files, `musik`, `archiv` a social export): one component each — the share
+  `standort-import` history files, `musik`, `archiv` a social export, `kontakt-fragen` a contact's vCard,
+  offered by the `kontakte` module): one component each — the share
   activity's aliases `.ui.TeilenMerken` and `.ui.TeilenDokument`,
-  `.ui.StandortImportActivity`, `.hochladen.MusikTeilenActivity` and `.archiv.ArchivTeilenActivity` — enabled while the key is there, disabled
+  `.ui.StandortImportActivity`, `.hochladen.MusikTeilenActivity`, `.archiv.ArchivTeilenActivity` and
+  `.fragen.KontaktFragenActivity` — enabled while the key is there, disabled
   while it is missing (`PackageManager.setComponentEnabledSetting`,
   DONT_KILL_APP; `kann/Teilen.kt`), all enabled while unknown. The Direct
   Share target names the category of each enabled one and is gone with
@@ -981,3 +984,39 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   carries it. Without a placed live widget the service does not run, and
   the screen says it reports only while one is placed. The last report's
   line („Lädt kabellos – gemeldet“, or why not) shows under the switch.
+
+## (l) Daten erfragen: a contact asked for what is missing
+
+(The owner's request, 2026-11-28; Homes' side is mdopp/homes
+`feat/kontakt-fragen`.) The share target „Homes: Daten erfragen“
+(`fragen/KontaktFragenActivity`, switched by the box's `teilen` key
+`kontakt-fragen`, which the `kontakte` module offers) takes `ACTION_SEND` of
+`text/x-vcard` and `text/vcard` — Samsung Contacts' „Senden“ → „vCard-Datei
+(VCF)“, Google Contacts — and of `text/plain` only when the text is a vCard
+(else „Das ist keine Visitenkarte …“, and no request).
+
+- **The card** (`fragen/GeteilteKarte.kt`): the first card only; folds undone,
+  vCard 2.1's QUOTED-PRINTABLE (soft line breaks, `CHARSET`, the bare
+  parameter) and 3.0/4.0 read alike; the name is `FN`, else `N`'s parts; every
+  `TEL` and `EMAIL` once, in the card's order. Nothing else of it leaves the
+  phone, and nothing is stored.
+- **The call:** „Sucht <Name> im Haushalts-Adressbuch …“, then `POST
+  /napi/kontakte/fragen {"name","telefon":[…],"mail":[…]}`:
+  - 200 `{"ok":true,"kontakt","vorname","link","text","fehlt":[…],"telefon"?,"neu"?}`
+    → „Bei <vorname> fehlen: Adresse, Geburtstag“ (`fehlt` in Homes' words, as
+    sent), or „Alles da – trotzdem fragen?“ when `fehlt` is empty; with `neu`
+    „<kontakt> ist jetzt im Haushalts-Adressbuch.“ first. Then „Per WhatsApp an
+    <vorname>“ (only with `telefon` and WhatsApp installed: `https://wa.me/<digits>?text=<text>`
+    in `com.whatsapp`), „Per SMS“ (`smsto:` to `telefon`, else the card's first
+    number, `sms_body` the `text`) and „Anders teilen …“ (`ACTION_SEND` of the
+    `text` through the chooser). Each ends the share. Without `text` the app
+    sends the `link`.
+  - 404 `{"ok":false,"error","anlegen":true}` → Homes' sentence and
+    „Ins Haushalts-Adressbuch aufnehmen und fragen“, which sends the same body
+    with `"anlegen":true`. A 404 without `anlegen` is a refusal.
+  - 409 `{"kandidaten":[{"kontakt","uid"}]}` → one row per candidate (Homes'
+    `error` as the question, else „Mehrere Kontakte passen. Wer ist gemeint?“);
+    the pick sends the body again with its `"uid"`.
+  - 401: pair again; 403 and any other: Homes' `error`, else „Homes hat nicht
+    lesbar geantwortet (<code>) …“; no answer in 20 s or no line: the app's
+    own sentence.

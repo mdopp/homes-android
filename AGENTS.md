@@ -298,6 +298,8 @@ app/src/main/java/cloud/dopp/homes/
                file age-encrypted to the person's archive and uploaded while the share's dialog is open
   ausloeser/   the phone as a trigger for HA (homes ADR 0004): the touched tag's activity, Mehr → Auslöser
                (HA's tags, writing a new one), „Ladestation melden“'s receiver, the client
+  fragen/      Share → „Homes: Daten erfragen“: a contact's vCard read, looked for on Homes, the link
+               that asks for what is missing sent by WhatsApp, SMS or any app (docs/CONTRACT.md (l))
   einrichtung/ the person's modules and tasks (/napi/einrichtung): „Öffnen“, „Deine Aufgaben“,
                the installed-apps report, the launcher's four shortcuts and their trampoline
 app/src/test/  JVM tests with Robolectric, including the preview renders

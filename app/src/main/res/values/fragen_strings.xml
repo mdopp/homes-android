@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Share → „Homes: Daten erfragen“ (owner 2026-11-28): a contact's vCard, the link that asks for what is missing. -->
+<resources>
+    <string name="fragen_label">Homes: Daten erfragen</string>
+    <string name="fragen_titel">Daten erfragen</string>
+    <string name="fragen_liest">Liest die Visitenkarte …</string>
+    <string name="fragen_sucht">Sucht %1$s im Haushalts-Adressbuch …</string>
+    <string name="fragen_fehlen">Bei %1$s fehlen: %2$s</string>
+    <string name="fragen_alles_da">Alles da – trotzdem fragen?</string>
+    <string name="fragen_neu">%1$s ist jetzt im Haushalts-Adressbuch.</string>
+    <string name="fragen_whatsapp">Per WhatsApp an %1$s</string>
+    <string name="fragen_sms">Per SMS</string>
+    <string name="fragen_anders">Anders teilen …</string>
+    <string name="fragen_anlegen">Ins Haushalts-Adressbuch aufnehmen und fragen</string>
+    <string name="fragen_welcher">Mehrere Kontakte passen. Wer ist gemeint?</string>
+    <string name="fragen_keine_karte">Das ist keine Visitenkarte. Im Adressbuch beim Kontakt „Senden“ und dann „vCard-Datei (VCF)“ wählen.</string>
+    <string name="fragen_leer">Auf der Visitenkarte steht weder ein Name noch eine Nummer oder Mail-Adresse.</string>
+    <string name="fragen_unlesbar">Homes hat nicht lesbar geantwortet (%1$d). Bitte später noch einmal teilen.</string>
+    <string name="fragen_zeit">Homes hat nicht rechtzeitig geantwortet. Bitte gleich noch einmal teilen.</string>
+    <string name="fragen_offline">Homes ist gerade nicht erreichbar. Bitte später noch einmal teilen, im WLAN zu Hause oder mit Netz.</string>
+    <string name="fragen_keine_app">Auf diesem Telefon ist dafür keine App. Bitte „Anders teilen …“ nehmen.</string>
+</resources>

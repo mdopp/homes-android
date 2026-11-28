@@ -227,6 +227,13 @@ class NapiContractTest {
                 "internal/napi/kontakte.go:49-122 (text/vcard :65-69), registered napi.go:242, the reply internal/caldav/spiegel.go:277-282",
                 sends = setOf("kontakte", "neu", "geaendert", "entfernt", "fehler"),
             ),
+            // Daten erfragen (owner 2026-11-28): mdopp/homes feat/kontakt-fragen, the handler not pushed yet — the
+            // contract as agreed for it; the file and lines are pinned when its PR exists.
+            Route(
+                "POST", "/napi/kontakte/fragen", "internal/napi (mdopp/homes feat/kontakt-fragen, pending)",
+                body = setOf("name", "telefon", "mail", "anlegen", "uid"),
+                sends = setOf("ok", "kontakt", "vorname", "link", "text", "fehlt", "telefon", "neu", "error", "anlegen", "kandidaten", "uid"),
+            ),
             // Kontakt prüfen lassen (owner 2026-11-07 and 2026-11-08; mdopp/homes feat/kontakt-v2, homes#304; registered korrekturen.go:101-107, napi.go:329)
             Route(
                 "GET", "/napi/kontakte/korrekturen",
@@ -437,7 +444,7 @@ class NapiContractTest {
             "POST /napi/merken",
             "GET /napi/sicherung/stand", "POST /napi/sicherung/fehlend", "POST /napi/sicherung/uploads",
             "HEAD /napi/sicherung/uploads/{id}", "PATCH /napi/sicherung/uploads/{id}",
-            "GET /napi/sicherung/schluessel", "POST /napi/kontakte",
+            "GET /napi/sicherung/schluessel", "POST /napi/kontakte", "POST /napi/kontakte/fragen",
             "GET /napi/sicherung/letzte", "GET /napi/sicherung/letzte/{quelle}/{pfad...}",
             "GET /napi/standort", "POST /napi/standort",
             "POST /napi/standort/import", "HEAD /napi/standort/import/{id}",
@@ -480,6 +487,7 @@ class NapiContractTest {
             "app/src/main/java/cloud/dopp/homes/einrichtung/EinrichtungLeser.kt",
             "app/src/main/java/cloud/dopp/homes/hochladen/MusikClient.kt",
             "app/src/main/java/cloud/dopp/homes/ausloeser/AusloeserClient.kt",
+            "app/src/main/java/cloud/dopp/homes/fragen/FragenClient.kt",
         )
 
         private val literal = Regex(""""((?:[^"\\]|\\.)*)"""")
