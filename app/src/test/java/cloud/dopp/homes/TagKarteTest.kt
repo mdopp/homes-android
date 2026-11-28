@@ -220,7 +220,8 @@ class TagKarteTest {
         assertEquals(View.VISIBLE, a.findViewById<View>(R.id.ausloeser_inhalt).visibility)
         assertEquals("Karte mit eigenen Daten", a.findViewById<TextView>(R.id.inhalt_titel).text.toString())
         assertEquals(
-            "Karte mit eigenen Daten (MIFARE Classic 1K) – vermutlich eine Zugangs-, Bank- oder Fahrkarte. Homes beschreibt sie nicht.",
+            "Karte mit eigenen Daten (MIFARE Classic 1K) – vermutlich eine Zugangs-, Bank- oder Fahrkarte. Homes beschreibt sie nicht." +
+                "\nDiese Karte kann ein Telefon nicht nachspielen.",
             a.findViewById<TextView>(R.id.inhalt_text).text.toString(),
         )
         val daten = a.findViewById<TextView>(R.id.inhalt_daten).text.toString()

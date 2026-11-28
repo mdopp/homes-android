@@ -133,7 +133,7 @@ class TeilenTest {
 
     @Test
     fun theScreenSaysGeteiltOrAbgelaufen() {
-        WlanAnbietenActivity.oeffnen(ctx(), "Speisekarte", uri, einmal = true)
+        WlanAngebot.vorbereiten("Speisekarte", uri, nurEinmal = true)
         val a = Robolectric.buildActivity(WlanAnbietenActivity::class.java).setup().get()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals("Was teilen?", a.findViewById<TextView>(R.id.anbieten_titel).text.toString())
@@ -141,7 +141,7 @@ class TeilenTest {
         WlanAngebot.gelesen()
         shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1))
         assertEquals("Geteilt.", a.findViewById<TextView>(R.id.anbieten_stand).text.toString())
-        WlanAnbietenActivity.oeffnen(ctx(), "Speisekarte", uri, einmal = true)
+        WlanAngebot.vorbereiten("Speisekarte", uri, nurEinmal = true)
         val b = Robolectric.buildActivity(WlanAnbietenActivity::class.java).setup().get()
         shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(121))
         assertEquals("Nicht geteilt – abgelaufen.", b.findViewById<TextView>(R.id.anbieten_stand).text.toString())
