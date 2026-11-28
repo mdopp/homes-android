@@ -142,11 +142,11 @@ budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        # 3246 -> 3329 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“), Teilen per Berührung): the service
                        #   listens while unlocked and asks when read with nothing chosen, an offer answered once
                        #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
-budget teilen     1564  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
+budget teilen     1566  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
                        # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
                        # 530 -> 904 (owner's request 2026-11-28 (Teilen: WLAN und Einladen), owner approved 2026-11-28 „Passt“): „Teilen“ as one row per topic with NFC and QR in place (TeilenActivity),
                        #   the guest Wi-Fi's form (GastWlanActivity), the invitation link's client (EinladenClient), a kept tag's QR
-                       # 904 -> 1564 (owner's request 2026-11-28 (Kontakt austauschen) — the raise to be OK'd in the PR): „Was teilen?“ (AustauschActivity), the session's client and state
+                       # 904 -> 1566 (owner's request 2026-11-28 (Kontakt austauschen) — the raise to be OK'd in the PR): „Was teilen?“ (AustauschActivity), the session's client and state
                        #   (AustauschClient, Austausch), the touch that starts one (Teilen), the offer and the QR code shared (Anbieten),
                        #   Mobil and Geburtstag on the card and the card read back (Visitenkarte)
 budget fragen     442  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“): Share →

@@ -235,7 +235,7 @@ class NapiContractTest {
                 body = setOf("name", "telefon", "mail", "anlegen", "uid"),
                 sends = setOf("ok", "kontakt", "vorname", "link", "text", "fehlt", "telefon", "neu", "error", "anlegen", "kandidaten", "uid"),
             ),
-            // Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): mdopp/homes#397 at fa999d0, not merged yet; no body read.
+            // Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): mdopp/homes main at f4f7575, the merge of #397; no body read.
             Route(
                 "POST", "/napi/kontakte/einladen",
                 "internal/napi/kontakte_fragen.go:83-97, the answer :96, registered :50 (module kontakte); refusals {ok:false,error} " +
