@@ -9,8 +9,8 @@ import java.lang.ref.WeakReference
 
 /**
  * Whether one of the app's own screens is in front (owner approved 2026-11-28, „Was teilen?“ vorne öffnen): resumed,
- * the screen on, the phone unlocked. Then a touch's „Was teilen?“ opens at once ([Teilen]) — an allowed start, the
- * app is visible — instead of only its notification. It counts resumed activities; it holds no activity alive.
+ * the screen on, the phone unlocked. Then a touch's „Was teilen?“ is started from it ([Teilen]) — an allowed start,
+ * the app is visible — rather than from the bound HCE service. It counts resumed activities; it holds none alive.
  */
 object Vorne : Application.ActivityLifecycleCallbacks {
 

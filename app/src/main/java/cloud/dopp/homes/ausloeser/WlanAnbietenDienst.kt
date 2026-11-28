@@ -13,7 +13,7 @@ import cloud.dopp.homes.teilen.Teilen
  * ([Typ4Tag]) while [WlanAngebot] offers, and with the screen on; otherwise
  * every command is 6A82, as if there were no tag — and a reader asking then
  * makes [Teilen] ask the person what to share (owner approved 2026-11-28),
- * at most every 30 s. An offer made there answers once, then it is over.
+ * at most every 30 s, from this service while bound (an allowed start). An offer made there answers once.
  */
 class WlanAnbietenDienst : HostApduService() {
 

@@ -25,7 +25,8 @@ import kotlin.concurrent.thread
 /**
  * „Kontakt austauschen“ → „Was teilen?“ (owner approved 2026-11-28): the
  * session's link goes to the other phone at once — by NFC, as a QR code, or
- * already on the touch that started it ([Teilen]) — and its page shows only
+ * already on the touch that started it ([Teilen], which opens this screen at
+ * once: „Homes macht den Link …“ until the session is there) — and its page shows only
  * the first name until „Freigeben“ sends exactly what is switched on: the
  * card's fields (remembered per field), the guest Wi-Fi, the form to fill in
  * one's own details (an admin's; Homes says no otherwise). Pressed again, the
@@ -74,35 +75,60 @@ class AustauschActivity : AppCompatActivity() {
         findViewById<Button>(R.id.austausch_karte_festlegen).setOnClickListener { startActivity(Intent(this, VisitenkarteActivity::class.java)) }
         freigeben.setOnClickListener { freigeben() }
         findViewById<Button>(R.id.austausch_beenden).setOnClickListener { beenden() }
-        if (Austausch.jetzt?.let { abgelaufen(it.bis, System.currentTimeMillis()) } == true) Austausch.jetzt = null
+        Austausch.aufraeumen()
         val s = Austausch.jetzt
         val wie = intent.getStringExtra(WIE)
+        val beruehrt = intent.getBooleanExtra(BERUEHRT, false)
+        val nicht = Austausch.gescheitert.takeIf { beruehrt }
         when {
+            Austausch.startet -> warten()
+            nicht != null -> ende(satz(nicht))
             s == null -> starten(wie)
             wie == NFC -> nfc(s)
             wie == QR -> qr(s)
-            WlanAngebot.einmal && WlanAngebot.ssid != null -> angebot.uebernehmen { ja -> danach(ja) } // armed by the touch
-            else -> {
-                geteilt = WlanAngebot.geteilt // the touch's offer, read before this screen came
-                zeigeStand()
+            else -> beruehrt()
+        }
+    }
+
+    /** The touch's session is still being started ([Teilen]): said, then the switches once it is there. */
+    private fun warten() {
+        stand.text = getString(R.string.austausch_startet)
+        freigeben.isEnabled = false
+        Austausch.wennGestartet = { a ->
+            Austausch.wennGestartet = null
+            if (!isFinishing && !isDestroyed) {
+                freigeben.isEnabled = true
+                if (a is Antwort.Neu && Austausch.jetzt != null) beruehrt() else ende(satz(a))
+                main.removeCallbacks(abfrage)
+                main.post(abfrage)
             }
         }
     }
 
+    /** The touch's session: its offer this screen's, or what came of it already. */
+    private fun beruehrt() {
+        if (WlanAngebot.einmal && WlanAngebot.ssid != null) return angebot.uebernehmen { ja -> danach(ja) }
+        geteilt = WlanAngebot.geteilt // the touch's offer, read before this screen came
+        zeigeStand()
+    }
+
     override fun onResume() {
         super.onResume()
+        Teilen.vorn(this, true)
         karte()
         angebot.vorn()
         main.post(abfrage)
     }
 
     override fun onPause() {
+        Teilen.vorn(this, false)
         angebot.weg()
         main.removeCallbacks(abfrage)
         super.onPause()
     }
 
     override fun onDestroy() {
+        Austausch.wennGestartet = null
         angebot.zu(isFinishing)
         main.removeCallbacksAndMessages(null)
         super.onDestroy()
@@ -260,6 +286,8 @@ class AustauschActivity : AppCompatActivity() {
     private fun ende(satz: String) {
         vorbei = true
         Austausch.jetzt = null
+        Austausch.gescheitert = null
+        Teilen.weg(this)
         angebot.abbrechen()
         main.removeCallbacks(abfrage)
         stand.text = satz
@@ -293,6 +321,9 @@ class AustauschActivity : AppCompatActivity() {
         const val NFC = "nfc"
         const val QR = "qr"
 
+        /** Opened by a touch ([Teilen]): its session is the one being started, or why it did not. */
+        const val BERUEHRT = "beruehrt"
+
         private const val ABFRAGE_MS = 3_000L
         private const val HTTP_403 = 403
 
@@ -300,10 +331,12 @@ class AustauschActivity : AppCompatActivity() {
         fun ndef(link: String) = NdefMessage(arrayOf(NdefRecord.createUri(link)))
 
         /** Past Homes' `gueltig_bis` (RFC 3339 in UTC, as it writes it); unreadable: not. */
-        fun abgelaufen(bis: String?, jetzt: Long): Boolean {
+        fun abgelaufen(bis: String?, jetzt: Long): Boolean = bisMs(bis)?.let { jetzt >= it } ?: false
+
+        /** Homes' `gueltig_bis` in epoch milliseconds; null when unreadable. */
+        fun bisMs(bis: String?): Long? {
             val f = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ROOT).apply { timeZone = TimeZone.getTimeZone("UTC") }
-            val t = runCatching { f.parse(bis ?: return false)?.time }.getOrNull() ?: return false
-            return jetzt >= t
+            return runCatching { f.parse(bis ?: return null)?.time }.getOrNull()
         }
     }
 }

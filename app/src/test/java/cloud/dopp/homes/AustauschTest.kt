@@ -1,9 +1,13 @@
 package cloud.dopp.homes
 
+import android.app.Application
 import android.app.Dialog
 import android.app.KeyguardManager
+import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.nfc.NdefMessage
 import android.os.Looper
@@ -15,6 +19,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.test.core.app.ApplicationProvider
 import cloud.dopp.homes.ausloeser.WlanAnbietenActivity
+import cloud.dopp.homes.ausloeser.WlanAnbietenDienst
 import cloud.dopp.homes.ausloeser.WlanAngebot
 import cloud.dopp.homes.ausloeser.WlanTag
 import cloud.dopp.homes.data.TokenStore
@@ -46,7 +51,11 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowDialog
+import java.text.SimpleDateFormat
 import java.time.Duration
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import javax.crypto.KeyGenerator
@@ -103,8 +112,12 @@ class AustauschTest {
         Tresor.schluessel = vorher
         WlanAngebot.vergessen()
         Austausch.jetzt = null
+        Austausch.startet = false
+        Austausch.gescheitert = null
+        Austausch.wennGestartet = null
         Austausch.http = null
         Teilen.zuletzt = 0
+        Teilen.vorn(ctx(), false)
         listOf("tresor", "austausch", "homes_server").forEach { ctx().getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit() }
         TokenStore.clear(ctx())
         runCatching { server.shutdown() }
@@ -292,20 +305,104 @@ class AustauschTest {
         assertEquals("Homes hat nicht rechtzeitig geantwortet. Bitte gleich noch einmal tippen.", b.stand())
     }
 
+    private fun nm() = shadowOf(ctx().getSystemService(NotificationManager::class.java))
+
+    /** What the touch started, as the activity it opens. */
+    private fun gestartet(): Intent = shadowOf(ctx() as Application).nextStartedActivity
+
     @Test
-    fun aTouchStartsTheSessionItsLinkAnswersAndTheQuestionOpensWasTeilen() {
+    fun aTouchFromTheBoundServiceOpensWasTeilenAtOnceWhichWaitsForTheSession() {
+        homes.neu = { MockResponse().setResponseCode(201).setBody(NEU).setBodyDelay(500, TimeUnit.MILLISECONDS) }
+        val dienst = Robolectric.setupService(WlanAnbietenDienst::class.java)
         Teilen.zuletzt = 0
-        Teilen.anfrage(ctx(), 90_000_000)
-        val nm = shadowOf(ctx().getSystemService(NotificationManager::class.java))
-        warte { Austausch.jetzt != null && WlanAngebot.ssid != null && nm.allNotifications.isNotEmpty() }
+        Teilen.anfrage(dienst, 90_000_000)
+        val i = gestartet()
+        assertEquals("started on the touch, before Homes answered", AustauschActivity::class.java.name, i.component?.className)
+        assertTrue(i.flags and Intent.FLAG_ACTIVITY_NEW_TASK != 0)
+        assertTrue(i.getBooleanExtra(AustauschActivity.BERUEHRT, false))
+        val a = Robolectric.buildActivity(AustauschActivity::class.java, i).setup().get()
+        assertEquals("Homes macht den Link …", a.stand())
+        assertFalse(a.findViewById<Button>(R.id.austausch_freigeben).isEnabled)
+        warte { Austausch.jetzt != null && !Austausch.startet }
         assertEquals("https://www.box.test/t/tok", NdefMessage(WlanAngebot.nachricht()!!).records.single().toUri().toString())
-        val n = nm.allNotifications.single()
-        assertEquals("Kontakt austauschen: Was teilen?", shadowOf(n).contentTitle.toString())
-        assertEquals(AustauschActivity::class.java.name, shadowOf(n.contentIntent).savedIntent.component?.className)
+        assertTrue(a.stand(), a.stand().startsWith("Halte das andere Telefon an deins"))
+        assertTrue(a.findViewById<Button>(R.id.austausch_freigeben).isEnabled)
         WlanAngebot.gelesen()
-        val a = was(null)
-        assertEquals("one session, not two", 1, homes.anfragen.count { it.first == "POST /napi/teilen" })
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(2))
         assertTrue(a.stand(), a.stand().startsWith("Link geteilt"))
+        assertTrue("it came: no notification", nm().allNotifications.isEmpty())
+        assertEquals("one session, not two", 1, homes.anfragen.count { it.first == "POST /napi/teilen" })
+    }
+
+    @Test
+    fun aRefusedStartPostsTheQuestionOnItsNewChannelUntilTheSessionEnds() {
+        val bis = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ROOT).apply { timeZone = TimeZone.getTimeZone("UTC") }
+            .format(Date(System.currentTimeMillis() + 3_000))
+        homes.neu = { MockResponse().setResponseCode(201).setBody(NEU.replace("2099-01-01T00:00:00Z", bis)) }
+        val manager = ctx().getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(NotificationChannel("teilen", "alt", NotificationManager.IMPORTANCE_DEFAULT))
+        val verweigert = object : ContextWrapper(ctx()) {
+            override fun startActivity(intent: Intent?) = throw SecurityException("background activity start")
+        }
+        Teilen.zuletzt = 0
+        Teilen.anfrage(verweigert, 94_000_000)
+        val n = nm().allNotifications.single()
+        assertEquals("Kontakt austauschen: Was teilen?", shadowOf(n).contentTitle.toString())
+        assertEquals("teilen-frage", n.channelId)
+        assertEquals(Notification.CATEGORY_MESSAGE, n.category)
+        assertEquals("no timeout", 0L, n.timeoutAfter)
+        assertEquals(NotificationManager.IMPORTANCE_HIGH, manager.getNotificationChannel("teilen-frage").importance)
+        assertNull("the old channel, kept at its first importance, is gone", manager.getNotificationChannel("teilen"))
+        assertEquals(AustauschActivity::class.java.name, shadowOf(n.contentIntent).savedIntent.component?.className)
+        warte { Austausch.jetzt != null && !Austausch.startet }
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1))
+        assertEquals("still there, no timeout", 1, nm().allNotifications.size)
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(5))
+        assertNull("over: no session going", Austausch.jetzt)
+        assertTrue("over: the question gone", nm().allNotifications.isEmpty())
+    }
+
+    @Test
+    fun aStartThatDoesNotComeWithinAMomentPostsTheQuestionAndWasTeilenTakesItAway() {
+        Teilen.zuletzt = 0
+        Teilen.anfrage(ctx(), 95_000_000)
+        val i = gestartet()
+        warte { Austausch.jetzt != null && !Austausch.startet }
+        assertTrue("not yet", nm().allNotifications.isEmpty())
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(Teilen.ERSCHEINT_MS + 100))
+        assertEquals("Kontakt austauschen: Was teilen?", shadowOf(nm().allNotifications.single()).contentTitle.toString())
+        val a = Robolectric.buildActivity(AustauschActivity::class.java, i).setup().get()
+        assertTrue("answered: gone", nm().allNotifications.isEmpty())
+        WlanAngebot.gelesen()
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1))
+        assertTrue(a.stand(), a.stand().startsWith("Link geteilt"))
+    }
+
+    @Test
+    fun aTouchWhoseSessionHomesRefusesSaysWhyOnWasTeilen() {
+        homes.neu = { MockResponse().setResponseCode(429).setBody("""{"ok":false,"error":"Du teilst gerade schon fünfmal. Beende eins davon, dann geht es wieder."}""") }
+        Teilen.zuletzt = 0
+        Teilen.anfrage(ctx(), 96_000_000)
+        val i = gestartet()
+        warte { !Austausch.startet }
+        val a = Robolectric.buildActivity(AustauschActivity::class.java, i).setup().get()
+        assertEquals("Du teilst gerade schon fünfmal. Beende eins davon, dann geht es wieder.", a.stand())
+        assertNull(WlanAngebot.nachricht())
+        assertNull(Austausch.gescheitert)
+    }
+
+    @Test
+    fun aStaleSessionDoesNotBlockTheNextTouchAndALiveOneNotOnScreenIsEnded() {
+        Austausch.jetzt = Austausch.Sitzung("s0", "https://www.box.test/t/alt", "2000-01-01T00:00:00Z")
+        Teilen.zuletzt = 0
+        Teilen.anfrage(ctx(), 97_000_000)
+        warte { Austausch.jetzt?.id == "s1" && !Austausch.startet }
+        assertEquals("expired: not ended, just gone", 0, homes.anfragen.count { it.first == "DELETE /napi/teilen/s0" })
+        Austausch.jetzt = Austausch.Sitzung("s0", "https://www.box.test/t/alt", "2099-01-01T00:00:00Z")
+        Teilen.anfrage(ctx(), 98_000_000)
+        warte { Austausch.jetzt?.id == "s1" && homes.anfragen.any { it.first == "DELETE /napi/teilen/s0" } }
+        assertEquals(2, homes.anfragen.count { it.first == "POST /napi/teilen" })
+        assertEquals("https://www.box.test/t/tok", NdefMessage(WlanAngebot.nachricht()!!).records.single().toUri().toString())
     }
 
     @Test
@@ -317,20 +414,21 @@ class AustauschTest {
         warte { shadowOf(vorn).peekNextStartedActivity() != null }
         assertEquals(AustauschActivity::class.java.name, shadowOf(vorn).nextStartedActivity.component?.className)
         assertTrue("no notification needed", shadowOf(ctx().getSystemService(NotificationManager::class.java)).allNotifications.isEmpty())
+        warte { Austausch.jetzt != null && !Austausch.startet }
         assertEquals("https://www.box.test/t/tok", NdefMessage(WlanAngebot.nachricht()!!).records.single().toUri().toString())
     }
 
     @Test
-    fun aScreenGoneToTheBackgroundOnlyGetsTheNotification() {
+    fun aScreenGoneToTheBackgroundIsNotWhereWasTeilenStartsFrom() {
         val c = Robolectric.buildActivity(TeilenActivity::class.java).setup()
         c.pause().stop()
         assertNull("paused: not in front", Vorne.aktivitaet())
         Teilen.zuletzt = 0
         Teilen.anfrage(ctx(), 93_000_000)
-        val nm = shadowOf(ctx().getSystemService(NotificationManager::class.java))
-        warte { nm.allNotifications.isNotEmpty() }
-        assertEquals("Kontakt austauschen: Was teilen?", shadowOf(nm.allNotifications.single()).contentTitle.toString())
-        assertNull("nothing started from the background", shadowOf(c.get()).peekNextStartedActivity())
+        val i = gestartet()
+        assertEquals(AustauschActivity::class.java.name, i.component?.className)
+        assertTrue("from the touch's context, not the screen in the background", i.flags and Intent.FLAG_ACTIVITY_NEW_TASK != 0)
+        warte { Austausch.jetzt != null && !Austausch.startet }
     }
 
     @Test

@@ -1069,13 +1069,20 @@ is its person's alone, in Homes' memory only, 30 minutes at most.)
   „Bei Berührung Kontakt austauschen“ on (the switch under „Teilen“'s rows,
   on by default — the link alone shows only the first name). Then the
   session starts in the background, its link answers the reader still held
-  to the phone (once, two minutes, screen on), and the question „Kontakt
-  austauschen: Was teilen?“ opens „Was teilen?“ for it (at most every 30 s,
-  no activity started from the background) — or, while one of the app's own
-  screens is in front (resumed, screen on, unlocked; owner approved
-  2026-11-28, `teilen/Vorne.kt`), „Was teilen?“ opens at once, without the
-  notification. Off, or not paired, or the
-  start refused: the plain question of (k).
+  to the phone (once, two minutes, screen on), and „Was teilen?“ opens at
+  once, on the touch (at most every 30 s): from one of the app's own screens
+  while it is in front (resumed, screen on, unlocked; `teilen/Vorne.kt`),
+  else from the HCE service while Android's NFC stack has it bound, which
+  Android allows (the binding carries `BIND_ALLOW_BACKGROUND_ACTIVITY_STARTS`;
+  field failure 2026-11-28: a notification alone was not seen). It says
+  „Homes macht den Link …“ until `POST /napi/teilen` answers, then the
+  switches, or Homes' sentence. Only if that start is refused, or „Was
+  teilen?“ is not in front within 1.5 s, the question „Kontakt austauschen:
+  Was teilen?“ comes (channel `teilen-frage`, high importance, no timeout),
+  and stays until answered, ended, or past `gueltig_bis`. A session whose
+  time is up no longer blocks a touch; one still going whose screen is not in
+  front is ended (`DELETE`) for the touch's new one. Off, or not paired:
+  the plain question of (k).
 - **The start:** `POST /napi/teilen {"vorname"}` (the first name of „Meine
   Visitenkarte“; none: Homes takes the login's) → 201 `{"ok":true,"id","link",
   "gueltig_bis"}` → [NFC]: an NDEF URI record of `link`, as every row of (k);
