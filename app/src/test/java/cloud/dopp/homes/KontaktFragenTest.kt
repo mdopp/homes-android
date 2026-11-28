@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit
  * Google's 3.0), Homes' answer becomes one dialog in each state — reading,
  * running, done (WhatsApp, SMS, any app), not found („aufnehmen und
  * fragen“), more than one (pick), failed, timed out, not paired — and the
- * target is switched by the box's `teilen` `kontakt-fragen`.
+ * target follows the box's `kontakte` module.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -306,16 +306,21 @@ class KontaktFragenTest {
 
         val c = ComponentName(ctx(), KontaktFragenActivity::class.java)
         val pm = ctx().packageManager
-        Teilen.schalten(ctx(), Kann.lesen(kann("[]")))
-        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DISABLED, pm.getComponentEnabledSetting(c))
-        Teilen.schalten(ctx(), Kann.lesen(kann("""["kontakt-fragen"]""")))
-        assertTrue(Teilen.an(ctx(), "kontakt-fragen"))
+        Teilen.schalten(ctx(), Kann.lesen(kann(an = false)))
+        assertEquals("kontakte off", PackageManager.COMPONENT_ENABLED_STATE_DISABLED, pm.getComponentEnabledSetting(c))
+        Teilen.schalten(ctx(), Kann.lesen(kann(an = true)))
+        assertTrue("kontakte on, no teilen key needed", Teilen.an(ctx(), "kontakt-fragen"))
+        Teilen.schalten(ctx(), Kann.lesen("""{"version":1,"module":[],"app":{"teilen":["kontakt-fragen"]}}"""))
+        assertFalse("without the module, a key alone does not", Teilen.an(ctx(), "kontakt-fragen"))
+        Teilen.schalten(ctx(), null)
+        assertTrue("unknown: on", Teilen.an(ctx(), "kontakt-fragen"))
     }
 
     // --- helpers ------------------------------------------------------------------
 
-    private fun kann(teilen: String) =
-        """{"version":1,"module":[],"app":{"widgets":[],"teilen":$teilen,"konto":[],"sicherung":[],"mehr":[]}}"""
+    private fun kann(an: Boolean) = """{"version":1,"module":[{"name":"kontakte","titel":"Kontakte","an":$an,""" +
+        """"bietet":{"widgets":[],"teilen":[],"konto":[],"sicherung":["kontakte"],"mehr":[]}}],""" +
+        """"app":{"widgets":[],"teilen":[],"konto":[],"sicherung":[],"mehr":[]}}"""
 
     private fun kurz() = OkHttpClient.Builder().readTimeout(300, TimeUnit.MILLISECONDS).build()
 

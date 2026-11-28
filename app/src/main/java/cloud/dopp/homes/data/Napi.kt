@@ -662,7 +662,7 @@ object Napi {
         const val DATEN_SICHERN = "daten-sichern"
         const val STANDORTVERLAUF = "standortverlauf"
         const val ARCHIV = "archiv"
-        const val KONTAKT_FRAGEN = "kontakt-fragen" // the kontakte module's share target „Daten erfragen“ (owner 2026-11-28)
+        const val KONTAKT_FRAGEN = "kontakt-fragen" // „Daten erfragen“'s component key: on while the kontakte module is (kann/Teilen.kt)
         const val AUSLOESER = "ausloeser" // the geraete module's Mehr row: NFC tags and the charger (homes ADR 0004)
     }
 

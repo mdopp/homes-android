@@ -227,10 +227,11 @@ class NapiContractTest {
                 "internal/napi/kontakte.go:49-122 (text/vcard :65-69), registered napi.go:242, the reply internal/caldav/spiegel.go:277-282",
                 sends = setOf("kontakte", "neu", "geaendert", "entfernt", "fehler"),
             ),
-            // Daten erfragen (owner 2026-11-28): mdopp/homes feat/kontakt-fragen, the handler not pushed yet — the
-            // contract as agreed for it; the file and lines are pinned when its PR exists.
+            // Daten erfragen (owner 2026-11-28): mdopp/homes#396 at b2e0b70, not merged yet.
             Route(
-                "POST", "/napi/kontakte/fragen", "internal/napi (mdopp/homes feat/kontakt-fragen, pending)",
+                "POST", "/napi/kontakte/fragen",
+                "internal/napi/kontakte_fragen.go:54-79, the body :46-52, registered :38-43 (module kontakte); 409 kandidaten :101-106, " +
+                    "404 anlegen :108, the answer :121-135; refusals {ok:false,error} sagNein :63-71, :86, :100, :115, :125",
                 body = setOf("name", "telefon", "mail", "anlegen", "uid"),
                 sends = setOf("ok", "kontakt", "vorname", "link", "text", "fehlt", "telefon", "neu", "error", "anlegen", "kandidaten", "uid"),
             ),

@@ -602,8 +602,8 @@ there.
   A placed widget whose type went shows the module's `grund`; a tap opens
   the app.
 - **Share targets** (`teilen`: `merken` text, `dokument` images,
-  `standort-import` history files, `musik`, `archiv` a social export, `kontakt-fragen` a contact's vCard,
-  offered by the `kontakte` module): one component each — the share
+  `standort-import` history files, `musik`, `archiv` a social export; and „Daten erfragen“, a contact's vCard,
+  which follows the `kontakte` module's `an` instead of a key): one component each — the share
   activity's aliases `.ui.TeilenMerken` and `.ui.TeilenDokument`,
   `.ui.StandortImportActivity`, `.hochladen.MusikTeilenActivity`, `.archiv.ArchivTeilenActivity` and
   `.fragen.KontaktFragenActivity` — enabled while the key is there, disabled
@@ -987,10 +987,10 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
 
 ## (l) Daten erfragen: a contact asked for what is missing
 
-(The owner's request, 2026-11-28; Homes' side is mdopp/homes
-`feat/kontakt-fragen`.) The share target „Homes: Daten erfragen“
-(`fragen/KontaktFragenActivity`, switched by the box's `teilen` key
-`kontakt-fragen`, which the `kontakte` module offers) takes `ACTION_SEND` of
+(The owner's request, 2026-11-28; Homes' side is mdopp/homes#396,
+`internal/napi/kontakte_fragen.go`, admins only.) The share target „Homes: Daten erfragen“
+(`fragen/KontaktFragenActivity`, enabled while `/napi/kann`'s `kontakte`
+module is on, and while that is unknown; Homes names no `teilen` key for it) takes `ACTION_SEND` of
 `text/x-vcard` and `text/vcard` — Samsung Contacts' „Senden“ → „vCard-Datei
 (VCF)“, Google Contacts — and of `text/plain` only when the text is a vCard
 (else „Das ist keine Visitenkarte …“, and no request).
@@ -1017,6 +1017,7 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   - 409 `{"kandidaten":[{"kontakt","uid"}]}` → one row per candidate (Homes'
     `error` as the question, else „Mehrere Kontakte passen. Wer ist gemeint?“);
     the pick sends the body again with its `"uid"`.
-  - 401: pair again; 403 and any other: Homes' `error`, else „Homes hat nicht
+  - `telefon` is `""` without a mobile number: no WhatsApp row then.
+  - 401: pair again; 403 (not an admin), 400, 502, 503 and any other: Homes' `error`, else „Homes hat nicht
     lesbar geantwortet (<code>) …“; no answer in 20 s or no line: the app's
     own sentence.

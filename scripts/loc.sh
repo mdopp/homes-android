@@ -95,12 +95,12 @@ budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts 
                        # 1632 -> 1726 (owner approved 2026-11-05: contact pictures, homes#287): a card's
                        #   PHOTO read, written as the contact's picture with its hash read back, the person's own sent, at most 256 px
 budget standort  1098  # 1,046: Standortverlauf — recording, batching, import
-budget kann      468  #   340 on 2026-11-04: what the box can do, /napi/kann kept and read, „Hier anfordern“ (homes ADR 0001);
+budget kann      472  #   340 on 2026-11-04: what the box can do, /napi/kann kept and read, „Hier anfordern“ (homes ADR 0001);
                        # 360 -> 420 (owner-approved, homes ADR 0001 plan): the share targets switched by teilen, homes-android#232;
                        # 420 -> 460: the widget providers switched by widgets, homes-android#233
                        # 460 -> 469 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut — owner approved 2026-11-27 („Bau alles“)): the tool
                        #   widget's provider leaves the picker while no tool is offered (Anbieter.werkzeug)
-                       # 467 -> 468 (owner's request 2026-11-28 (Kontakte fragen) — the raise to be OK'd in the PR): the share target kontakt-fragen
+                       # 467 -> 472 (owner's request 2026-11-28 (Kontakte fragen) — the raise to be OK'd in the PR): „Daten erfragen“ on while the kontakte module is
 budget einrichtung 599 #   599 on 2026-11-27 (owner approved 2026-11-27 („Bau alles“), mdopp/homes#391): bereiche parsed (Bereich), an entry's neu, a task's dringend and the orange count;   571 on 2026-11-27: „Öffnen“ became tiles of ui/Ueberblick, „Deine Aufgaben“ one row;   617 on 2026-11-14, the first three tasks and „Alle N Aufgaben“ (owner: „immer nur die ersten mit Verweis auf alle“); 574 on 2026-11-04, a new package (owner): /napi/einrichtung kept and read, „Öffnen“ and „Deine Aufgaben“
                        # on the start screen, the launcher's four shortcuts and their trampoline
 budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochladen job — music and Takeout ZIPs, with the screen off;

@@ -28,8 +28,8 @@ import kotlin.concurrent.thread
  * The one dialog says each step: reading the card, „Sucht … “, then what is
  * missing with the ways to send — or not in the address book („aufnehmen und
  * fragen“), more than one fits (pick one), or why not. Every way ends the
- * share; nothing is stored on the phone. Switched by the box's `teilen`
- * `kontakt-fragen` (kann/Teilen.kt).
+ * share; nothing is stored on the phone. On while the box's `kontakte`
+ * module is (kann/Teilen.kt).
  */
 class KontaktFragenActivity : Activity() {
 
