@@ -32,12 +32,31 @@ object WlanAngebot {
     @Volatile
     private var offen = false
 
-    /** Hold [n] for an offer of [name]; it begins when the screen is in front. */
-    fun vorbereiten(name: String, n: NdefMessage) {
+    /** „Teilen per Berührung“ (owner 2026-11-28): one answer only, then the offer is over ([geteilt]). */
+    @Volatile
+    var einmal = false
+        private set
+
+    /** The one answer of an [einmal] offer went: a reader read the whole message. */
+    @Volatile
+    var geteilt = false
+        private set
+
+    /** Hold [n] for an offer of [name]; it begins when the screen is in front. [nurEinmal]: one reader, then over. */
+    fun vorbereiten(name: String, n: NdefMessage, nurEinmal: Boolean = false) {
         nachricht = n.toByteArray()
         ssid = name
         bis = 0L
         offen = false
+        einmal = nurEinmal
+        geteilt = false
+    }
+
+    /** A reader read the NDEF file to its end ([Typ4Tag]): an [einmal] offer is over and forgotten. */
+    fun gelesen() {
+        if (!einmal || nachricht == null) return
+        vergessen()
+        geteilt = true
     }
 
     /** The screen is in front: answered from now until [bis] (set at the first start, never moved). False: nothing, or over. */
@@ -58,6 +77,7 @@ object WlanAngebot {
 
     /** The offer over: the credential forgotten. */
     fun vergessen() {
+        geteilt = false
         nachricht?.fill(0)
         nachricht = null
         ssid = null

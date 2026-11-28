@@ -49,8 +49,11 @@ These rules apply to every session, human or agent.
   are „Haushalts-Kontakte“ and „Haushalts-Kalender“ (the owner's call,
   2026-11-05), and asking for a module is an „Anfrage“, not a „Wunsch“.
 - Messages to people go through their chat channel (laib ADR 0022 §3), not the
-  app. Two notifications, and only these: the live service's quiet one, and
-  the Hochladen job's while it uploads and for what came of it. Two
+  app. Three notifications, and only these: the live service's quiet one,
+  the Hochladen job's while it uploads and for what came of it, and „Teilen
+  per Berührung“'s question „Ein Telefon möchte etwas von dir. Was teilen?“
+  when another phone reads this one (owner approved 2026-11-28; at most every
+  30 s, `teilen/Teilen.kt`). Two
   foreground services, and only these: the live widgets' (`specialUse`),
   always there while wanted, and WorkManager's for the Hochladen job
   (`dataSync`), only while it uploads. Why the second: the owner decided on
@@ -63,8 +66,11 @@ These rules apply to every session, human or agent.
   „WLAN anbieten“'s host-card-emulation service
   (`ausloeser/WlanAnbietenDienst.kt`), which only Android's NFC stack binds
   (`BIND_NFC_SERVICE`), for the NDEF application's AID alone, with the
-  phone unlocked (`@xml/apduservice`); it posts nothing, holds nothing, and
-  answers only while its screen offers (else 6A82). Recovery after a killed process rests
+  phone unlocked (`@xml/apduservice`). It listens whenever the phone is
+  unlocked (owner approved 2026-11-28) but answers only after an explicit
+  choice: the WLAN offer while its screen is in front, or „Teilen per
+  Berührung“ once, for at most two minutes; else 6A82, and a reader asking
+  then only makes it post that question. Recovery after a killed process rests
   on the battery-optimization exemption the person grants. `ManifestTest`
   holds this; `e2e/` proves it on emulators (`.github/workflows/live-e2e.yml`).
 - Two jobs, and only these. The backup pick-up (the owner's call in #194):
@@ -128,9 +134,21 @@ These rules apply to every session, human or agent.
   read-only Type 4 Tag with that one record (`Typ4Tag`, `WlanAnbietenTest`)
   — only while `WlanAnbietenActivity` is in front, at most two minutes from
   its start, then it stops by itself and says so; the credential is held in
-  memory only (`WlanAngebot`) and forgotten when the offer ends. Homes keeps
-  no WLAN anywhere: „Ins Telefon übernehmen“ hands it to Android's own WLAN
-  settings, and nothing else stores it.
+  memory only (`WlanAngebot`) and forgotten when the offer ends. „Ins Telefon
+  übernehmen“ hands it to Android's own WLAN settings; Homes keeps a WLAN
+  only when the person keeps the tag („Im Telefon behalten“, encrypted).
+- Teilen per Berührung (owner approved 2026-11-28: „Ja, aber auch Karten die
+  ich ausgelesen habe“): a phone held to this one, with nothing chosen, gets
+  nothing, and this one asks „Was teilen?“ (`teilen/TeilenActivity.kt`):
+  „Meine Kontaktdaten“ (a vCard 3.0 of the fields ticked under „Dieses
+  Telefon“ → „Meine Visitenkarte“), each tag kept on this phone („Im Telefon
+  behalten“ on the Tag-Inhalt card, NDEF tags only — a card with data of its
+  own „kann ein Telefon nicht nachspielen“), „Nichts“, and a QR code of the
+  card or a WLAN for an iPhone. A choice answers one reader within two
+  minutes, then nothing again („Geteilt.“ / „Nicht geteilt – abgelaufen.“).
+  The card and the kept tags are encrypted with a Keystore AES-GCM key
+  (`teilen/Tresor.kt`, not EncryptedSharedPreferences), on this phone only:
+  never sent, backed up or logged (`TeilenTest`).
 - Standortverlauf (the owner's call, 2026-11-02; docs/CONTRACT.md (f)):
   behind its own switch and the background-location permission,
   Android's own LocationManager delivers by PendingIntent to

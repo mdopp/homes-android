@@ -374,6 +374,13 @@
                 android:layout_marginTop="@dimen/space_xs" />
 
             <Button
+                android:id="@+id/inhalt_drei"
+                style="@style/Widget.Homes.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs" />
+
+            <Button
                 android:id="@+id/inhalt_zu"
                 style="@style/Widget.Homes.Button.Ghost"
                 android:layout_width="match_parent"

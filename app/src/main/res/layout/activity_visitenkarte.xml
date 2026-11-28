@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- „Meine Visitenkarte“ (owner 2026-11-28): the contact picked, the fields ticked, kept on this phone only. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/karte_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingEnd="@dimen/screen_gutter"
+        android:paddingBottom="@dimen/space_xl">
+
+        <TextView
+            style="@style/Text.Homes.Headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_sm"
+            android:text="@string/karte_titel_visitenkarte" />
+
+        <TextView
+            style="@style/Text.Homes.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/karte_hinweis" />
+
+        <Button
+            android:id="@+id/karte_waehlen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:text="@string/karte_waehlen" />
+
+        <TextView
+            android:id="@+id/karte_wer"
+            style="@style/Text.Homes.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md" />
+
+        <CheckBox android:id="@+id/karte_name" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_name_leer" />
+        <CheckBox android:id="@+id/karte_telefon" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_telefon_leer" />
+        <CheckBox android:id="@+id/karte_mail" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_mail_leer" />
+        <CheckBox android:id="@+id/karte_adresse" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_adresse_leer" />
+        <CheckBox android:id="@+id/karte_firma" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_firma_leer" />
+
+        <Button
+            android:id="@+id/karte_sichern"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:text="@string/karte_sichern" />
+
+        <Button
+            android:id="@+id/karte_entfernen"
+            style="@style/Widget.Homes.Button.Ghost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/karte_entfernen" />
+
+        <TextView
+            android:id="@+id/karte_stand"
+            style="@style/Text.Homes.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm" />
+    </LinearLayout>
+</ScrollView>

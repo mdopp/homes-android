@@ -17,6 +17,7 @@
         android:paddingBottom="@dimen/space_xl">
 
         <TextView
+            android:id="@+id/anbieten_titel"
             style="@style/Text.Homes.Headline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

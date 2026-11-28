@@ -824,6 +824,22 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   then it stops by itself and says so. At any other time every command is
   6A82. The credential lives in memory only (`WlanAngebot`), never stored,
   and is forgotten when the offer ends or the screen closes.
+- **Teilen per Berührung** (owner approved 2026-11-28; no `/napi`, nothing
+  leaves the phone but over NFC to the phone held to it). The same service
+  listens whenever the phone is unlocked; with nothing chosen it answers 6A82
+  and, on a reader's SELECT of the NDEF application, posts „Ein Telefon möchte
+  etwas von dir. Was teilen?“ (heads-up, at most every 30 s, no activity
+  started from the background). „Was teilen?“ offers „Meine Kontaktdaten“
+  (NDEF MIME `text/vcard`, vCard 3.0 of the ticked fields of the person's own
+  contact, set under „Dieses Telefon“ → „Meine Visitenkarte“), each kept tag
+  by its name (its NDEF message as read), „Nichts“, and the card or a kept
+  WLAN as a QR code (vCard, `WIFI:`) for an iPhone. A choice answers exactly
+  one reader within two minutes (the NDEF file read to its end), then the
+  screen says „Geteilt.“, else „Nicht geteilt – abgelaufen.“ „Im Telefon
+  behalten“ on the Tag-Inhalt card keeps any NDEF tag under a name; a card
+  with data of its own says „Diese Karte kann ein Telefon nicht
+  nachspielen.“ Kept tags („Dieses Telefon“ → „Behaltene Tags“, deletable)
+  and the card are encrypted on the phone (Android Keystore AES-GCM).
 - **A new tag.** On the Auslöser screen: a name (the list's `vorschlaege`,
   the house's rooms from HA and a few places, as one-tap words under the
   field) → `POST /napi/ausloeser/tag {"name":"Bürotür"}` →

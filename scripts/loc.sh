@@ -41,7 +41,7 @@ budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
                        #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
                        #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
-budget ui        3912  # 3,026: the activities: start screen, pairing, settings screens;
+budget ui        3940  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
                        # 3220 -> 3320: the account's and the backup's missing parts as disabled switches with their trace, homes-android#233
@@ -54,6 +54,10 @@ budget ui        3912  # 3,026: the activities: start screen, pairing, settings 
                        #   (ui/Jetzt.kt), „Alles auf einen Blick“ (ui/Ueberblick.kt), „Dieses Telefon“ (ui/TelefonActivity.kt)
                        # 3897 -> 3912 (owner approved 2026-11-27 („Bau alles“), mdopp/homes#391): a tile's line and „neu: …“ from Homes' bereiche,
                        #   seen once opened; Jetzt reads a card's achtung instead of guessing from its words (net)
+                       # 3912 -> 3929 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): „Dieses
+                       #   Telefon“'s rows for Teilen per Berührung (Was teilen?, Meine Visitenkarte, Behaltene Tags)
+                       # 3929 -> 3940 (owner 2026-11-28 „Die Version bitte weiterhin in der App anzeigen.“): the start
+                       #   screen's last line, „Version … · gekoppelt mit …“
 budget data      3364  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
@@ -95,7 +99,7 @@ budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochlad
 budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
                        # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
 budget realtime   667  #   635: the live stream and its foreground service
-budget ausloeser  3246 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
+budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
                        # trigger for HA — the touched tag's activity, the Auslöser screen (writing, naming, renaming, removing a tag;
                        # §2 owner 2026-11-26), the charger's receiver, the client;
                        # 1000 -> 1070 (owner approved 2026-11-26 „Go. Passt alles“, §4): „Was soll der Tag tun?“, the action
@@ -123,6 +127,11 @@ budget ausloeser  3246 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        # 2894 -> 3246 (owner approved 2026-11-27 („Bau alles“), WLAN anbieten): the phone as a read-only
                        #   Type 4 Tag (Typ4Tag.kt), its bound HCE service (WlanAnbietenDienst.kt), the offer held in memory
                        #   for two minutes (WlanAngebot.kt) and its screen (WlanAnbietenActivity.kt), the form's „Anbieten“
+                       # 3246 -> 3329 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“), Teilen per Berührung): the service
+                       #   listens while unlocked and asks when read with nothing chosen, an offer answered once
+                       #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
+budget teilen     530  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
+                       # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)
 budget .           35  #    33: HomesConfig.kt

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- „Teilen per Berührung“ (owner approved 2026-11-28: „Ja, aber auch Karten die ich ausgelesen habe“) -->
+<resources>
+    <string name="teilen_kanal">Teilen per Berührung</string>
+    <string name="teilen_frage">Ein Telefon möchte etwas von dir. Was teilen?</string>
+    <string name="teilen_titel">Was teilen?</string>
+    <string name="teilen_hinweis">Tippe an, was das andere Telefon bekommen soll. Es bekommt genau das, einmal, in den nächsten zwei Minuten.</string>
+    <string name="teilen_kontakt">Meine Kontaktdaten</string>
+    <string name="teilen_qr">QR-Code: %1$s</string>
+    <string name="teilen_karte_festlegen">Meine Visitenkarte festlegen …</string>
+    <string name="teilen_nichts">Nichts</string>
+    <string name="teilen_art_wlan">WLAN „%1$s“</string>
+    <string name="teilen_art_homes">Homes-Tag</string>
+    <string name="teilen_geteilt">Geteilt.</string>
+    <string name="teilen_abgelaufen">Nicht geteilt – abgelaufen.</string>
+    <string name="teilen_unterwegs">Teilt per Berührung</string>
+
+    <string name="behalten_titel">Behaltene Tags</string>
+    <string name="behalten_keine">Noch keiner. Halte einen Tag an den Auslöser-Bildschirm und tippe „Im Telefon behalten“.</string>
+    <string name="behalten_hinweis">Antippen zum Entfernen.</string>
+    <string name="behalten_weg_titel">„%1$s“ entfernen?</string>
+    <string name="behalten_weg_hinweis">Er ist dann nur noch auf dem Tag selbst.</string>
+    <plurals name="behalten_anzahl">
+        <item quantity="one">%d Tag</item>
+        <item quantity="other">%d Tags</item>
+    </plurals>
+
+    <string name="inhalt_behalten">Im Telefon behalten</string>
+    <string name="inhalt_behalten_titel">Wie soll er heißen?</string>
+    <string name="inhalt_behalten_ok">Behalten</string>
+    <string name="inhalt_behalten_vorschlag">Mein Tag</string>
+    <string name="inhalt_behalten_fertig">„%1$s“ ist im Telefon behalten.</string>
+    <string name="karte_nachspielen">Diese Karte kann ein Telefon nicht nachspielen.</string>
+
+    <string name="karte_titel_visitenkarte">Meine Visitenkarte</string>
+    <string name="karte_hinweis">Wähle dich selbst aus deinen Kontakten und hake an, was du teilen willst. Die Karte bleibt auf diesem Telefon.</string>
+    <string name="karte_waehlen">Kontakt wählen</string>
+    <string name="karte_feld_name">Name: %1$s</string>
+    <string name="karte_feld_telefon">Telefon: %1$s</string>
+    <string name="karte_feld_mail">Mail: %1$s</string>
+    <string name="karte_feld_adresse">Adresse: %1$s</string>
+    <string name="karte_feld_firma">Firma: %1$s</string>
+    <string name="karte_feld_name_leer">Name</string>
+    <string name="karte_feld_telefon_leer">Telefon</string>
+    <string name="karte_feld_mail_leer">Mail</string>
+    <string name="karte_feld_adresse_leer">Adresse</string>
+    <string name="karte_feld_firma_leer">Firma</string>
+    <string name="karte_sichern">Sichern</string>
+    <string name="karte_entfernen">Visitenkarte entfernen</string>
+    <string name="karte_entfernt">Entfernt.</string>
+    <string name="karte_gesetzt">Deine Visitenkarte ist festgelegt.</string>
+    <string name="karte_gesichert">Gesichert. Unter „Was teilen?“ heißt sie „Meine Kontaktdaten“.</string>
+    <string name="karte_ohne_recht">Ohne Zugriff auf die Kontakte kann Homes die Felder nicht lesen.</string>
+    <string name="karte_nicht_lesbar">Dieser Kontakt ließ sich nicht lesen.</string>
+    <string name="karte_ohne_namen">ohne Namen</string>
+    <string name="karte_erst_waehlen">Wähle erst einen Kontakt.</string>
+    <string name="karte_nichts_gewaehlt">Hake mindestens ein Feld an.</string>
+</resources>

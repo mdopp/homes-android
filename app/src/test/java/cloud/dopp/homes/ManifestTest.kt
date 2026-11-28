@@ -67,6 +67,9 @@ class ManifestTest {
     /** The one file that may name WorkManager: the backup job (#194). */
     private val workerFile = "app/src/main/java/cloud/dopp/homes/sicherung/SicherungWorker.kt"
 
+    /** „Teilen per Berührung“ (owner approved 2026-11-28): its one question, in one file; never foreground. */
+    private val teilenFile = "app/src/main/java/cloud/dopp/homes/teilen/Teilen.kt"
+
     /** The Hochladen job (owner, 2026-11-04): its worker, its foreground and its notification, in one file. */
     private val hochladenFile = "app/src/main/java/cloud/dopp/homes/hochladen/Hochladen.kt"
 
@@ -390,14 +393,16 @@ class ManifestTest {
     }
 
     /**
-     * Two notifications: the live service's, and the Hochladen job's
-     * (owner, 2026-11-04); each in its one file, and only those two go foreground.
+     * Three notifications: the live service's, the Hochladen job's (owner,
+     * 2026-11-04), and „Teilen per Berührung“'s question when a phone reads
+     * this one (owner approved 2026-11-28); each in its one file, and only the
+     * first two go foreground.
      */
     @Test
     fun noOtherNotificationNoWebShellNoVoiceInTheSources() {
         val hits = noneSay(
             "NotificationCompat", "NotificationManager", "NotificationChannel",
-            except = setOf(serviceFile, hochladenFile),
+            except = setOf(serviceFile, hochladenFile, teilenFile),
         ) + noneSay("startForeground", except = setOf(serviceFile)) + noneSay(
             "TrustedWebActivity", "androidx.browser.trusted", "RecognizerIntent", "SpeechRecognizer",
         ) + noneSay("DATA_SYNC", "dataSync", except = setOf(hochladenFile))

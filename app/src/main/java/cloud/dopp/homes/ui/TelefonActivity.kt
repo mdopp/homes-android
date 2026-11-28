@@ -25,6 +25,10 @@ import cloud.dopp.homes.konto.HomesKonto
 import cloud.dopp.homes.konto.KontoStore
 import cloud.dopp.homes.sicherung.SicherungStore
 import cloud.dopp.homes.standort.StandortStore
+import cloud.dopp.homes.teilen.Behalten
+import cloud.dopp.homes.teilen.BehalteneActivity
+import cloud.dopp.homes.teilen.TeilenActivity
+import cloud.dopp.homes.teilen.VisitenkarteActivity
 
 /**
  * What this phone does with the box, in one place (the owner, 2026-11-27):
@@ -131,6 +135,16 @@ class TelefonActivity : AppCompatActivity() {
             zeile(KannKey.STANDORTVERLAUF, R.drawable.ic_standort, R.string.standort_title, StandortActivity::class.java),
             zeile(KannKey.AUSLOESER, R.drawable.ic_ausloeser, R.string.ausloeser_laden_titel, AusloeserActivity::class.java),
         ), { reihe(meldet, it, status[it.key]) })
+        val teilt = findViewById<ViewGroup>(R.id.telefon_teilt)
+        teilt.removeAllViews()
+        val behalten = Behalten.alle(this).size
+        listOf(
+            zeile(TEILEN, R.drawable.ic_ausloeser, R.string.teilen_titel, TeilenActivity::class.java) to null,
+            zeile(TEILEN, R.drawable.ic_modul_kontakte, R.string.karte_titel_visitenkarte, VisitenkarteActivity::class.java) to
+                getString(if (Behalten.visitenkarte(this) != null) R.string.telefon_an else R.string.telefon_aus),
+            zeile(TEILEN, R.drawable.ic_ausloeser, R.string.behalten_titel, BehalteneActivity::class.java) to
+                resources.getQuantityString(R.plurals.behalten_anzahl, behalten, behalten),
+        ).forEach { (z, stand) -> teilt.addView(reihe(teilt, z, stand)) }
     }
 
     private fun zeile(key: String, @DrawableRes bild: Int, titel: Int, ziel: Class<*>) =
@@ -151,5 +165,8 @@ class TelefonActivity : AppCompatActivity() {
     private companion object {
         /** „Homes auf dem Handy“ is always there: no key of the box gates it. */
         const val KONTO = "konto"
+
+        /** „Teilen per Berührung“ is always there: no key of the box gates it, nothing goes to the box. */
+        const val TEILEN = "teilen"
     }
 }

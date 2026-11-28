@@ -29,6 +29,7 @@ import cloud.dopp.homes.ausloeser.AusloeserClient.Ausgang
 import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.realtime.Live
+import cloud.dopp.homes.teilen.Behalten
 import cloud.dopp.homes.sicherung.Anzeige
 import cloud.dopp.homes.ui.padForSystemBars
 import cloud.dopp.homes.widget.ActionDialog
@@ -505,7 +506,13 @@ class AusloeserActivity : AppCompatActivity() {
     // --- what is on a written tag ---------------------------------------------------
 
     private fun gelesen(e: TagSchreiber.Ergebnis.Gelesen) {
-        when (val i = TagInhalt.lesen(e.nachricht, ServerStore.baseUrl(this)?.toUri()?.host)) {
+        val i = TagInhalt.lesen(e.nachricht, ServerStore.baseUrl(this)?.toUri()?.host)
+        val vorschlag = when (i) {
+            is TagInhalt.Wlan -> i.netz.ssid
+            is TagInhalt.Homes -> tags.firstOrNull { it.tag == i.id }?.name?.ifEmpty { null } ?: getString(R.string.teilen_art_homes)
+            is TagInhalt.Fremd -> getString(R.string.inhalt_behalten_vorschlag)
+        }
+        when (i) {
             is TagInhalt.Homes -> homesTag(i.id)
             is TagInhalt.Wlan -> wlanTag(i.netz, e.id, e.nachricht)
             is TagInhalt.Fremd -> inhalt.zeige(
@@ -513,6 +520,26 @@ class AusloeserActivity : AppCompatActivity() {
                 listOf(TagInhaltAnsicht.Knopf(getString(R.string.inhalt_ueberschreiben)) { fragUeberschreiben(e.id) { neuerTag(getString(R.string.inhalt_neu_titel)) } }),
             )
         }
+        inhalt.dazu(TagInhaltAnsicht.Knopf(getString(R.string.inhalt_behalten)) { fertig -> behalten(e.nachricht, vorschlag, fertig) })
+    }
+
+    /** „Im Telefon behalten“ (owner 2026-11-28): a name asked, the tag's message kept encrypted on this phone to share again. */
+    private fun behalten(n: NdefMessage, vorschlag: String, fertig: (String) -> Unit) {
+        val feld = EditText(this).apply {
+            setText(vorschlag)
+            setSelection(text.length)
+        }
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.inhalt_behalten_titel)
+            .setView(feld)
+            .setPositiveButton(R.string.inhalt_behalten_ok) { _, _ ->
+                val name = feld.text.toString().trim().ifEmpty { vorschlag }
+                Behalten.dazu(this, name, n)
+                fertig(getString(R.string.inhalt_behalten_fertig, name))
+            }
+            .setNegativeButton(R.string.ausloeser_abbrechen) { _, _ -> fertig("") }
+            .setOnCancelListener { fertig("") }
+            .show()
     }
 
     /** One of Homes' tags: its name, action and automations from HA's list, „Bearbeiten“ and „Auslösen“. */
@@ -599,7 +626,7 @@ class AusloeserActivity : AppCompatActivity() {
         }
         val satz = if (unklar == null) getString(R.string.karte_eigene_daten, k.typ) else getString(R.string.karte_unklar, k.typ)
         val titel = getString(if (unklar == null) R.string.karte_titel else R.string.karte_titel_unklar)
-        inhalt.zeige(titel, listOf(satz), null, listOfNotNull(leer, kopieren), TagBefund.text(k))
+        inhalt.zeige(titel, listOf(satz, getString(R.string.karte_nachspielen)), null, listOfNotNull(leer, kopieren), TagBefund.text(k))
     }
 
     /** One question before a tag that may hold something is written: on [ja], [id] may be written once. */

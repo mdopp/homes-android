@@ -187,6 +187,16 @@ class HomeActivity : AppCompatActivity() {
         thread { val gut = BoxApiClient(app).gut(); runOnUiThread { if (!isFinishing) findViewById<TextView>(R.id.home_claim).setText(if (gut) R.string.home_claim_gut else R.string.home_claim) } }
     }
 
+    /** „Version 4.1.21 · gekoppelt mit www.dopp.cloud“, or „… · nicht gekoppelt“: the start screen's last line. */
+    private fun renderVersion(connected: Boolean) {
+        val version = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull() ?: "?"
+        findViewById<TextView>(R.id.home_version).text = if (connected) {
+            getString(R.string.home_version_gekoppelt, version, ServerStore.host(this) ?: "")
+        } else {
+            getString(R.string.home_version_ungekoppelt, version)
+        }
+    }
+
     private fun render() {
         val connected = paired()
         findViewById<View>(R.id.connect_section).visibility = if (connected) View.GONE else View.VISIBLE
@@ -200,6 +210,7 @@ class HomeActivity : AppCompatActivity() {
                 getString(R.string.home_connect_hint)
             }
         renderAssistent()
+        renderVersion(connected)
         if (!connected) return
         findViewById<View>(R.id.live_row).visibility = if (Live.exempt(this)) View.GONE else View.VISIBLE
         renderDevices()
