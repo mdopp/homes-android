@@ -355,23 +355,6 @@ class ManifestTest {
         assertTrue(receiver, receiver.contains("android.intent.action.MY_PACKAGE_REPLACED"))
     }
 
-    /**
-     * The fed widgets without a configure screen of their own get the shared
-     * no-UI one, required, so placing one from the launcher is a visible
-     * activity — an allowed start for the live service on Android 12+.
-     */
-    @Test
-    fun theFedWidgetsWithoutAScreenStartTheServiceWhenPlaced() {
-        listOf("energy_widget_info.xml").forEach { name ->
-            val info = File(RepoFiles.main, "res/xml/$name").readText()
-            assertTrue(name, info.contains("""android:configure="cloud.dopp.homes.widget.LiveConfigActivity""""))
-            assertFalse("$name: an optional configure step is skipped at placement", info.contains("configuration_optional"))
-        }
-        val activity = manifest.substringAfter("""android:name=".widget.LiveConfigActivity"""").substringBefore("</activity>")
-        assertTrue(activity, activity.contains("android.appwidget.action.APPWIDGET_CONFIGURE"))
-        assertTrue(activity, activity.contains("Translucent"))
-    }
-
     /** No widget asks Android to wake it: the live service resyncs on screen-on. */
     @Test
     fun noWidgetPolls() {
@@ -544,9 +527,11 @@ class ManifestTest {
         assertFalse("the camera", manifest.contains("android.hardware.camera"))
         val providers = Regex("""<receiver\s+android:name="\.widget\.(\w+WidgetProvider)"""").findAll(manifest).map { it.groupValues[1] }.toSet()
         assertEquals(
+            // the energy widget's provider stays for widgets already placed (owner 2026-11-28), never offered
             setOf("DeviceWidgetProvider", "EnergyWidgetProvider", "ToolWidgetProvider"),
             providers,
         )
+        assertFalse("its old picture is gone", File(RepoFiles.main, "res/layout/widget_energy.xml").exists())
         listOf(
             "devices_widget_info", "active_devices_widget_info", "camera_widget_info",
             "energy_stats_widget_info", "energy_totals_widget_info", "box_overview_widget_info", "box_services_widget_info",

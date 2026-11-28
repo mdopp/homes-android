@@ -42,7 +42,7 @@
 
     <!-- The widget types the app offers (#34). -->
     <string name="widget_type_device">Ein Gerät</string>
-    <string name="widget_type_energy">Energie</string>
+    <string name="bereich_energie">Energie</string>
 
     <!-- The start screen's devices (owner, 2026-11-02). -->
     <string name="home_devices_title">Deine Geräte</string>

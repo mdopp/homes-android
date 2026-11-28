@@ -89,7 +89,6 @@ object HomesPages {
  */
 enum class WidgetKind(val kind: String) {
     DEVICE("device"),
-    ENERGY("energy"),
     TOOL("tool"),
     ;
 

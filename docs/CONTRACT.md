@@ -67,7 +67,7 @@ each row naming the Homes file and lines it came from.
 | the start screen's devices | `GET /napi/portal/favorites` (the person's ☆ things on Homes, as cards in their order; homes#213), `POST /napi/ha/call`, `GET /napi/portal/state` (a cover's or a lock's state before its toggle) |
 | one device (widget, restored 2026-11-03) | `GET /napi/portal/state`, `POST /napi/ha/call`; its picker `GET /napi/portal/start/addable` |
 | app-icon shortcuts | Garagentor, Einkaufsliste, Zeitleiste, Dokument scannen: see (i); the garage among the favourites, else `GET /napi/portal/start/addable` (without cameras: Homes draws no card for one), `POST /napi/ha/call` |
-| energy | `GET /napi/portal/energy`: the flow now, per total `today` (kWh since the house's midnight; homes#213), and `charge`, how full the battery is (mdopp/homes#228) |
+| the start screen's „Energie“ tile (owner 2026-11-28: the energy widget went, „nur als Link zur Anzeige“) | `GET /napi/portal/energy`: the house's `draw` leg now and the sun's total `today` (else the grid's), as one line „Haus 260 W · heute 5,3 kWh erzeugt“; read when the start screen draws, at most every five minutes, with the screen on, only while `/napi/kann` lists `widgets` `energie`; the tap opens `/energie` in a Custom Tab |
 | Daten sichern | `GET /napi/sicherung/stand`, `POST /napi/sicherung/fehlend`, `POST /napi/sicherung/uploads`, `HEAD`/`PATCH /napi/sicherung/uploads/{id}`, `GET /napi/sicherung/schluessel`, `POST /napi/kontakte`, `GET /napi/kontakte/korrekturen`, `POST /napi/kontakte/korrekturen/{id}`, `GET /napi/sicherung/letzte`, `GET /napi/sicherung/letzte/{quelle}/{pfad...}`: see (e) |
 | Standortverlauf | `GET /napi/standort`, `POST /napi/standort`, `…/standort/import…`: see (f) |
 | Homes-Konto | `GET /napi/gemeinsam/kontakte`, `GET /napi/gemeinsam/kalender` (`?schreibbar=1`), `PUT\|DELETE /napi/gemeinsam/kalender/{kalender}/{uid}`, `PUT\|DELETE /napi/gemeinsam/kontakte/{uid}`: see (g) |
@@ -110,23 +110,20 @@ Fields the widgets read beyond a value to show:
 
 One foreground service (`realtime/LiveService.kt`, type `specialUse`, a quiet
 "Live-Widgets" notification) runs while the app is paired and a widget the
-stream keeps current is placed (one device, energy, tools; the Box widgets are
-gone, owner 2026-11-03). There is no switch (owner, 2026-11-08: „es ist jetzt
+stream keeps current is placed (one device, tools; the Box widgets are
+gone, owner 2026-11-03, the energy widget 2026-11-28). There is no switch (owner, 2026-11-08: „es ist jetzt
 der einzige Weg“); an older install's stored switch value is ignored. The
 start screen keeps one row only while the battery exemption is missing:
 „Widgets aktuell halten · Tippen und „Zulassen“ wählen“. It listens for the screen itself. While the screen is on it
 holds `GET /napi/portal/events` and reads one frame, `card_state`; on
 screen-off it drops the connection. Once connected it posts its watch set
-(`POST /napi/portal/watch`: `entity_ids`, the device widgets' devices and,
-while the energy widget is placed, the energy flow's sensors and the battery's charge; re-posted inside Homes' one-hour TTL; a 503 while
+(`POST /napi/portal/watch`: `entity_ids`, the device widgets' devices; re-posted inside Homes' one-hour TTL; a 503 while
 Home Assistant is down is retried with backoff, about two minutes) and has
 every fed widget read again.
 
 - `gemeinsam` (`{teil}`) syncs that part of the Homes account, see (g).
 - `card_state` (`{entity_id, card}`) draws the device widgets of that entity
-  without a read; for an energy sensor it reads the energy
-  widget again, at most every 10 s, Homes' sensor interval. Any other frame
-  reads nothing. The app never asks for `active_set` (no `active` in its
+  without a read. Any other frame reads nothing. The app never asks for `active_set` (no `active` in its
   watch), and a stray one is not read.
 
 A 401 stops the service.
@@ -154,7 +151,7 @@ through their chat channel, not the app (laib ADR 0022 §3).
 ## (d) Pages
 
 A widget's body tap opens one of Homes' pages in the browser at the paired
-address: `/energie` for the energy widget, `/start` for a tool widget's
+address: `/start` for a tool widget's
 header, a device's own page for a device widget whose device a tap cannot
 switch (a lamp, a switch, a cover, a lock act on the tap instead). The app has
 no web shell of its own; its start
@@ -174,7 +171,7 @@ screen (`ToolActionActivity`) that opens the page or the sheet.
 Every page a widget opens carries `von=widget.<kind>` exactly once (`?von=…`,
 or `&von=…` after a query the page already has; a `von` of the page's own is
 replaced), so Homes counts server-side which widget a tap came from (#180).
-The kinds (`WidgetKind` in `widget/HomesPages.kt`): `device`, `energy`, `tool`. The app counts nothing and makes no call for it; a
+The kinds (`WidgetKind` in `widget/HomesPages.kt`): `device`, `tool` (`energy` went with its widget, 2026-11-28). The app counts nothing and makes no call for it; a
 launcher shortcut and the app's own links carry no `von`.
 
 ## (d2) The start screen's devices
@@ -616,9 +613,10 @@ there.
   trace below. A Homes-Konto part that was on stops syncing
   (`setIsSyncable(…, 0)`, no periodic sync) and its entries stay on the
   phone; it syncs again when the box offers it again (`HomesKonto.folgen`).
-  The backup job skips a part the box lacks. The device and energy widget
-  providers are disabled only while their key is missing and none of their
-  widgets is placed (`kann/Anbieter.kt`).
+  The backup job skips a part the box lacks. The device widget's provider
+  is disabled only while its key is missing and none of its widgets is
+  placed; the energy widget's (gone, 2026-11-28) is never offered and stays
+  only while one is placed (`kann/Anbieter.kt`).
 - **„Hier anfordern“:** `POST /napi/kann/anfordern {"modul": …}` → 200, the
   module's entry with its new state, which replaces the kept one. Pressed,
   the button says „Wird angefordert …“; it ends with the new state, Homes'

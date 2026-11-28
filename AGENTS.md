@@ -12,9 +12,11 @@ This repo is the **Homes app**: native Kotlin home-screen widgets, the
 pairing with **Homes** (`https://www.<domain>`, repo `mdopp/homes`), the
 family's surface of the box Laib runs, and on the app's start screen the
 person's favorite devices (the owner's calls, 2026-11-02 and 2026-11-03: the
-widgets are one device per widget and one energy widget; the tools Dokumente
-and Notizen went on 2026-11-27 („Kann ganz weg“: a placed one only says to
-remove it, `ToolDefs.AUSGEBAUT`, no network); no Box widgets; every confirmation is the one dialog,
+widgets are one device per widget; the energy widget went on 2026-11-28
+(„nur als Link zur Anzeige“: the start screen's „Energie“ tile opens Homes'
+Energie page, `ui/EnergieKachel.kt`; a placed one only says to remove it), the
+tools Dokumente and Notizen on 2026-11-27 („Kann ganz weg“: a placed one only
+says to remove it, `ToolDefs.AUSGEBAUT`, no network); no Box widgets; every confirmation is the one dialog,
 `widget/ActionDialog.kt`). It is a widget client (laib ADR 0022):
 no web shell, no messages, no approvals, no diagnostics, and for the widgets
 no network while the screen is off. The widgets stay live through one
@@ -280,7 +282,7 @@ why in a `@Suppress` beside it.
 app/src/main/java/cloud/dopp/homes/
   data/        every call to Homes: Napi.kt (the calls as data), NapiRequest.kt,
                pairing, token and server store, ScreenGate
-  widget/      the device, energy and tool widgets, the one ActionDialog,
+  widget/      the device and tool widgets (the energy one only says it went), the one ActionDialog,
                publishing the shortcuts, and the widget picker
   ui/          the app's screens: start (favourites, LevelSheet), share,
                Daten sichern, Zurückholen, Standortverlauf, Homes-Konto

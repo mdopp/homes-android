@@ -2,9 +2,7 @@ package cloud.dopp.homes.widget
 
 import android.content.Context
 import androidx.core.content.edit
-import cloud.dopp.homes.data.ApiClient
 import cloud.dopp.homes.data.Card
-import cloud.dopp.homes.data.Energy
 import org.json.JSONObject
 
 /**
@@ -58,18 +56,6 @@ object WidgetCache {
             )
         }.getOrNull()
     }
-
-    /** Keep Homes' energy answer [body], the energy widget's last good read: one house, one picture. */
-    fun putEnergy(ctx: Context, body: String) {
-        runCatching { p(ctx).edit { putString(ENERGY, body) } }
-    }
-
-    /** The energy read last, or null when there is none yet. */
-    fun energy(ctx: Context): Energy? = runCatching {
-        p(ctx).getString(ENERGY, null)?.let { ApiClient.parseEnergy(JSONObject(it)) }
-    }.getOrNull()
-
-    private const val ENERGY = "energy"
 
     /** Drop the card of [id] (widget removed / re-bound). */
     fun clear(ctx: Context, id: Int) {

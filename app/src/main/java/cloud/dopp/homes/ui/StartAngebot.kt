@@ -82,8 +82,8 @@ internal class StartAngebot(
         fun archiv(kann: Kann?, base: String?): String? =
             if (kann?.hat(Liste.MEHR, KannKey.ARCHIV) == true) base?.let(Rueckholung::archivAdresse) else null
 
-        /** A widget key the picker can offer: the device, the energy, a tool the app offers. */
-        fun widget(key: String): Boolean = key == KannKey.GERAET || key == KannKey.ENERGIE ||
+        /** A widget key the picker can offer: the device, a tool the app offers (the energy widget went, owner 2026-11-28). */
+        fun widget(key: String): Boolean = key == KannKey.GERAET ||
             (key.startsWith(KannKey.TOOL) && key.removePrefix(KannKey.TOOL).let { it !in ToolDefs.NOT_OFFERED && it !in ToolDefs.AUSGEBAUT })
 
         /** A trace's icon by what its module would bring, the app's own where it has one. */

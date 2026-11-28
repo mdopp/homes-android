@@ -17,9 +17,6 @@ contacts and calendar are on the phone.
   <img src="docs/img/regler.webp" width="260" alt="A lamp's level opens a sheet with a slider and 25, 50, 75 and 100 %">
 </p>
 <p align="center">
-  <img src="docs/img/widget-energie.webp" width="420" alt="The energy widget: solar, battery with its charge, grid and house now, and today's totals">
-</p>
-<p align="center">
   <img src="docs/img/widget-geraete.webp" width="820" alt="Device widgets: garage door, front door, kitchen light at 60 %, hall light, shutter, bathroom temperature">
 </p>
 
@@ -32,9 +29,10 @@ contacts and calendar are on the phone.
   Homes, and a lamp's brightness or a shutter's position opens a sheet
   with a slider.
 - **Widgets:** one device per widget (its state as a picture, a tap
-  switches it), an energy widget (solar, battery, grid and house now, and
-  today). The notes and documents widgets went (2026-11-27): one already
-  on the home screen says to remove it.
+  switches it). The energy is a tile on the start screen (2026-11-28): it
+  opens Homes' Energie page, and its line says what the house draws and
+  what the sun made today. The energy, notes and documents widgets went: one
+  already on the home screen says to remove it.
 - **Live while you look:** while the screen is on, the widgets stay
   current through one live connection to Homes. When the screen goes off,
   the app stops listening. No polling.

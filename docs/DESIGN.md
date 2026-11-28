@@ -95,7 +95,9 @@ Rest; **Deine Aufgaben** in einer Zeile mit Zahl (grau, orange erst wenn Homes
 eine Aufgabe `dringend` nennt); **Alles auf einen Blick** — jeder Bereich eine
 Kachel, drei je Reihe (Bild, Name, eine Zeile Stand von Homes, ein grüner Punkt
 und einmal „neu: …“ für Neues, bis die Kachel geöffnet ist,
-`item_bereich.xml`, `ui/Ueberblick.kt`), darunter leise die Spuren;
+`item_bereich.xml`, `ui/Ueberblick.kt`; „Energie“ öffnet Homes' Energie-Seite,
+seine Zeile „Haus 260 W · heute 5,3 kWh erzeugt“, Besitzer 2026-11-28: kein
+Energie-Widget mehr), darunter leise die Spuren;
 **Dieses Telefon · <Name>** — eine Zeile (orange, wenn eine Sicherung
 überfällig ist) zu einer Seite mit „Sichert auf die Box“, „Ist verbunden
 mit“, „Meldet an die Box“ und „Kopplung“ (mit der Version,

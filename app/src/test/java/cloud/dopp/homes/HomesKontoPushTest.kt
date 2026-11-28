@@ -15,7 +15,7 @@ import cloud.dopp.homes.konto.HomesKonto
 import cloud.dopp.homes.konto.HomesKonto.Teil
 import cloud.dopp.homes.realtime.LiveService
 import cloud.dopp.homes.realtime.RealtimeProtocol
-import cloud.dopp.homes.widget.EnergyWidgetProvider
+import cloud.dopp.homes.widget.ToolWidgetProvider
 import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
@@ -86,7 +86,7 @@ class HomesKontoPushTest {
             FakeSource(req).also { opened += it }
         })
         Reach.set("cloud.dopp.homes.realtime.Live", "postWatch", { _: Context -> })
-        shadowOf(android.appwidget.AppWidgetManager.getInstance(app)).createWidget(EnergyWidgetProvider::class.java, R.layout.widget_energy)
+        shadowOf(android.appwidget.AppWidgetManager.getInstance(app)).createWidget(ToolWidgetProvider::class.java, R.layout.widget_tool)
         shadowOf(app).grantPermissions(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
     }
 

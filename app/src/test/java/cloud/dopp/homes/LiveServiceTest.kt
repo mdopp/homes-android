@@ -13,7 +13,6 @@ import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.ui.HomeActivity
 import cloud.dopp.homes.widget.DeviceWidgetProvider
-import cloud.dopp.homes.widget.EnergyWidgetProvider
 import cloud.dopp.homes.widget.ToolWidgetProvider
 import okhttp3.Protocol
 import okhttp3.Request
@@ -67,7 +66,6 @@ class LiveServiceTest {
 
     /** Every widget the stream keeps current. */
     private val fed: List<Pair<Class<out android.appwidget.AppWidgetProvider>, Int>> = listOf(
-        EnergyWidgetProvider::class.java to R.layout.widget_energy,
         ToolWidgetProvider::class.java to R.layout.widget_tool,
         DeviceWidgetProvider::class.java to R.layout.widget_device,
     )
@@ -153,13 +151,13 @@ class LiveServiceTest {
     /**
      * The catch-up (#137, #138): Homes sends a card only when it changes, so what
      * changed while the screen was off reaches a widget only through this. Every
-     * placed instance of every fed widget is asked, each once — the energy
-     * widget must not keep the morning's sun, a lamp tile not its old state.
+     * placed instance of every fed widget is asked, each once — a lamp tile
+     * must not keep its old state.
      */
     @Test
     fun onceConnectedItPostsTheWatchSetAndReadsEveryFedWidgetAgain() {
         place(*fed.toTypedArray())
-        place(fed[0], fed[0], fed[2])
+        place(fed[0], fed[0], fed[1])
         start()
         val app = shadowOf(ctx() as android.app.Application)
         app.clearBroadcastIntents()
@@ -250,33 +248,10 @@ class LiveServiceTest {
         assertEquals("a live_switch in the app", 0, ctx().resources.getIdentifier("live_switch", "id", ctx().packageName))
     }
 
-    @Test
-    fun theEnergyFlowIsWatchedAndItsFramesReadTheEnergyWidgetAgain() {
-        place(fed.first())
-        Reach.call("cloud.dopp.homes.realtime.WatchSet", "rememberEnergy", ctx(), listOf("sensor.pv_power"))
-        @Suppress("UNCHECKED_CAST")
-        val watched = Reach.call("cloud.dopp.homes.realtime.WatchSet", "currentEntities", ctx()) as List<String>
-        assertTrue("energy not watched: $watched", "sensor.pv_power" in watched)
-
-        start()
-        listeners.last().onOpen(opened.last(), response(200))
-        idle()
-        val app = shadowOf(ctx() as android.app.Application)
-        app.clearBroadcastIntents()
-        listeners.last().onEvent(
-            opened.last(), null, "card_state",
-            """{"entity_id":"sensor.pv_power","card":{"entity_id":"sensor.pv_power","domain":"sensor","state":"812"}}""",
-        )
-        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(15))
-        val asked = app.broadcastIntents.mapNotNull { it.component?.className }.toSet()
-        assertTrue("energy widget not read: $asked", EnergyWidgetProvider::class.java.name in asked)
-    }
-
-    /** A frame for anything but an energy sensor reads nothing: no device widgets any more. */
+    /** A frame reads nothing (the energy widget went, owner 2026-11-28): a device draws it without a read. */
     @Test
     fun anotherFrameReadsNothing() {
         place(*fed.toTypedArray())
-        Reach.call("cloud.dopp.homes.realtime.WatchSet", "rememberEnergy", ctx(), listOf("sensor.pv_power"))
         start()
         listeners.last().onOpen(opened.last(), response(200))
         idle()

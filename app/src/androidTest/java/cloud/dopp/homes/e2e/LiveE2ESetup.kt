@@ -8,7 +8,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.widget.DeviceWidgetProvider
-import cloud.dopp.homes.widget.EnergyWidgetProvider
 import cloud.dopp.homes.widget.WidgetStore
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -16,8 +15,8 @@ import org.junit.runner.RunWith
 
 /**
  * The live e2e's starting point (e2e/live_e2e.sh): the app paired to the fake
- * Homes on the emulator's host, the energy widget and a device widget placed:
- * the stream watches the energy sensors and the device. Binding needs `appwidget grantbind` for the app, which the script
+ * Homes on the emulator's host, a device widget placed: the stream watches
+ * the device (the energy widget went, owner 2026-11-28). Binding needs `appwidget grantbind` for the app, which the script
  * does first; the widgets are bound to a host of the app's own, which is all
  * the live service looks at.
  */
@@ -31,8 +30,6 @@ class LiveE2ESetup {
         assertTrue("token", TokenStore.save(ctx, "homes_device_E2E"))
         val mgr = AppWidgetManager.getInstance(ctx)
         val host = AppWidgetHost(ctx, HOST_ID)
-        val energy = host.allocateAppWidgetId()
-        assertTrue("bind the energy widget", mgr.bindAppWidgetIdIfAllowed(energy, ComponentName(ctx, EnergyWidgetProvider::class.java)))
         val device = host.allocateAppWidgetId()
         assertTrue("bind the device widget", mgr.bindAppWidgetIdIfAllowed(device, ComponentName(ctx, DeviceWidgetProvider::class.java)))
         WidgetStore.bind(ctx, device, "light.e2e", "E2E", "light", null)

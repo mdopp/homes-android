@@ -3,8 +3,7 @@
     <string name="widget_refresh">Aktualisieren</string>
     <string name="widget_load_error">konnte nicht laden</string>
 
-    <!-- The one energy widget (owner, 2026-11-02; 2026-11-08: no „Jetzt“ and „Heute“ labels). -->
+    <!-- The energy widget, taken out (owner 2026-11-28): only for widgets already placed. -->
     <string name="energy_widget_label">Haus-Energie</string>
-    <string name="energy_widget_description">Strom von PV, Haus, Netz und Akku. Tippen öffnet die Energie-Seite.</string>
-    <string name="energy_autarkie">Autarkie</string>
+    <string name="energy_widget_description">Gibt es nicht mehr: die Energie ist eine Kachel auf dem Startbildschirm.</string>
 </resources>

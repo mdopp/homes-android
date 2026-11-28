@@ -177,7 +177,7 @@ class ApiClient(private val ctx: Context) {
         Upload.Unreachable
     }
 
-    /** The house energy picture via `/napi/portal/energy`, raw for the widget to keep ([parseEnergy]); null on any failure. */
+    /** The house energy picture via `/napi/portal/energy`, raw, for the start screen's Energie tile ([parseEnergy]); null on any failure. */
     fun energyBody(): String? = getBody(Napi.ENERGY, Napi.ENERGY.path)
 
     /**
@@ -378,7 +378,7 @@ class ApiClient(private val ctx: Context) {
                             label = o.optString(EnergyJson.LABEL),
                             value = o.optString(EnergyJson.STATE).toDoubleOrNull(),
                             unit = o.optString(EnergyJson.UNIT).ifBlank { "kWh" },
-                            // Homes' totals carry no key of their own: EnergyStyle
+                            // Homes' totals carry no key of their own: the Energie tile
                             // classifies a slot from its entity id and label.
                             key = entityId,
                             entityId = entityId.ifBlank { null },

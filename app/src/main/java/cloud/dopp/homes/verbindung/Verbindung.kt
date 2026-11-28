@@ -20,7 +20,6 @@ import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.realtime.Live
 import cloud.dopp.homes.widget.DeviceWidgetProvider
-import cloud.dopp.homes.widget.EnergyWidgetProvider
 import okhttp3.OkHttpClient
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -163,6 +162,5 @@ object Verbindung {
         runCatching { ctx.sendBroadcast(Intent(GEAENDERT).setPackage(ctx.packageName)) }
         if (nachher.alt == vorher.alt) return
         runCatching { DeviceWidgetProvider.zeichnen(ctx) }
-        runCatching { EnergyWidgetProvider.zeichnen(ctx) }
     }
 }

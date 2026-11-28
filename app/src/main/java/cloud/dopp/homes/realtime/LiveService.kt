@@ -38,7 +38,6 @@ import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.data.request
 import cloud.dopp.homes.ui.HomeActivity
 import cloud.dopp.homes.widget.DeviceWidgetProvider
-import cloud.dopp.homes.widget.EnergyWidgetProvider
 import cloud.dopp.homes.widget.ToolWidgetProvider
 import cloud.dopp.homes.data.HomesHttp
 import cloud.dopp.homes.verbindung.Verbindung
@@ -61,7 +60,7 @@ object Live {
 
     /** The widgets the stream keeps current: frames, refetches on frames, or the screen-on resync. */
     val FED: List<Class<out AppWidgetProvider>> = listOf(
-        DeviceWidgetProvider::class.java, EnergyWidgetProvider::class.java, ToolWidgetProvider::class.java,
+        DeviceWidgetProvider::class.java, ToolWidgetProvider::class.java,
     )
 
     /**
@@ -137,8 +136,7 @@ object Live {
  *   widget read again, since Homes sends a card only when it changes.
  * - Screen off: drop the connection. Nothing polls; a widget nobody sees
  *   needs no update.
- * - A card draws the device widgets of its entity, no read; a card of an
- *   energy sensor has the energy widget read again, coalesced.
+ * - A card draws the device widgets of its entity, no read.
  * - With „Ladestation melden“ on it holds the charger's receiver ([Ladestation], homes ADR 0004): its one
  *   request goes with the screen off too, the owner's yes of 2026-11-26 (AGENTS.md).
  * - A 401 stops the service (the device was removed in Homes); any other loss
@@ -171,7 +169,6 @@ class LiveService : Service() {
     private var connectedAtMs = 0L
     private var status: Zustand? = null
     private var inForeground = false
-    private var energyQueued = false
 
     private val screen = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -265,7 +262,6 @@ class LiveService : Service() {
         runCatching { source?.cancel() }
         source = null
         connectedAtMs = 0L
-        energyQueued = false
         Verbindung.live(this, false)
     }
 
@@ -302,11 +298,6 @@ class LiveService : Service() {
         }
     }
 
-    private val energyRefresh = Runnable {
-        energyQueued = false
-        update(EnergyWidgetProvider::class.java)
-    }
-
     private val reconnect = Runnable { if (Live.wanted(this)) connect() else stop() }
 
     private val listener = object : EventSourceListener() {
@@ -330,11 +321,6 @@ class LiveService : Service() {
                     is RealtimeProtocol.GemeinsamEvent -> gemeinsam(ev.teil)
                     is RealtimeProtocol.CardStateEvent -> {
                         runCatching { DeviceWidgetProvider.wakeEntity(this@LiveService, ev.entityId, ev.card) }
-                        // a sensor comes every 10 s at most: at most one energy refetch in that time
-                        if (!energyQueued && ev.entityId in WatchSet.energy(this@LiveService)) {
-                            energyQueued = true
-                            main.postDelayed(energyRefresh, ENERGY_REFRESH_MS)
-                        }
                     }
                 }
             }
@@ -441,9 +427,6 @@ class LiveService : Service() {
 
         /** Re-post the watch set well inside Homes' one-hour TTL. */
         private const val WATCH_REPOST_MS = 20L * 60L * 1000L
-
-        /** Homes sends a sensor's card at most every 10 s: the energy widget reads at most that often. */
-        private const val ENERGY_REFRESH_MS = 10_000L
     }
 }
 
