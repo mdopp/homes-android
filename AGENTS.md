@@ -55,7 +55,8 @@ These rules apply to every session, human or agent.
   the Hochladen job's while it uploads and for what came of it, and „Teilen
   per Berührung“'s question „Ein Telefon möchte etwas von dir. Was teilen?“
   when another phone reads this one (owner approved 2026-11-28; at most every
-  30 s, `teilen/Teilen.kt`). Two
+  30 s, `teilen/Teilen.kt`; none while the app is in front and „Was teilen?“
+  opens itself). Two
   foreground services, and only these: the live widgets' (`specialUse`),
   always there while wanted, and WorkManager's for the Hochladen job
   (`dataSync`), only while it uploads. Why the second: the owner decided on
@@ -162,7 +163,9 @@ These rules apply to every session, human or agent.
   2026-11-28; docs/CONTRACT.md (n)): a session on Homes whose link the other
   phone opens — by [NFC], [QR] or a touch while nothing is armed and „Bei
   Berührung Kontakt austauschen“ is on (the link alone shows only the first
-  name) — and „Was teilen?“ (`teilen/AustauschActivity.kt`) releases
+  name) — and „Was teilen?“ (`teilen/AustauschActivity.kt`; after a touch
+  its notification, or opened at once while a screen of the app is in front:
+  `teilen/Vorne.kt`, owner approved 2026-11-28) releases
   exactly the switched fields of the card, the guest Wi-Fi, the form; the
   page follows. The card, the guest Wi-Fi and the kept tags are
   encrypted with a Keystore AES-GCM key (`teilen/Tresor.kt`, not

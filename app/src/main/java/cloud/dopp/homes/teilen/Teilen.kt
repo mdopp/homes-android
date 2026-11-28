@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
@@ -20,8 +22,9 @@ import kotlin.concurrent.thread
  * Telefon möchte etwas von dir. Was teilen?“, at most every 30 s, whose tap
  * opens „Teilen“ ([TeilenActivity]) — or, with „Bei Berührung Kontakt
  * austauschen“ on, „Was teilen?“ of the session just started ([Austausch]).
- * No activity is started from the background; nothing of what could be
- * shared is in the notification.
+ * No activity is started from the background: while one of the app's own
+ * screens is in front ([Vorne]), „Was teilen?“ opens at once instead (owner
+ * approved 2026-11-28). Nothing of what could be shared is in the notification.
  */
 object Teilen {
 
@@ -54,8 +57,15 @@ object Teilen {
             Austausch.jetzt = Austausch.Sitzung(a.id, a.link, a.bis)
             WlanAngebot.vorbereiten(app.getString(R.string.austausch_titel), AustauschActivity.ndef(a.link), nurEinmal = true)
             WlanAngebot.anfangen()
-            melden(app, app.getString(R.string.austausch_beruehrt), AustauschActivity::class.java)
+            Handler(Looper.getMainLooper()).post { wasTeilen(app) }
         }
+    }
+
+    /** „Was teilen?“ for the session just started: opened at once while a screen of the app is in front ([Vorne]), else asked. */
+    private fun wasTeilen(app: Context) {
+        val vorn = Vorne.aktivitaet()
+        val offen = vorn != null && runCatching { vorn.startActivity(Intent(vorn, AustauschActivity::class.java)) }.isSuccess
+        if (!offen) melden(app, app.getString(R.string.austausch_beruehrt), AustauschActivity::class.java)
     }
 
     /** The one heads-up notification, [titel], whose tap opens [ziel]. */
