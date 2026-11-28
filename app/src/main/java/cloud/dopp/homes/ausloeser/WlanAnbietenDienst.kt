@@ -17,7 +17,7 @@ import cloud.dopp.homes.teilen.Teilen
  */
 class WlanAnbietenDienst : HostApduService() {
 
-    private val tag = Typ4Tag({ WlanAngebot.nachricht()?.takeIf { bildschirmAn() } }, WlanAngebot::gelesen)
+    private val tag = Typ4Tag(WlanAngebot::gelesen) { WlanAngebot.nachricht()?.takeIf { bildschirmAn() } }
 
     private fun bildschirmAn() = (getSystemService(POWER_SERVICE) as? PowerManager)?.isInteractive == true
 

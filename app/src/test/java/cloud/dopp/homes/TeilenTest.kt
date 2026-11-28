@@ -97,7 +97,7 @@ class TeilenTest {
         return out
     }
 
-    private fun tag() = Typ4Tag({ WlanAngebot.nachricht(T0 + 1_000) }, WlanAngebot::gelesen)
+    private fun tag() = Typ4Tag(WlanAngebot::gelesen) { WlanAngebot.nachricht(T0 + 1_000) }
 
     @Test
     fun nothingIsAnsweredWithoutAChoice() {

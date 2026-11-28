@@ -8,7 +8,7 @@ package cloud.dopp.homes.ausloeser
  * nothing is offered, each one is 6A82 (not found), as if no tag were there.
  * One instance per reader session ([zuruecksetzen] between them).
  */
-class Typ4Tag(private val ndef: () -> ByteArray?, private val gelesen: () -> Unit = {}) {
+class Typ4Tag(private val gelesen: () -> Unit = {}, private val ndef: () -> ByteArray?) {
 
     private var gewaehlt = false
     private var datei: ByteArray? = null
