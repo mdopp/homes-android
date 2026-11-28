@@ -33,9 +33,6 @@ object DokumenteAdresse {
         return teile[0].takeIf { it.endsWith(PLUS) && it.length > PLUS.length }
     }
 
-    /** The row's hint: `mdopp+doc+…@dopp.cloud`. */
-    fun muster(adresse: String): String? = kopie(adresse)?.let { it + "…@" + adresse.trim().substringAfter('@') }
-
     /** Puts [kopie] on the clipboard; Android 13 and later show their own note of it, older ones a toast. */
     fun kopieren(ctx: Context, adresse: String?) {
         val text = kopie(adresse) ?: return

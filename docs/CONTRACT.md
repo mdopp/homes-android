@@ -578,8 +578,9 @@ title, why it is off (`grund`), what it would bring (`bietet`), its trace
 `eingerichtet`; `spur` the German words) and whether it offers „Hier
 anfordern“ (`anfordern`). To a device whose person has one, it also gives
 `dokumente_adresse`, `<login>+doc+@<domain>` (owner 2026-11-10,
-mdopp/homes#338): Mehr's row „Dokumente-Adresse kopieren“ and the app
-icon's entry of that name copy `<login>+doc+`, and the person types the
+mdopp/homes#338): the app icon's entry „Dokumente-Adresse kopieren“
+copies `<login>+doc+` (no start-screen tile since 2026-11-28: Homes'
+Dokumente page copies it), and the person types the
 sender after the `+` (`widget/DokumenteAdresse.kt`). Without it, neither is
 there.
 

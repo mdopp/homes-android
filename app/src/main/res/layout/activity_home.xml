@@ -201,6 +201,15 @@
                 android:layout_marginBottom="@dimen/space_xs"
                 android:text="@string/home_devices_hint" />
 
+            <!-- The device widget's entry (owner 2026-11-28: „oben in die Liste von Geräten“): one quiet row above
+                 the tiles, „+ Gerät als Widget auf den Startbildschirm“ (HomeActivity.showGeraetWidget). -->
+            <LinearLayout
+                android:id="@+id/geraet_widget_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xs"
+                android:orientation="vertical" />
+
             <!-- The favorites from Homes (/napi/portal/favorites) as tiles (FavoritenAnsicht). -->
             <LinearLayout
                 android:id="@+id/devices_group"
@@ -349,13 +358,16 @@
                     android:visibility="gone" />
             </LinearLayout>
 
+            <!-- „Widget hinzufügen“: the tools Homes offers as widgets, if any; gone with none (owner 2026-11-28). -->
             <TextView
+                android:id="@+id/widgets_titel"
                 style="@style/Text.Homes.Title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/home_widgets_title" />
 
             <TextView
+                android:id="@+id/widgets_hinweis"
                 style="@style/Text.Homes.Label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

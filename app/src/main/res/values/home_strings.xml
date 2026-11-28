@@ -41,7 +41,7 @@
     <string name="home_logged_out">Kopplung aufgehoben.</string>
 
     <!-- The widget types the app offers (#34). -->
-    <string name="widget_type_device">Ein Gerät</string>
+    <string name="widget_type_device">Gerät als Widget auf den Startbildschirm</string>
     <string name="bereich_energie">Energie</string>
 
     <!-- The start screen's devices (owner, 2026-11-02). -->
@@ -109,7 +109,7 @@
     <string name="scannen_keine_kamera">Keine Kamera-App gefunden.</string>
     <string name="scannen_erlaubnis">Ohne Zugriff auf die Kamera lässt sich kein Dokument scannen.</string>
 
-    <!-- Dokumente-Adresse kopieren (owner 2026-11-10): the Mehr row, its hint, the app icon's menu, what Android 12 and older are told. -->
+    <!-- Dokumente-Adresse kopieren (owner 2026-11-10): the app icon's menu (no start-screen tile since 2026-11-28), what Android 12 and older are told. -->
     <string name="dokumente_adresse">Dokumente-Adresse kopieren</string>
     <string name="dokumente_adresse_kurz">Dokumente-Adresse</string>
     <string name="dokumente_adresse_kopiert">Dokumente-Adresse kopiert</string>

@@ -12,6 +12,7 @@ import cloud.dopp.homes.data.Napi.Quelle
 import cloud.dopp.homes.data.ServerStore
 import cloud.dopp.homes.data.TokenStore
 import cloud.dopp.homes.einrichtung.EinrichtungStore
+import cloud.dopp.homes.kann.KannStore
 import cloud.dopp.homes.sicherung.SicherungStore
 import cloud.dopp.homes.ui.HomeActivity
 import cloud.dopp.homes.ui.Jetzt
@@ -36,8 +37,8 @@ import org.robolectric.annotation.Config
  * The start screen as the owner approved it (2026-11-27: „Sonst ein gutes
  * Konzept. Bitte umsetzen“): „Jetzt“ only while something wants attention,
  * the favourites ordered by it, every area a tile with „neu“ for one never
- * opened, „Dieses Telefon“ in one line and on its page, „Widget hinzufügen“
- * as before.
+ * opened, „Dieses Telefon“ in one line and on its page; the device widget
+ * atop „Deine Geräte“ (owner 2026-11-28, HomeScreenTest).
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -60,6 +61,7 @@ class StartNeuTest {
         TokenStore.clear(ctx())
         StartDevices.clear(ctx())
         EinrichtungStore.clear(ctx())
+        KannStore.clear(ctx())
         listOf("start_jetzt", "start_bereiche").forEach { ctx().getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit() }
     }
 
@@ -165,6 +167,16 @@ class StartNeuTest {
 
     private fun View.name() = findViewById<TextView>(R.id.bereich_name).text.toString()
     private fun View.neu() = findViewById<View>(R.id.bereich_neu).visibility == View.VISIBLE
+
+    /** No „Dokumente-Adresse“ tile (owner 2026-11-28): Homes' Dokumente page copies it; the Dokumente tile stays. */
+    @Test
+    fun theDokumenteAdresseIsNoTileTheDokumenteTileStays() {
+        EinrichtungStore.neu(ctx(), antwort("dokumente"))
+        KannStore.neu(ctx(), """{"version":1,"module":[],"app":{"mehr":["dokumente-adresse"]},"dokumente_adresse":"anna+doc+@example.org"}""", null)
+        val namen = kacheln(start()).map { it.name() }
+        assertTrue(namen.toString(), "Dokumente" in namen)
+        assertFalse(namen.toString(), "Dokumente-Adresse" in namen)
+    }
 
     @Test
     fun aNewAreaWearsTheDotUntilOpened() {
