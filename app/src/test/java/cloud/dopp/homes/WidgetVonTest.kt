@@ -41,7 +41,7 @@ class WidgetVonTest {
     @Test
     fun theKinds() {
         assertEquals(
-            listOf("device", "energy", "tool"),
+            listOf("device", "tool"), // the energy widget went (owner 2026-11-28)
             WidgetKind.values().map { it.kind },
         )
         WidgetKind.values().forEach {

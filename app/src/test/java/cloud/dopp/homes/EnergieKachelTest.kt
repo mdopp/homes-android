@@ -45,12 +45,17 @@ class EnergieKachelTest {
 
     private val ctx: Context = ApplicationProvider.getApplicationContext()
     private val anfragen = CopyOnWriteArrayList<String>()
+
+    /** What `/napi/kann` answers, as [kann] set it: the app reads it again when it opens. */
+    @Volatile
+    private var kannAntwort: String? = null
     private val server = MockWebServer().apply {
         dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 anfragen += request.path.orEmpty()
                 return when (request.path) {
                     "/napi/portal/energy" -> MockResponse().setBody(ENERGY)
+                    "/napi/kann" -> kannAntwort?.let { MockResponse().setBody(it) } ?: MockResponse().setResponseCode(404)
                     else -> MockResponse().setResponseCode(404)
                 }
             }
@@ -76,8 +81,11 @@ class EnergieKachelTest {
         runCatching { server.shutdown() }
     }
 
-    private fun kann(vararg widgets: String) =
-        KannStore.neu(ctx, """{"version":1,"module":[],"app":{"widgets":[${widgets.joinToString(",") { "\"$it\"" }}],"mehr":[]}}""", null)
+    private fun kann(vararg widgets: String) {
+        val body = """{"version":1,"module":[],"app":{"widgets":[${widgets.joinToString(",") { "\"$it\"" }}],"mehr":[]}}"""
+        kannAntwort = body
+        KannStore.neu(ctx, body, null)
+    }
 
     @Test
     fun theEnergyWidgetIsNoLongerOffered() {
@@ -139,6 +147,7 @@ class EnergieKachelTest {
         kann("geraet")
         assertNull(kachel(start(), "Energie"))
         KannStore.clear(ctx)
+        kannAntwort = null
         assertNull("what the box can do unknown: no link to a page that may not be there", kachel(start(), "Energie"))
         Thread.sleep(300)
         assertTrue(anfragen.none { it == "/napi/portal/energy" })
