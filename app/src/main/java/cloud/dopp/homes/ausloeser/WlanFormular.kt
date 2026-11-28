@@ -90,6 +90,14 @@ internal class WlanFormular(
         }
     }
 
+    /** „Neu beschreiben“ on a WLAN tag read: the form open with what was on it. */
+    fun vorbelegen(n: WlanTag.Netz) {
+        auf(true)
+        ssid.setText(n.ssid)
+        schutz.check(if (n.schutz == WlanTag.Schutz.OFFEN) R.id.wlan_offen else R.id.wlan_wpa2)
+        passwort.setText(n.passwort)
+    }
+
     /** The screen is in front again while waiting: this form's record goes on. */
     fun wiederAn() {
         nachricht?.let { (name, n) -> lesen(name, n) }
@@ -147,6 +155,7 @@ internal class WlanFormular(
                 warteAus()
                 zeigeStand(e.satz)
             }
+            is TagSchreiber.Ergebnis.Gelesen -> zeigeStand(a.getString(R.string.wlan_schon_beschrieben)) // never written over unasked
             else -> Unit // only looked at: not this form's
         }
     }

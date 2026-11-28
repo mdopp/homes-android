@@ -769,7 +769,22 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   nothing). Tapping a tag opens the same form for it. A blank tag held to
   the phone while the screen is open opens the form by itself, „Neuer Tag
   erkannt – wie soll er heißen?“, the name field focused. A written tag
-  held to it says „Schon beschrieben. Zum Melden die Seite schließen.“ for
+  held to it shows what is on it, before anything is offered (owner
+  2026-11-27, `ausloeser/TagInhalt.kt`, `TagInhaltTest`), in a card right
+  under the list (scrolled into view): a Homes tag (Homes' address, the scheme form or HA's) → its
+  name, action and automations from the list `GET /napi/ausloeser/tags`
+  already read, „Bearbeiten“ (the list's form for it) and „Auslösen“ (`POST
+  /napi/ausloeser` as a touch, the answer on the card); a WLAN tag → its
+  network and protection, the password hidden behind „zeigen“, „Neu
+  beschreiben“ (the WLAN form filled in) and „Ins Telefon übernehmen“
+  (Android 11+'s own „WLAN speichern?“, `ACTION_WIFI_ADD_NETWORKS`; Homes
+  keeps nothing); anything else → each record's kind and content in plain
+  words (address, text, vCard, MIME, an app's) and „Überschreiben“. **A tag
+  that holds something is never written over without one question** („Der
+  Inhalt geht verloren.“): only after the yes may the next write go onto
+  that tag (its id, once; forgotten when the screen goes), also while a new
+  tag or a WLAN tag waits. Nothing read leaves the phone. One the phone
+  cannot read says „Schon beschrieben. Zum Melden die Seite schließen.“ for
   four seconds. The charger's card is as before.
 - **A new tag.** On the Auslöser screen: a name (the list's `vorschlaege`,
   the house's rooms from HA and a few places, as one-tap words under the
@@ -783,8 +798,8 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   the retry writes the same `uri` and makes no second tag in HA. No tag
   within a minute is said. While the screen is in front the phone reads in
   NFC reader mode: a tag held to it opens nothing and is not reported; a
-  blank one is offered for „Neuen Tag beschreiben“, a written one is said
-  to be written already.
+  blank one is offered for „Neuen Tag beschreiben“, a written one shows
+  what is on it (above).
 - **Naming** (ADR 0004 §2). The list is `GET /napi/ausloeser/tags` →
   `{"ok":true,"tags":[{"tag","name"}],"vorschlaege":[…]}`, names only (the
   id is never shown). A tag tapped there is renamed — `POST

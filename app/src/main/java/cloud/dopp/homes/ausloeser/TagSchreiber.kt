@@ -17,6 +17,9 @@ import java.io.IOException
  * nothing else on it. While the Auslöser screen is in front the phone reads in
  * reader mode (§2: a blank tag is offered there), so a tag held to it opens
  * nothing: written while the screen waits for one, else only looked at.
+ * A tag that holds something is never written unless the person said yes to
+ * losing it ([erlauben], after „Der Inhalt geht verloren.“): it is read
+ * instead ([Ergebnis.Gelesen]), and the screen says what is on it.
  */
 interface TagSchreiber {
 
@@ -28,8 +31,11 @@ interface TagSchreiber {
         /** Looked at, not waited for: nothing on it yet. */
         object Leer : Ergebnis()
 
-        /** Looked at, not waited for: something is on it already. */
+        /** Looked at, not waited for: something is on it already that the phone could not read. */
         object Beschrieben : Ergebnis()
+
+        /** Something is on it: [nachricht], read and not written over; [id] the tag's own, for [erlauben]. */
+        class Gelesen(val nachricht: NdefMessage, val id: ByteArray?) : Ergebnis()
     }
 
     enum class Bereit { KEIN_NFC, AUS, JA }
@@ -58,7 +64,17 @@ interface TagSchreiber {
      */
     fun anNachricht(activity: Activity, nachricht: NdefMessage, zuKlein: (Int, Int) -> String, ergebnis: (Ergebnis) -> Unit) = Unit
 
+    /**
+     * The person said yes to losing what is on the tag [id] („Überschreiben“): the next write may go onto it,
+     * once. Null takes it back. A writer that never reads: nothing.
+     */
+    fun erlauben(id: ByteArray?) = Unit
+
     companion object {
+        /** May a write go onto the tag [id]: when it is blank, or it is the one the person said yes for. */
+        fun darf(leer: Boolean, id: ByteArray?, erlaubt: ByteArray?): Boolean =
+            leer || erlaubt != null && id?.contentEquals(erlaubt) == true
+
         /** Blank: one Ndef can format ([formatierbar]), or an Ndef tag whose message is none or empty records only. */
         fun leer(formatierbar: Boolean, ndef: Boolean, nachricht: NdefMessage?): Boolean =
             formatierbar || ndef && nachricht?.records.orEmpty().all { it.tnf == NdefRecord.TNF_EMPTY }
@@ -83,26 +99,46 @@ object NfcSchreiber : TagSchreiber {
         return if (nfc.isEnabled) TagSchreiber.Bereit.JA else TagSchreiber.Bereit.AUS
     }
 
-    override fun an(activity: Activity, uri: () -> String?, ergebnis: (TagSchreiber.Ergebnis) -> Unit) {
-        val nfc = NfcAdapter.getDefaultAdapter(activity) ?: return
-        nfc.enableReaderMode(activity, { tag -> ergebnis(uri()?.let { schreiben(tag, it) } ?: ansehen(tag)) }, ARTEN, null)
+    /** The tag the person said yes for; written once, then forgotten (also when the screen goes). */
+    @Volatile
+    private var erlaubt: ByteArray? = null
+
+    override fun erlauben(id: ByteArray?) {
+        erlaubt = id?.copyOf()
     }
 
-    /** Blank: an NDEF tag with no record yet, or one still to be formatted. */
+    override fun an(activity: Activity, uri: () -> String?, ergebnis: (TagSchreiber.Ergebnis) -> Unit) {
+        val nfc = NfcAdapter.getDefaultAdapter(activity) ?: return
+        nfc.enableReaderMode(activity, { tag -> ergebnis(uri()?.takeIf { darf(tag) }?.let { schreiben(tag, it) } ?: ansehen(tag)) }, ARTEN, null)
+    }
+
+    /** Blank, or the one said yes for. */
+    private fun darf(tag: Tag): Boolean {
+        val ndef = Ndef.get(tag)
+        val leer = TagSchreiber.leer(ndef == null && NdefFormatable.get(tag) != null, ndef != null, ndef?.cachedNdefMessage)
+        return TagSchreiber.darf(leer, tag.id, erlaubt)
+    }
+
+    /** Blank: an NDEF tag with no record yet, or one still to be formatted; else what is on it. */
     private fun ansehen(tag: Tag): TagSchreiber.Ergebnis {
         val ndef = Ndef.get(tag) ?: return if (NdefFormatable.get(tag) != null) TagSchreiber.Ergebnis.Leer else TagSchreiber.Ergebnis.Fehler(KEIN_NDEF)
-        // a new sticker often carries one empty record
-        return if (TagSchreiber.leer(false, true, ndef.cachedNdefMessage)) TagSchreiber.Ergebnis.Leer else TagSchreiber.Ergebnis.Beschrieben
+        val nachricht = ndef.cachedNdefMessage
+        return when {
+            TagSchreiber.leer(false, true, nachricht) -> TagSchreiber.Ergebnis.Leer // a new sticker often carries one empty record
+            nachricht != null -> TagSchreiber.Ergebnis.Gelesen(nachricht, tag.id)
+            else -> TagSchreiber.Ergebnis.Beschrieben
+        }
     }
 
     override fun direkt(tag: Parcelable, uri: String): TagSchreiber.Ergebnis? = (tag as? Tag)?.let { schreiben(it, uri) }
 
     override fun anNachricht(activity: Activity, nachricht: NdefMessage, zuKlein: (Int, Int) -> String, ergebnis: (TagSchreiber.Ergebnis) -> Unit) {
         val nfc = NfcAdapter.getDefaultAdapter(activity) ?: return
-        nfc.enableReaderMode(activity, { tag -> ergebnis(schreiben(tag, nachricht, zuKlein)) }, ARTEN, null)
+        nfc.enableReaderMode(activity, { tag -> ergebnis(if (darf(tag)) schreiben(tag, nachricht, zuKlein) else ansehen(tag)) }, ARTEN, null)
     }
 
     override fun aus(activity: Activity) {
+        erlaubt = null
         runCatching { NfcAdapter.getDefaultAdapter(activity)?.disableReaderMode(activity) }
     }
 
@@ -113,7 +149,7 @@ object NfcSchreiber : TagSchreiber {
     /** [nachricht] as all that is on the tag. */
     private fun schreiben(tag: Tag, nachricht: NdefMessage, zuKlein: (Int, Int) -> String): TagSchreiber.Ergebnis {
         val ndef = Ndef.get(tag) ?: return formatieren(tag, nachricht)
-        return versuche { ndef.use { beschreibe(it, nachricht, zuKlein) } }
+        return versuche { ndef.use { beschreibe(it, nachricht, zuKlein) } }.also { if (it == TagSchreiber.Ergebnis.Fertig) erlaubt = null }
     }
 
     private fun beschreibe(ndef: Ndef, nachricht: NdefMessage, zuKlein: (Int, Int) -> String): TagSchreiber.Ergebnis {

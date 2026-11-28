@@ -1,6 +1,7 @@
 package cloud.dopp.homes.ausloeser
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -14,10 +15,12 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.IntentCompat
+import androidx.core.net.toUri
 import androidx.core.view.isEmpty
 import androidx.core.view.isVisible
 import cloud.dopp.homes.R
@@ -46,7 +49,11 @@ import kotlin.concurrent.thread
  * front, a blank tag held to the phone is offered for a new one. And the
  * switch „Ladestation melden“, off until the person turns it on. Every press
  * answers on its button at once and ends in the line below it; a tag that
- * does not come within a minute is said too.
+ * does not come within a minute is said too. A written tag held to the
+ * phone shows what is on it first ([TagInhalt], [TagInhaltAnsicht]): a Homes
+ * tag with „Bearbeiten“ and „Auslösen“, a WLAN with „Neu beschreiben“ and
+ * „Ins Telefon übernehmen“, anything else with „Überschreiben“ behind one
+ * question; nothing that holds something is written over unasked.
  */
 class AusloeserActivity : AppCompatActivity() {
 
@@ -76,6 +83,21 @@ class AusloeserActivity : AppCompatActivity() {
     /** The tag's automations, while one of HA's tags is changed (§8). */
     private lateinit var automationen: TagAutomationen
 
+    /** What is on a written tag held to the phone. */
+    private lateinit var inhalt: TagInhaltAnsicht
+
+    /** HA's tags as the list said them last: a Homes tag held to the phone is looked up here. */
+    private var tags: List<AusloeserClient.Tag> = emptyList()
+
+    /** „Ins Telefon übernehmen“: Android's answer, said on the card. */
+    private var uebernommen: ((String) -> Unit)? = null
+    private var uebernimmt = ""
+    private val wlanFrage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        val satz = if (r.resultCode == RESULT_OK) getString(R.string.inhalt_uebernommen, uebernimmt) else getString(R.string.inhalt_nicht_uebernommen)
+        uebernommen?.invoke(satz)
+        uebernommen = null
+    }
+
     /** A blank tag Android handed over (LeerTagActivity), not written yet. */
     private var gehalten: Parcelable? = null
 
@@ -90,6 +112,7 @@ class AusloeserActivity : AppCompatActivity() {
         padForSystemBars(findViewById(R.id.ausloeser_root))
         automationen = TagAutomationen(this, ::gekoppelt, ::ladeTags)
         wlan = WlanFormular(this, { schreiber }, ::leserZurueck, ::zuklappen, ::stand)
+        inhalt = TagInhaltAnsicht(this)
         findViewById<SwitchCompat>(R.id.ausloeser_laden).setOnCheckedChangeListener { _, an ->
             if (setzt) return@setOnCheckedChangeListener
             Ausloeser.setzeLadenMelden(this, an)
@@ -157,6 +180,7 @@ class AusloeserActivity : AppCompatActivity() {
                 if (isFinishing) return@runOnUiThread
                 if (a is Ausgang.Tags) {
                     aktionen = a.aktionen
+                    tags = a.tags
                     zeigeTags(liste, if (a.tags.isEmpty()) getString(R.string.ausloeser_tags_keine) else null, a.tags)
                     folge(a.tags)
                     zeigeVorschlaege(a.vorschlaege)
@@ -193,19 +217,20 @@ class AusloeserActivity : AppCompatActivity() {
         val wartend = Ausloeser.wartende(this).values.toSet()
         tags.forEach { t ->
             val name = t.name.ifEmpty { getString(R.string.ausloeser_ohne_namen) }
-            // what it does, under the name, when it is not HA's report (§4); the id is never shown (§2)
-            val tut = aktionen.firstOrNull { it.id == t.aktion && t.aktion.isNotEmpty() }?.titel
-            // its automations (§8), and a wish of this phone's that waits for an admin
-            val unter = listOfNotNull(
-                tut,
-                t.automationen.takeIf { it.isNotEmpty() }?.let { a -> getString(R.string.ausloeser_tag_startet, a.joinToString(", ") { it.name }) },
-                getString(R.string.ausloeser_tag_wartet).takeIf { t.tag in wartend },
-                t.zuletzt?.let(::zuletzt),
-            )
-            val zeile = unter.fold(name) { z, u -> getString(R.string.ausloeser_tag_mit_aktion, z, u) }
+            val zeile = unter(t, wartend).fold(name) { z, u -> getString(R.string.ausloeser_tag_mit_aktion, z, u) }
             liste.addView(text(zeile) { bearbeite(t, true) })
         }
     }
+
+    /** What is said under a tag's name: its action, its automations, a waiting wish, its last run. */
+    private fun unter(t: AusloeserClient.Tag, wartend: Set<String>): List<String> = listOfNotNull(
+        // what it does, when it is not HA's report (§4); the id is never shown (§2)
+        aktionen.firstOrNull { it.id == t.aktion && t.aktion.isNotEmpty() }?.titel,
+        // its automations (§8), and a wish of this phone's that waits for an admin
+        t.automationen.takeIf { it.isNotEmpty() }?.let { a -> getString(R.string.ausloeser_tag_startet, a.joinToString(", ") { it.name }) },
+        getString(R.string.ausloeser_tag_wartet).takeIf { t.tag in wartend },
+        t.zuletzt?.let(::zuletzt),
+    )
 
     /** When a tag last ran (§9): „zuletzt heute 18:12, Anna – Bürolicht aus“; without a readable time its text alone. */
     private fun zuletzt(z: AusloeserClient.Zuletzt): String {
@@ -469,8 +494,93 @@ class AusloeserActivity : AppCompatActivity() {
         when (e) {
             TagSchreiber.Ergebnis.Leer -> if (!wartet) leerAngeboten()
             TagSchreiber.Ergebnis.Beschrieben -> if (!wartet) kurz(getString(R.string.ausloeser_schon_beschrieben))
+            is TagSchreiber.Ergebnis.Gelesen -> gelesen(e) // also while waiting: it is not written over unasked
             TagSchreiber.Ergebnis.Fertig, is TagSchreiber.Ergebnis.Fehler -> geschrieben(e)
         }
+    }
+
+    // --- what is on a written tag ---------------------------------------------------
+
+    private fun gelesen(e: TagSchreiber.Ergebnis.Gelesen) {
+        when (val i = TagInhalt.lesen(e.nachricht, ServerStore.baseUrl(this)?.toUri()?.host)) {
+            is TagInhalt.Homes -> homesTag(i.id)
+            is TagInhalt.Wlan -> wlanTag(i.netz, e.id)
+            is TagInhalt.Fremd -> inhalt.zeige(
+                getString(R.string.inhalt_fremd), i.zeilen, null,
+                listOf(TagInhaltAnsicht.Knopf(getString(R.string.inhalt_ueberschreiben)) { fragUeberschreiben(e.id) { neuerTag(getString(R.string.inhalt_neu_titel)) } }),
+            )
+        }
+    }
+
+    /** One of Homes' tags: its name, action and automations from HA's list, „Bearbeiten“ and „Auslösen“. */
+    private fun homesTag(id: String) {
+        val t = tags.firstOrNull { it.tag == id }
+        val titel = when {
+            t == null -> getString(R.string.inhalt_homes_unbekannt)
+            t.name.isEmpty() -> getString(R.string.inhalt_homes_ohne)
+            else -> getString(R.string.inhalt_homes_titel, t.name)
+        }
+        val bearbeiten = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_bearbeiten)) {
+            inhalt.schliessen()
+            bearbeite(t ?: AusloeserClient.Tag(id, ""), t != null)
+        }
+        val ausloesen = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_ausloesen), getString(R.string.inhalt_loest_aus)) { fertig -> ausloesen(id, fertig) }
+        inhalt.zeige(titel, t?.let { unter(it, Ausloeser.wartende(this).values.toSet()) }.orEmpty(), null, listOf(bearbeiten, ausloesen))
+    }
+
+    /** „Auslösen“: the tag reported as if touched outside the screen (§1), its answer on the card. */
+    private fun ausloesen(id: String, fertig: (String) -> Unit) {
+        val k = gekoppelt() ?: return fertig(Ausloeser.NICHT_GEKOPPELT)
+        thread(name = "tag-ausloesen") {
+            val a = client(k).nfc(id)
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                fertig(Ausloeser.tagZeile(a))
+                ladeTags() // its last run
+            }
+        }
+    }
+
+    /** A WLAN tag: its network, the password behind „zeigen“, „Neu beschreiben“ and „Ins Telefon übernehmen“. */
+    private fun wlanTag(n: WlanTag.Netz, id: ByteArray?) {
+        val neu = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_neu_beschreiben)) {
+            fragUeberschreiben(id) {
+                inhalt.schliessen()
+                wlan.vorbelegen(n)
+            }
+        }
+        val uebernehmen = TagInhaltAnsicht.Knopf(getString(R.string.inhalt_uebernehmen), getString(R.string.inhalt_uebernimmt)) { fertig -> uebernehmen(n, fertig) }
+        val zeilen = listOf(getString(R.string.inhalt_wlan_name, n.ssid), getString(R.string.inhalt_wlan_schutz, n.art))
+        inhalt.zeige(getString(R.string.inhalt_wlan_titel), zeilen, n.passwort.ifEmpty { null }, listOf(neu, uebernehmen))
+    }
+
+    private fun uebernehmen(n: WlanTag.Netz, fertig: (String) -> Unit) {
+        WlanUebernahme.warumNicht(n)?.let { return fertig(it) }
+        val i = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) WlanUebernahme.absicht(n) else null
+        if (i == null) return fertig(getString(R.string.inhalt_passwort_nimmt_nicht))
+        uebernimmt = n.ssid
+        uebernommen = fertig
+        runCatching { wlanFrage.launch(i) }.onFailure {
+            uebernommen = null
+            fertig(getString(R.string.inhalt_passwort_nimmt_nicht))
+        }
+    }
+
+    /** „Der Inhalt geht verloren.“ — on yes the tag [id] may be written once, and [dann] goes on. */
+    private fun fragUeberschreiben(id: ByteArray?, dann: () -> Unit) {
+        ActionDialog.show(
+            activity = this,
+            title = getString(R.string.inhalt_frage_titel),
+            message = getString(R.string.inhalt_frage),
+            sheet = ActionSheet(listOf(ActionItem(R.string.inhalt_ueberschreiben, ActionTone.DANGEROUS)), R.string.inhalt_frage_hinweis),
+            onPick = {
+                schreiber.erlauben(id)
+                inhalt.schliessen()
+                if (wartet || wlan.wartet) stand(getString(R.string.inhalt_halte_nochmal)) else dann()
+            },
+            onCancel = {},
+            paintScrim = false,
+        )
     }
 
     /** A blank tag while nothing waits: the form opens for it by itself, its name asked for (§2). */
