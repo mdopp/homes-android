@@ -103,7 +103,7 @@ object TagBefund {
      * (`03 00 FE`) before zeros.
      */
     fun seitenLeer(ab4: ByteArray): Boolean {
-        val rest = if (ab4.size >= 3 && ab4[0] == TLV_NDEF && ab4[1] == 0.toByte() && ab4[2] == TLV_ENDE) ab4.copyOfRange(3, ab4.size) else ab4
+        val rest = if (ab4.size >= 3 && ab4.copyOf(3).contentEquals(LEERES_NDEF)) ab4.copyOfRange(3, ab4.size) else ab4
         return rest.all { it == 0.toByte() }
     }
 
@@ -233,8 +233,8 @@ object TagBefund {
         }
     }
 
-    private const val TLV_NDEF: Byte = 0x03
-    private const val TLV_ENDE: Byte = 0xFE.toByte()
+    /** The factory's empty NDEF TLV and its terminator: `03 00 FE`. */
+    private val LEERES_NDEF = byteArrayOf(0x03, 0x00, 0xFE.toByte())
     private const val TAG_AID = 0x4F
     private val KONSTRUIERT = setOf(0x6F, 0xA5, 0xBF0C, 0x61)
     private val DRUCKBAR = 0x20..0x7E
