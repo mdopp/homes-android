@@ -25,7 +25,6 @@ import cloud.dopp.homes.kann.KannStore
 import cloud.dopp.homes.kann.Liste
 import cloud.dopp.homes.kann.hat
 import cloud.dopp.homes.verbindung.Verbindung
-import cloud.dopp.homes.widget.DokumenteAdresse
 import cloud.dopp.homes.widget.HomesPages
 
 /**
@@ -34,8 +33,8 @@ import cloud.dopp.homes.widget.HomesPages
  * under „Öffnen“ (Dokumente, Zeitleiste, Musik, Rezepte, …, each with the
  * line Homes says where it stands), Energie (Homes' page, the house's power
  * and today's yield as its line, [EnergieKachel]), Auslöser and Dein Archiv as the box
- * offers them, Homes itself, and „Dokumente-Adresse“ for whom Homes gives
- * one. Each only while it is there, as the rows were. A small green dot
+ * offers them, and Homes itself (no „Dokumente-Adresse“ tile: Homes' Dokumente
+ * page copies it, owner 2026-11-28). Each only while it is there, as the rows were. A small green dot
  * marks an area the person has never opened on this phone; the areas there
  * when the grid first drew count as opened.
  */
@@ -75,11 +74,7 @@ object Ueberblick {
         val homes = base?.takeIf { e != null }?.let { HomesPages.url(it, HomesPages.START) }?.let { url ->
             Bereich(HOMES, R.drawable.ic_stat_homes, a.getString(R.string.oeffnen_homes), null, null) { Abschnitte.oeffnen(a, url.toUri()) }
         }
-        val dok = kann?.dokumenteAdresse.orEmpty()
-        val adresse = DokumenteAdresse.muster(dok)?.let { muster ->
-            Bereich(ADRESSE, R.drawable.ic_modul_dokumente, a.getString(R.string.dokumente_adresse_kurz), muster, null) { DokumenteAdresse.kopieren(a, dok) }
-        }
-        return module + listOfNotNull(energie, ausloeser, archiv, homes, adresse)
+        return module + listOfNotNull(energie, ausloeser, archiv, homes)
     }
 
     /** The box has the energy (`widgets` `energie`, the energie module on); false while unknown. */
@@ -139,7 +134,6 @@ object Ueberblick {
     private const val ANGEFANGEN = "angefangen"
     private const val MODUL = "modul:"
     private const val HOMES = "homes"
-    private const val ADRESSE = "dokumente-adresse"
     private const val NEU = "neu:"
     private const val GRAU = 0.45f
 

@@ -19,6 +19,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isNotEmpty
+import androidx.core.view.isVisible
 import cloud.dopp.homes.HomesConfig
 import cloud.dopp.homes.R
 import cloud.dopp.homes.data.ApiClient
@@ -334,8 +336,9 @@ class HomeActivity : AppCompatActivity() {
 
     // --- the widgets ----------------------------------------------------------
 
-    /** One list, no groups (owner, 2026-11-03): one device, the energy, then the tools. */
+    /** The device widget atop „Deine Geräte“ (owner 2026-11-28), the tools under „Widget hinzufügen“. */
     private fun renderWidgetTypes() {
+        showGeraetWidget()
         showTools(WidgetStore.keptToolCatalog(this).filter { it.isOffered })
         renderBereiche()
     }
@@ -414,23 +417,40 @@ class HomeActivity : AppCompatActivity() {
     }
 
     /**
-     * The widget list: the fixed types first, then a row per tool; a type the
-     * box lacks is a quiet trace that cannot be placed (homes ADR 0001 §10).
+     * „+ Gerät als Widget auf den Startbildschirm“ atop „Deine Geräte“ (owner 2026-11-28: „oben in die
+     * Liste von Geräten“): one quiet row; while the box lacks it, a quiet trace there (homes ADR 0001 §10).
+     */
+    private fun showGeraetWidget() {
+        val group = findViewById<ViewGroup>(R.id.geraet_widget_group)
+        group.removeAllViews()
+        val zeilen = WidgetTypes.ALL.map { e -> StartAngebot.Zeile(e.key, e.icon, getString(e.label)) { pin(e.provider) } }
+        StartAngebot(this, KannStore.kann(this), ::renderWidgetTypes).fuellen(group, Liste.WIDGETS, zeilen, { z ->
+            layoutInflater.inflate(R.layout.item_geraet_widget, group, false).also { v ->
+                v.findViewById<TextView>(R.id.geraet_widget_label).text = z.label
+                v.setOnClickListener { z.tap() }
+            }
+        })
+    }
+
+    /**
+     * „Widget hinzufügen“: a row per tool; one the box lacks is a quiet trace that cannot be placed
+     * (homes ADR 0001 §10). With none, the title and its hint are gone, the card stays only for „Zulassen“.
      */
     private fun showTools(defs: List<ToolDef>) {
         val group = findViewById<ViewGroup>(R.id.widgets_group)
         group.removeAllViews()
-        val zeilen = WidgetTypes.ALL.map { e ->
-            StartAngebot.Zeile(e.key, e.icon, getString(e.label)) { pin(e.provider) }
-        } + defs.map { def ->
+        val zeilen = defs.map { def ->
             StartAngebot.Zeile(KannKey.TOOL + def.id, R.drawable.ic_services, def.label) { pinTool(def) }
         }
         val kept = WidgetStore.keptToolCatalog(this)
         StartAngebot(this, KannStore.kann(this), ::renderWidgetTypes).fuellen(
             group, Liste.WIDGETS, zeilen, { row(group, it.icon, it.label, it.tap) },
         ) { key, m ->
-            if (!StartAngebot.widget(key)) null else kept.firstOrNull { KannKey.TOOL + it.id == key }?.label ?: m.titel
+            if (!StartAngebot.widget(key) || key == KannKey.GERAET) null else kept.firstOrNull { KannKey.TOOL + it.id == key }?.label ?: m.titel
         }
+        val tools = group.isNotEmpty()
+        listOf(R.id.widgets_titel, R.id.widgets_hinweis, R.id.widgets_group).forEach { findViewById<View>(it).isVisible = tools }
+        findViewById<View>(R.id.widgets_card).isVisible = tools || findViewById<View>(R.id.live_row).isVisible
     }
 
     private fun pinManager(): AppWidgetManager? {

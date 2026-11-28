@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- „+ Gerät als Widget auf den Startbildschirm“ (owner 2026-11-28): a quiet row atop „Deine Geräte“, 48 dp to tap. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/geraet_widget_label"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="48dp"
+    android:drawablePadding="@dimen/space_xs"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textColor="@color/homes_accent"
+    android:textSize="@dimen/text_body"
+    app:drawableStartCompat="@drawable/ic_ctl_plus"
+    app:drawableTint="@color/homes_accent" />

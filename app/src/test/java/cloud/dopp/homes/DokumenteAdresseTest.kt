@@ -28,8 +28,8 @@ import org.robolectric.annotation.Config
 /**
  * „Dokumente-Adresse kopieren“ (owner 2026-11-10): Homes' `/napi/kann` gives
  * this device's person `dokumente_adresse`, `<login>+doc+@<domain>`
- * (homes#338); the app copies `<login>+doc+`, from Mehr's row and the app
- * icon's menu, and offers neither without an address.
+ * (homes#338); the app copies `<login>+doc+`, from the app icon's menu (the
+ * start screen's tile went, owner 2026-11-28: Homes' Dokumente page copies it), and offers neither without an address.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -60,7 +60,6 @@ class DokumenteAdresseTest {
 
     @Test fun whatIsCopiedIsTheLoginAndDocAndThePlus() {
         assertEquals("mdopp+doc+", DokumenteAdresse.kopie("mdopp+doc+@dopp.cloud"))
-        assertEquals("mdopp+doc+…@dopp.cloud", DokumenteAdresse.muster("mdopp+doc+@dopp.cloud"))
         for (falsch in listOf(null, "", "mdopp@dopp.cloud", "+doc+@dopp.cloud", "mdopp+doc+@", "mdopp+doc+@a@b", "md opp+doc+@dopp.cloud")) {
             assertNull(falsch, DokumenteAdresse.kopie(falsch))
         }

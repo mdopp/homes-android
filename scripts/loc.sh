@@ -25,8 +25,9 @@ budget() { # budget <package> <cap>  — "." is the files beside the packages
 }
 known=""
 # package    cap     size on 2026-11-03, and what it is
-budget widget    3683  # 4,703: the home-screen widgets, their rendering and pinning;
+budget widget    3680  # 4,703: the home-screen widgets, their rendering and pinning;
                        # 4938 -> 3683 (owner approved 2026-11-28 (Energie nur als Link)): the energy widget's picture, flow and rendering gone
+                       # 3683 -> 3680 (owner 2026-11-28): DokumenteAdresse.muster gone with the start screen's tile
 budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and calls, age;
                        # 3183 -> 3199 (owner approved 2026-11-06): „Kontakte übertragen“
                        #   sends each contact's own picture as its PHOTO, ≤256 px, for Homes' „Ist das …?“ in Immich (homes#298);
@@ -42,7 +43,7 @@ budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
                        #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
                        #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
-budget ui        4029  # 3,026: the activities: start screen, pairing, settings screens;
+budget ui        4043  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
                        # 3220 -> 3320: the account's and the backup's missing parts as disabled switches with their trace, homes-android#233
@@ -61,6 +62,8 @@ budget ui        4029  # 3,026: the activities: start screen, pairing, settings 
                        #   screen's last line, „Version … · gekoppelt mit …“
                        # 3940 -> 4029 (owner approved 2026-11-28 (Energie nur als Link)): the „Energie“ tile, Homes' page, the widget's
                        #   numbers as its line, read at most every five minutes with the screen on (ui/EnergieKachel.kt)
+                       # 4029 -> 4043 (owner approved 2026-11-28 (Gerät-Widget oben)): „+ Gerät als Widget …“ atop „Deine Geräte“,
+                       #   „Widget hinzufügen“ only for tools, gone without one; the „Dokumente-Adresse“ tile gone (net)
 budget data      3364  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;

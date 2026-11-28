@@ -15,6 +15,7 @@ import cloud.dopp.homes.verbindung.Verbindung
 import cloud.dopp.homes.verbindung.Zustand
 import cloud.dopp.homes.widget.WidgetActionActivity
 import cloud.dopp.homes.widget.WidgetActionReceiver
+import cloud.dopp.homes.widget.WidgetStore
 import cloud.dopp.homes.widget.WidgetTypes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -82,10 +83,11 @@ class HomeScreenTest {
         val a = open()
         assertEquals(View.GONE, a.findViewById<View>(R.id.connect_section).visibility)
         assertEquals(View.VISIBLE, a.findViewById<View>(R.id.connected_section).visibility)
-        // one list, no groups (owner, 2026-11-03): one device, then the tools; the energy is a tile (owner 2026-11-28)
-        val list = a.findViewById<ViewGroup>(R.id.widgets_group)
-        assertEquals(WidgetTypes.ALL.size, list.childCount)
-        assertEquals(listOf("Ein Gerät"), (0 until list.childCount).map { texts(list.getChildAt(it)).single() })
+        // the device widget atop „Deine Geräte“ (owner 2026-11-28), not under „Widget hinzufügen“
+        val geraet = a.findViewById<ViewGroup>(R.id.geraet_widget_group)
+        assertEquals(WidgetTypes.ALL.size, geraet.childCount)
+        assertEquals(listOf("Gerät als Widget auf den Startbildschirm"), texts(geraet))
+        assertEquals("no tool offered: no widget list", 0, a.findViewById<ViewGroup>(R.id.widgets_group).childCount)
         assertNull("no Box group", a.findViewById<View>(ctx().resources.getIdentifier("box_group", "id", ctx().packageName).takeIf { it != 0 } ?: View.NO_ID))
         val all = texts(a.window.decorView)
         listOf("Box", "Haushalt").forEach { assertTrue("a group heading: $it", it !in all) }
@@ -270,6 +272,66 @@ class HomeScreenTest {
         assertNull("the pairing is on „Dieses Telefon“", a.findViewById<View>(R.id.logout_btn))
         val telefon = order.indexOf(a.findViewById(R.id.telefon_zeile))
         assertTrue("„Dieses Telefon“ right above „Widget hinzufügen“", telefon in 0 until title)
+    }
+
+    /**
+     * „+ Gerät als Widget auf den Startbildschirm“ is the first row of „Deine Geräte“, above the tiles
+     * (owner 2026-11-28: „oben in die Liste von Geräten einsortieren“), quiet and 48 dp to tap.
+     */
+    @Test
+    fun theDeviceWidgetRowSitsAtopTheDevices() {
+        paired()
+        StartDevices.save(ctx(), favorites)
+        val a = open()
+        val order = children(a)
+        val geraet = a.findViewById<ViewGroup>(R.id.geraet_widget_group)
+        val head = order.indexOfFirst { texts(it).firstOrNull() == ctx().getString(R.string.home_devices_title) }
+        assertTrue("under the devices' head", head in 0 until order.indexOf(geraet))
+        assertEquals("right above the tiles", order.indexOf(geraet) + 1, order.indexOf(a.findViewById(R.id.devices_group)))
+        val row = geraet.getChildAt(0)
+        assertTrue("a tap places it", row.hasOnClickListeners())
+        assertTrue("48 dp to tap", row.minimumHeight >= (48 * ctx().resources.displayMetrics.density).toInt())
+        assertNull("not a card", row.background)
+    }
+
+    /** No tool offered and the exemption granted: „Widget hinzufügen“ is gone, the version stays last. */
+    @Test
+    fun withoutToolsTheWidgetSectionIsGone() {
+        paired()
+        shadowOf(ctx().getSystemService(android.os.PowerManager::class.java)).setIgnoringBatteryOptimizations(ctx().packageName, true)
+        val a = open()
+        listOf(R.id.widgets_titel, R.id.widgets_hinweis, R.id.widgets_card).forEach {
+            assertEquals("gone: ${ctx().resources.getResourceEntryName(it)}", View.GONE, a.findViewById<View>(it).visibility)
+        }
+        val root = a.findViewById<View>(R.id.home_version).parent as ViewGroup
+        assertEquals("the version is the last line", R.id.home_version, root.getChildAt(root.childCount - 1).id)
+    }
+
+    /** The exemption missing but no tool: the card stays for „Zulassen“ alone, without the widgets' title. */
+    @Test
+    fun withoutToolsTheCardStaysOnlyForZulassen() {
+        paired()
+        val a = open()
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.widgets_card).visibility)
+        assertEquals(View.GONE, a.findViewById<View>(R.id.widgets_group).visibility)
+        assertEquals(View.GONE, a.findViewById<View>(R.id.widgets_titel).visibility)
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.live_row).visibility)
+    }
+
+    /** A tool Homes offers as a widget keeps „Widget hinzufügen“, for the tools only. */
+    @Test
+    fun aToolKeepsTheWidgetSectionForTheToolsOnly() {
+        paired()
+        WidgetStore.setToolCatalogJson(
+            ctx(),
+            """{"defs":[{"tool-id":"einkauf","tool-label":"Einkauf","tool-api-path":"/napi/portal/einkauf",
+               "tool-compose-path":"#/p/einkauf/new","tool-cell-schema":{"title":"title"}}]}""",
+        )
+        val a = open()
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.widgets_titel).visibility)
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.widgets_card).visibility)
+        assertEquals(listOf("Einkauf"), texts(a.findViewById(R.id.widgets_group)))
+        assertEquals("the device stays atop the devices", 1, a.findViewById<ViewGroup>(R.id.geraet_widget_group).childCount)
     }
 
     /** The row is there only while the exemption is missing; granted, it is gone (owner 2026-11-08: nothing to explain). */
