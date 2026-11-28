@@ -141,7 +141,7 @@ budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
 budget teilen     530  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
                        # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
-budget fragen     440  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen) — the raise to be OK'd in the PR): Share →
+budget fragen     442  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen) — the raise to be OK'd in the PR): Share →
                        # „Homes: Daten erfragen“ — a shared vCard read (2.1 quoted-printable, 3.0), the contact looked for on Homes,
                        # the link sent by WhatsApp, SMS or any app
 budget verbindung 236  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
