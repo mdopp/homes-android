@@ -17,7 +17,7 @@ import cloud.dopp.homes.ui.padForSystemBars
 /**
  * „Meine Visitenkarte“ under „Dieses Telefon“ (owner 2026-11-28): the
  * person's own contact picked once from the phone's contacts, the fields to
- * share ticked (Name, Telefon, Mail, Adresse, Firma), kept as a vCard in the
+ * share ticked (Name, Mobil, Telefon, Mail, Adresse, Geburtstag, Firma), kept as a vCard in the
  * [Tresor] — on this phone only, shared only when chosen in [TeilenActivity].
  */
 class VisitenkarteActivity : AppCompatActivity() {
@@ -27,8 +27,9 @@ class VisitenkarteActivity : AppCompatActivity() {
 
     private val felder by lazy {
         mapOf(
-            Visitenkarte.Feld.NAME to R.id.karte_name, Visitenkarte.Feld.TELEFON to R.id.karte_telefon,
-            Visitenkarte.Feld.MAIL to R.id.karte_mail, Visitenkarte.Feld.ADRESSE to R.id.karte_adresse,
+            Visitenkarte.Feld.NAME to R.id.karte_name, Visitenkarte.Feld.MOBIL to R.id.karte_mobil,
+            Visitenkarte.Feld.TELEFON to R.id.karte_telefon, Visitenkarte.Feld.MAIL to R.id.karte_mail,
+            Visitenkarte.Feld.ADRESSE to R.id.karte_adresse, Visitenkarte.Feld.GEBURTSTAG to R.id.karte_geburtstag,
             Visitenkarte.Feld.FIRMA to R.id.karte_firma,
         ).mapValues { findViewById<CheckBox>(it.value) }
     }
@@ -62,10 +63,8 @@ class VisitenkarteActivity : AppCompatActivity() {
         val k = runCatching { kontakt(uri) }.getOrNull() ?: return sag(getString(R.string.karte_nicht_lesbar))
         kontakt = k
         findViewById<TextView>(R.id.karte_wer).text = k.name ?: getString(R.string.karte_ohne_namen)
-        mapOf(
-            Visitenkarte.Feld.NAME to k.name, Visitenkarte.Feld.TELEFON to k.telefon, Visitenkarte.Feld.MAIL to k.mail,
-            Visitenkarte.Feld.ADRESSE to k.adresse, Visitenkarte.Feld.FIRMA to k.firma,
-        ).forEach { (f, w) ->
+        Visitenkarte.Feld.entries.forEach { f ->
+            val w = k.wert(f)
             felder.getValue(f).apply {
                 isEnabled = w != null
                 isChecked = w != null
@@ -80,11 +79,11 @@ class VisitenkarteActivity : AppCompatActivity() {
         val id = contentResolver.query(uri, arrayOf(ContactsContract.Contacts._ID), null, null, null)?.use { c ->
             if (c.moveToFirst()) c.getLong(0) else null
         } ?: return null
-        val zeilen = mutableListOf<Pair<String, String>>()
+        val zeilen = mutableListOf<Visitenkarte.Zeile>()
         contentResolver.query(
-            ContactsContract.Data.CONTENT_URI, arrayOf(ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1),
+            ContactsContract.Data.CONTENT_URI, arrayOf(ContactsContract.Data.MIMETYPE, ContactsContract.Data.DATA1, ContactsContract.Data.DATA2),
             "${ContactsContract.Data.CONTACT_ID} = ?", arrayOf(id.toString()), null,
-        )?.use { c -> while (c.moveToNext()) c.getString(1)?.let { zeilen += c.getString(0) to it } }
+        )?.use { c -> while (c.moveToNext()) c.getString(1)?.let { zeilen += Visitenkarte.Zeile(c.getString(0), it, c.getInt(2)) } }
         return Visitenkarte.kontakt(zeilen)
     }
 
@@ -102,8 +101,9 @@ class VisitenkarteActivity : AppCompatActivity() {
 
     private companion object {
         val TITEL = mapOf(
-            Visitenkarte.Feld.NAME to R.string.karte_feld_name, Visitenkarte.Feld.TELEFON to R.string.karte_feld_telefon,
-            Visitenkarte.Feld.MAIL to R.string.karte_feld_mail, Visitenkarte.Feld.ADRESSE to R.string.karte_feld_adresse,
+            Visitenkarte.Feld.NAME to R.string.karte_feld_name, Visitenkarte.Feld.MOBIL to R.string.karte_feld_mobil,
+            Visitenkarte.Feld.TELEFON to R.string.karte_feld_telefon, Visitenkarte.Feld.MAIL to R.string.karte_feld_mail,
+            Visitenkarte.Feld.ADRESSE to R.string.karte_feld_adresse, Visitenkarte.Feld.GEBURTSTAG to R.string.karte_feld_geburtstag,
             Visitenkarte.Feld.FIRMA to R.string.karte_feld_firma,
         )
     }

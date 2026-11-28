@@ -38,5 +38,15 @@
             android:layout_height="wrap_content"
             android:background="@drawable/card_homes"
             android:orientation="vertical" />
+
+        <!-- „Kontakt austauschen“ on a touch (owner 2026-11-28, on by default: the link alone shows the first name). -->
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/teilen_beruehrung"
+            style="@style/Text.Homes.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:text="@string/austausch_beruehrung"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

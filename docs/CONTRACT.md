@@ -76,6 +76,7 @@ each row naming the Homes file and lines it came from.
 | Share → Musik, Hochladen | `POST /napi/musik`, multipart, one `file` part a request, streamed from the app's copy: see (j) |
 | Share → Homes, photos | `POST /napi/upload`, multipart `filename` then `file`, one photo a request → `{ok, id}`: the camera app's photos (one or several, `image/*`) into the folder Paperless consumes (owner, 2026-11-02). JPEG, PNG, WebP and GIF of at most 25 MB go as they are; HEIC/HEIF or anything larger is made a JPEG on the phone (long edge ≤ 4096). At most 20 a share. Homes' refusals are codes; the app says them in German by status (404 no folder, 413, 415, 429 busy, 503, 507 full) |
 | Share → Daten erfragen | `POST /napi/kontakte/fragen` `{name, telefon: [...], mail: [...], anlegen?, uid?}`: a contact's vCard from the contacts app, Homes answers the link that asks its person for what is missing: see (l) |
+| Teilen → Kontakt austauschen | `POST /napi/teilen` `{vorname}`, `PUT\|GET\|DELETE /napi/teilen/{id}`: a live share session, its link for the other phone: see (n) |
 | Teilen → Kontaktdaten eintragen lassen | `POST /napi/kontakte/einladen` `{}`: a one-time link a person fills in their contact on, fetched on the tap, handed on by NFC or QR: see (m) |
 | Share → Homes | `POST /napi/merken` `{text}`: what the share sheet sent (title and link); Homes keeps the page as a note and answers `{kurz, notiz, schon, …}` or `{error}` with a German sentence (homes#120); the share sheet's Direct Share target carries the assistant's name (#188) |
 | tools | `GET /napi/defs/tool`, `POST /napi/action-callback`; the app offers no tool widget any more: `contacts` and `task` went on 2026-11-02 and 2026-11-03, `doc` (`/napi/portal/documents`) and `note` (`/napi/portal/notes`) on 2026-11-27 („Widget für Notizen brauche ich nicht mehr“, Dokumente „kann ganz weg“). A placed `doc` or `note` widget fetches nothing and says „Dieses Widget gibt es nicht mehr – lange drücken und entfernen.“ (the app cannot take it off the home screen); a placed `contacts` or `task` one keeps its rows (`/napi/portal/{contacts,tasks}`). The tool widget leaves the system's widget picker while no tool is offered and none is placed |
@@ -1054,4 +1055,41 @@ Homes decides.
     sentence in the row, else „Homes hat nicht lesbar geantwortet (<code>)
     …“; 401: pair again; no answer in 15 s or no line: the app's own sentence.
     Nothing is armed then; the buttons work again.
+
+## (n) Kontakt austauschen: a live share session
+
+(The owner approved 2026-11-28. Homes' side is mdopp/homes#398,
+`internal/napi/teilen.go`, module `kontakte`; any paired person, a session
+is its person's alone, in Homes' memory only, 30 minutes at most.)
+
+- **Where it starts:** „Teilen“'s first row „Kontakt austauschen“ (while
+  paired) [NFC] or [QR] opens „Was teilen?“ (`teilen/AustauschActivity`),
+  which starts it; or a touch: a reader asking while nothing is armed, with
+  „Bei Berührung Kontakt austauschen“ on (the switch under „Teilen“'s rows,
+  on by default — the link alone shows only the first name). Then the
+  session starts in the background, its link answers the reader still held
+  to the phone (once, two minutes, screen on), and the question „Kontakt
+  austauschen: Was teilen?“ opens „Was teilen?“ for it (at most every 30 s,
+  no activity started from the background). Off, or not paired, or the
+  start refused: the plain question of (k).
+- **The start:** `POST /napi/teilen {"vorname"}` (the first name of „Meine
+  Visitenkarte“; none: Homes takes the login's) → 201 `{"ok":true,"id","link",
+  "gueltig_bis"}` → [NFC]: an NDEF URI record of `link`, as every row of (k);
+  [QR]: `link` full-screen. A `link` that is not https is no link. 429
+  (five open, twenty an hour) and every other refusal: Homes' sentence.
+- **„Was teilen?“:** the first name always (not a switch); „Meine
+  Kontaktkarte“, one switch per field the card has — Nachname, Mobil,
+  Telefon, Mail, Adresse, Geburtstag, Firma — each remembered on the phone;
+  „Gast-WLAN „<ssid>““ when one is set; „Seine Kontaktdaten eintragen
+  lassen“. „Freigeben“ → `PUT /napi/teilen/{id} {"vorname","karte":{…}|null,
+  "wlan":{"ssid","kennwort"|"offen":true}|null,"eintragen"}`, exactly the
+  switched fields, all of it each time (what is switched off is taken back);
+  `karte.name` is the whole name, `geburtstag` only as `YYYY-MM-DD` or
+  `--MM-DD`. 403 on `eintragen` (not an admin): Homes' sentence, the switch
+  off again; 400, 503: Homes' sentence.
+- **Its state:** every 3 s while the screen is open, `GET /napi/teilen/{id}`
+  → `{"ok":true,"geoeffnet","eingetragen","gueltig_bis"}`: „Link bereit“ or
+  „Link geteilt“ (read over NFC, or the QR code shown) · „Seite geöffnet“ ·
+  „hat eingetragen“. 410 or 404, or `gueltig_bis` passed: over, said, every
+  button off but „Schließen“. „Beenden“ → `DELETE /napi/teilen/{id}`.
 

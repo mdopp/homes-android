@@ -44,9 +44,11 @@
             android:layout_marginTop="@dimen/space_md" />
 
         <CheckBox android:id="@+id/karte_name" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_name_leer" />
+        <CheckBox android:id="@+id/karte_mobil" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_mobil_leer" />
         <CheckBox android:id="@+id/karte_telefon" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_telefon_leer" />
         <CheckBox android:id="@+id/karte_mail" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_mail_leer" />
         <CheckBox android:id="@+id/karte_adresse" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_adresse_leer" />
+        <CheckBox android:id="@+id/karte_geburtstag" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_geburtstag_leer" />
         <CheckBox android:id="@+id/karte_firma" style="@style/Text.Homes.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:text="@string/karte_feld_firma_leer" />
 
         <Button

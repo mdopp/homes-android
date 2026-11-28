@@ -7,16 +7,21 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.SystemClock
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
 import cloud.dopp.homes.R
+import cloud.dopp.homes.ausloeser.WlanAngebot
+import kotlin.concurrent.thread
 
 /**
  * „Teilen per Berührung“ (owner approved 2026-11-28: „Ja, aber auch Karten
  * die ich ausgelesen habe“): another phone reading this one while nothing is
  * chosen gets nothing, and this phone asks — one heads-up notification „Ein
  * Telefon möchte etwas von dir. Was teilen?“, at most every 30 s, whose tap
- * opens the choice ([TeilenActivity]). No activity is started from the
- * background; nothing of what could be shared is in the notification.
+ * opens „Teilen“ ([TeilenActivity]) — or, with „Bei Berührung Kontakt
+ * austauschen“ on, „Was teilen?“ of the session just started ([Austausch]).
+ * No activity is started from the background; nothing of what could be
+ * shared is in the notification.
  */
 object Teilen {
 
@@ -24,27 +29,48 @@ object Teilen {
     private const val ID = 4711
     private const val PAUSE_MS = 30_000L
 
+    /** When the person was asked last (elapsed realtime); 0: not yet. Set in tests. */
+    @VisibleForTesting
     @Volatile
-    private var zuletzt = 0L
+    var zuletzt = 0L
 
     /** Whether a request at [jetzt] asks again, after one at [vorher] (0: none yet). */
     fun fragt(jetzt: Long, vorher: Long): Boolean = vorher == 0L || jetzt - vorher >= PAUSE_MS
 
-    /** A reader asked for a tag while nothing is chosen: the person is asked, unless asked in the last 30 s. */
+    /**
+     * A reader asked for a tag while nothing is chosen: the person is asked, unless asked in the last 30 s. With
+     * „Bei Berührung Kontakt austauschen“ on (and paired), a session starts first: its link answers the reader
+     * still held to this phone (once, two minutes), and the question opens „Was teilen?“ for it.
+     */
     fun anfrage(ctx: Context, jetzt: Long = SystemClock.elapsedRealtime()) {
         if (!fragt(jetzt, zuletzt)) return
         zuletzt = jetzt
+        val app = ctx.applicationContext
+        val c = Austausch.client(app)?.takeIf { Austausch.beiBeruehrung(app) && Austausch.jetzt == null }
+            ?: return melden(app, app.getString(R.string.teilen_frage), TeilenActivity::class.java)
+        thread(name = "austausch-beruehrt") {
+            val a = c.neu(Austausch.karte(app).first)
+            if (a !is AustauschClient.Antwort.Neu) return@thread melden(app, app.getString(R.string.teilen_frage), TeilenActivity::class.java)
+            Austausch.jetzt = Austausch.Sitzung(a.id, a.link, a.bis)
+            WlanAngebot.vorbereiten(app.getString(R.string.austausch_titel), AustauschActivity.ndef(a.link), nurEinmal = true)
+            WlanAngebot.anfangen()
+            melden(app, app.getString(R.string.austausch_beruehrt), AustauschActivity::class.java)
+        }
+    }
+
+    /** The one heads-up notification, [titel], whose tap opens [ziel]. */
+    private fun melden(ctx: Context, titel: String, ziel: Class<*>) {
         val nm = ctx.getSystemService(NotificationManager::class.java) ?: return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             nm.createNotificationChannel(NotificationChannel(KANAL, ctx.getString(R.string.teilen_kanal), NotificationManager.IMPORTANCE_HIGH))
         }
         val tap = PendingIntent.getActivity(
-            ctx, 0, Intent(ctx, TeilenActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            ctx, 0, Intent(ctx, ziel).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val n = NotificationCompat.Builder(ctx, KANAL)
             .setSmallIcon(R.drawable.ic_stat_homes)
-            .setContentTitle(ctx.getString(R.string.teilen_frage))
+            .setContentTitle(titel)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
             .setContentIntent(tap)
