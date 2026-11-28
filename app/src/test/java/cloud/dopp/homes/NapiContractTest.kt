@@ -242,7 +242,7 @@ class NapiContractTest {
                     "sagNein (ausloeser.go:109): darf :63-80 (403 :71, :73; 503 :75), 503 :92",
                 sends = setOf("ok", "link", "text", "gueltig_bis", "error"),
             ),
-            // Kontakt austauschen (owner 2026-11-28): mdopp/homes#398 at aa97b35, not merged yet; registered teilen.go:45-48
+            // Kontakt austauschen (owner 2026-11-28): mdopp/homes#398 at 1a55a21, not merged yet; registered teilen.go:45-48
             // (module kontakte); refusals {ok:false,error} teilenNein :70-88 (404, 410, 400, 429 + Retry-After), person :52-67 (403, 503).
             Route(
                 "POST", "/napi/teilen", "internal/napi/teilen.go:101-117, the body :106-109, the answer :116",
