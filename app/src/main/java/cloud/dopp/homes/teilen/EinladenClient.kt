@@ -1,6 +1,6 @@
 package cloud.dopp.homes.teilen
 
-import android.net.Uri
+import androidx.core.net.toUri
 import cloud.dopp.homes.data.HomesHttp
 import cloud.dopp.homes.data.Napi
 import cloud.dopp.homes.data.Napi.EinladenJson
@@ -54,7 +54,7 @@ class EinladenClient(
         /** A reply, by its status: the link, or why not. A link that is not https is no link. */
         fun ausgangAus(code: Int, body: String?): Ausgang {
             val o = HomesHttp.json(body)
-            val link = HomesHttp.text(o, EinladenJson.LINK)?.takeIf { Uri.parse(it).scheme == "https" }
+            val link = HomesHttp.text(o, EinladenJson.LINK)?.takeIf { it.toUri().scheme == "https" }
             return when {
                 code == HTTP_401 -> Ausgang.NichtGekoppelt
                 code in 200..299 && o?.optBoolean(EinladenJson.OK, false) == true && link != null ->
