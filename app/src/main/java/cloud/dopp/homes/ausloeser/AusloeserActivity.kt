@@ -493,7 +493,9 @@ class AusloeserActivity : AppCompatActivity() {
         if (isFinishing) return@runOnUiThread
         when (e) {
             TagSchreiber.Ergebnis.Leer -> if (!wartet) leerAngeboten()
-            TagSchreiber.Ergebnis.Beschrieben -> if (!wartet) kurz(getString(R.string.ausloeser_schon_beschrieben))
+            is TagSchreiber.Ergebnis.EigeneDaten -> karte(e.karte, null) // never written: no button for it
+            is TagSchreiber.Ergebnis.Unklar -> karte(e.karte, e.id)
+            TagSchreiber.Ergebnis.Unlesbar -> stand(getString(R.string.ausloeser_unlesbar))
             is TagSchreiber.Ergebnis.Gelesen -> gelesen(e) // also while waiting: it is not written over unasked
             TagSchreiber.Ergebnis.Fertig, is TagSchreiber.Ergebnis.Fehler -> geschrieben(e)
         }
@@ -567,12 +569,36 @@ class AusloeserActivity : AppCompatActivity() {
     }
 
     /** „Der Inhalt geht verloren.“ — on yes the tag [id] may be written once, and [dann] goes on. */
-    private fun fragUeberschreiben(id: ByteArray?, dann: () -> Unit) {
+    private fun fragUeberschreiben(id: ByteArray?, dann: () -> Unit) =
+        frage(id, R.string.inhalt_frage_titel, R.string.inhalt_frage, R.string.inhalt_ueberschreiben, dann)
+
+    /**
+     * A card with data of its own (owner 2026-11-28): what reads without keys, on the screen only, with
+     * „Kopieren“ — and no button that writes. [unklar]: its memory did not read; „Ist ein leerer Aufkleber …“
+     * asks first, and only on „Ja, leerer Aufkleber“ may that card be formatted.
+     */
+    private fun karte(k: Karte, unklar: ByteArray?) {
+        val kopieren = TagInhaltAnsicht.Knopf(getString(R.string.karte_kopieren)) { fertig ->
+            inhalt.kopieren(TagBefund.hexAlles(k))
+            fertig(getString(R.string.karte_kopiert))
+        }.takeIf { k.bloecke.any { it.daten != null } }
+        val leer = unklar?.let { id ->
+            TagInhaltAnsicht.Knopf(getString(R.string.karte_leer_knopf)) {
+                frage(id, R.string.karte_leer_titel, R.string.karte_leer_frage, R.string.karte_leer_ja) { leerAngeboten() }
+            }
+        }
+        val satz = if (unklar == null) getString(R.string.karte_eigene_daten, k.typ) else getString(R.string.karte_unklar, k.typ)
+        val titel = getString(if (unklar == null) R.string.karte_titel else R.string.karte_titel_unklar)
+        inhalt.zeige(titel, listOf(satz), null, listOfNotNull(leer, kopieren), TagBefund.text(k))
+    }
+
+    /** One question before a tag that may hold something is written: on [ja], [id] may be written once. */
+    private fun frage(id: ByteArray?, titel: Int, nachricht: Int, ja: Int, dann: () -> Unit) {
         ActionDialog.show(
             activity = this,
-            title = getString(R.string.inhalt_frage_titel),
-            message = getString(R.string.inhalt_frage),
-            sheet = ActionSheet(listOf(ActionItem(R.string.inhalt_ueberschreiben, ActionTone.DANGEROUS)), R.string.inhalt_frage_hinweis),
+            title = getString(titel),
+            message = getString(nachricht),
+            sheet = ActionSheet(listOf(ActionItem(ja, ActionTone.DANGEROUS)), R.string.inhalt_frage_hinweis),
             onPick = {
                 schreiber.erlauben(id)
                 inhalt.schliessen()
@@ -585,12 +611,6 @@ class AusloeserActivity : AppCompatActivity() {
 
     /** A blank tag while nothing waits: the form opens for it by itself, its name asked for (§2). */
     private fun leerAngeboten() = neuerTag(getString(R.string.ausloeser_neu_erkannt))
-
-    /** A note that goes again after a moment, unless something else was said meanwhile. */
-    private fun kurz(text: String) {
-        stand(text)
-        main.postDelayed({ if (findViewById<TextView>(R.id.ausloeser_stand).text.toString() == text) stand("") }, KURZ_MS)
-    }
 
     private fun geschrieben(e: TagSchreiber.Ergebnis) {
         val tag = offen
@@ -643,8 +663,6 @@ class AusloeserActivity : AppCompatActivity() {
         @Volatile
         var schreiber: TagSchreiber = NfcSchreiber
 
-        /** How long a passing note stays. */
-        private const val KURZ_MS = 4_000L
 
         /** How long the screen waits for a tag before it says none came. */
         private const val WARTEN_MS = 60_000L

@@ -28,7 +28,6 @@
     <!-- the form is closed until asked for (owner 2026-11-27): the list's last row, or a blank tag held to the phone -->
     <string name="ausloeser_neu_zeile">+ Neuen Tag beschreiben</string>
     <string name="ausloeser_neu_erkannt">Neuer Tag erkannt – wie soll er heißen?</string>
-    <string name="ausloeser_schon_beschrieben">Schon beschrieben. Zum Melden die Seite schließen.</string>
 
     <string name="ausloeser_sichern">Sichern</string>
     <string name="ausloeser_sichert">Sichert …</string>
@@ -135,4 +134,18 @@
     <string name="inhalt_neu_titel">Neuer Inhalt für diesen Tag</string>
     <string name="inhalt_halte_nochmal">Gut. Halte den Tag noch einmal ans Telefon, dann wird er überschrieben.</string>
     <string name="wlan_schon_beschrieben">Auf diesem Tag steht schon etwas. Nimm einen leeren, oder schließe das Formular und halte ihn ans Telefon: dann kannst du ihn überschreiben.</string>
+
+    <!-- A card with data of its own, or not readable (owner 2026-11-28): never written, its data on the screen only -->
+    <string name="ausloeser_unlesbar">Tag nicht lesbar – halte ihn ruhig noch einmal ans Telefon.</string>
+    <string name="karte_titel">Karte mit eigenen Daten</string>
+    <string name="karte_eigene_daten">Karte mit eigenen Daten (%1$s) – vermutlich eine Zugangs-, Bank- oder Fahrkarte. Homes beschreibt sie nicht.</string>
+    <string name="karte_titel_unklar">Inhalt nicht erkennbar</string>
+    <string name="karte_unklar">Ohne Schlüssel sieht Homes nicht, ob auf dieser Karte (%1$s) etwas steht. Homes beschreibt sie nur, wenn du sicher bist, dass es ein leerer Aufkleber ist.</string>
+    <string name="karte_leer_knopf">Ist ein leerer Aufkleber …</string>
+    <string name="karte_leer_titel">Wirklich ein leerer Aufkleber?</string>
+    <string name="karte_leer_frage">Falls das eine Zugangskarte ist, gehen ihre Daten verloren. Ist es wirklich ein leerer Aufkleber?</string>
+    <string name="karte_leer_ja">Ja, leerer Aufkleber</string>
+    <string name="karte_kopieren">Kopieren</string>
+    <string name="karte_kopiert">Kopiert.</string>
+    <string name="leer_keine">Das ist keine leere NFC-Karte.</string>
 </resources>

@@ -333,6 +333,24 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
 
+            <!-- A card with data of its own (owner 2026-11-28: „zeige mir die Daten“): what reads without
+                 keys, hex and ASCII in monospace, wide lines scrolled sideways; on the screen only. -->
+            <HorizontalScrollView
+                android:id="@+id/inhalt_daten_rahmen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/inhalt_daten"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:textColor="@color/homes_text"
+                    android:textSize="12sp" />
+            </HorizontalScrollView>
+
             <Button
                 android:id="@+id/inhalt_eins"
                 android:layout_width="match_parent"
