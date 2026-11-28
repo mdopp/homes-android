@@ -303,7 +303,7 @@ class HomeScreenTest {
         listOf(R.id.widgets_titel, R.id.widgets_hinweis, R.id.widgets_card).forEach {
             assertEquals("gone: ${ctx().resources.getResourceEntryName(it)}", View.GONE, a.findViewById<View>(it).visibility)
         }
-        val root = a.findViewById<ViewGroup>(R.id.home_version).parent as ViewGroup
+        val root = a.findViewById<View>(R.id.home_version).parent as ViewGroup
         assertEquals("the version is the last line", R.id.home_version, root.getChildAt(root.childCount - 1).id)
     }
 
