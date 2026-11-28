@@ -550,7 +550,7 @@
              phone's contacts app as a vCard (Samsung's „vCard-Datei (VCF)“, Google's
              Contacts) is looked for in the household's address book, and the link that
              asks its person for what is missing goes out by WhatsApp, SMS or any app
-             (fragen/KontaktFragenActivity.kt). Plain text only when it is a vCard.
+             (fragen/KontaktFragenActivity.kt, a screen of its own since 2026-11-28). Plain text only when it is a vCard.
              On while the box's `kontakte` module is (kann/Teilen.kt). -->
         <activity
             android:name=".fragen.KontaktFragenActivity"
@@ -558,7 +558,7 @@
             android:excludeFromRecents="true"
             android:label="@string/fragen_label"
             android:taskAffinity=""
-            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            android:theme="@style/Theme.Homes">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

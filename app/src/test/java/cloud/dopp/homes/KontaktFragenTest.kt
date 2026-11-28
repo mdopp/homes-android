@@ -1,6 +1,5 @@
 package cloud.dopp.homes
 
-import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -9,7 +8,9 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Looper
-import android.widget.LinearLayout
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import cloud.dopp.homes.data.TokenStore
@@ -47,10 +48,11 @@ import java.util.concurrent.TimeUnit
 /**
  * Share → „Homes: Daten erfragen“ (owner 2026-11-28): the card a contacts app
  * shares is read tolerantly (Samsung's vCard 2.1 with QUOTED-PRINTABLE,
- * Google's 3.0), Homes' answer becomes one dialog in each state — reading,
- * running, done (WhatsApp, SMS, any app), not found („aufnehmen und
- * fragen“), more than one (pick), failed, timed out, not paired — and the
- * target follows the box's `kontakte` module.
+ * Google's 3.0), Homes' answer is said on the screen itself in each state
+ * (owner 2026-11-28: „direkt als Screen“, never a dialog) — reading, running,
+ * done (WhatsApp, SMS, any app as buttons, one tap sends), not found
+ * („aufnehmen und fragen“), more than one (a button each), failed, timed out,
+ * not paired — and the target follows the box's `kontakte` module.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -171,7 +173,7 @@ class KontaktFragenTest {
         assertEquals(Ausgang.Offline, c.fragen(k))
     }
 
-    // --- the dialog ---------------------------------------------------------------
+    // --- the screen ---------------------------------------------------------------
 
     @Test
     fun runningSaysWhomItLooksForThenWhatIsMissingAndTheWays() {
@@ -179,10 +181,16 @@ class KontaktFragenTest {
         val a = geteilt(text(GOOGLE))
         warte { meldung() == "Sucht Anna Schäfer im Haushalts-Adressbuch …" }
         assertEquals("running", "Sucht Anna Schäfer im Haushalts-Adressbuch …", meldung())
+        assertEquals("Anna Schäfer", (sicht(R.id.fragen_name) as TextView).text.toString())
+        assertEquals("AS", (sicht(R.id.fragen_initialen) as TextView).text.toString())
+        assertEquals("its progress", View.VISIBLE, sicht(R.id.fragen_laeuft).visibility)
         assertTrue("no button while it runs", wahl().isEmpty())
         warte { meldung().startsWith("Bei") }
         assertEquals("Bei Anna fehlen: Adresse, Geburtstag", meldung())
+        assertEquals("done: no progress", View.GONE, sicht(R.id.fragen_laeuft).visibility)
+        assertEquals("not made just now", View.GONE, sicht(R.id.fragen_neu).visibility)
         assertEquals("no WhatsApp on this phone", listOf("Per SMS", "Anders teilen …"), wahl())
+        assertNull("no dialog at all", ShadowDialog.getLatestDialog())
         tippe("Per SMS")
         val sms = shadowOf(a).nextStartedActivity
         assertEquals(Intent.ACTION_SENDTO, sms.action)
@@ -238,7 +246,10 @@ class KontaktFragenTest {
         homes.antwort = { MockResponse().setBody(GEFUNDEN.replace("\"ok\":true", "\"ok\":true,\"neu\":true")) }
         tippe("Ins Haushalts-Adressbuch aufnehmen und fragen")
         warte { meldung().contains("fehlen") }
-        assertEquals("Anna Schäfer ist jetzt im Haushalts-Adressbuch. Bei Anna fehlen: Adresse, Geburtstag", meldung())
+        assertEquals("Bei Anna fehlen: Adresse, Geburtstag", meldung())
+        assertEquals(View.VISIBLE, sicht(R.id.fragen_neu).visibility)
+        assertEquals("Neu im Haushalts-Adressbuch angelegt.", (sicht(R.id.fragen_neu) as TextView).text.toString())
+        assertNull(ShadowDialog.getLatestDialog())
         assertTrue(JSONObject(homes.anfragen.last().second).getBoolean("anlegen"))
     }
 
@@ -259,25 +270,34 @@ class KontaktFragenTest {
         homes.antwort = { MockResponse().setResponseCode(403).setBody("""{"ok":false,"error":"Das darfst du nicht."}""") }
         val a = geteilt(text(GOOGLE))
         warte { meldung() == "Das darfst du nicht." }
-        assertEquals("Fertig", knopf())
-        dialog().findViewById<android.widget.Button>(R.id.ad_cancel).performClick()
+        assertEquals("a refusal: no second try", listOf("Schließen"), wahl())
+        tippe("Schließen")
         assertTrue(a.isFinishing)
 
         homes.antwort = { MockResponse().setResponseCode(502).setBody("bad gateway") }
         geteilt(text(GOOGLE))
         warte { meldung().contains("502") }
         assertEquals("Homes hat nicht lesbar geantwortet (502). Bitte später noch einmal teilen.", meldung())
+        assertEquals(listOf("Noch einmal", "Schließen"), wahl())
+        homes.antwort = { MockResponse().setBody(GEFUNDEN) }
+        tippe("Noch einmal")
+        warte { meldung().startsWith("Bei") }
+        assertEquals("asked again", "Bei Anna fehlen: Adresse, Geburtstag", meldung())
 
         KontaktFragenActivity.http = kurz()
         homes.antwort = { MockResponse().setBody(GEFUNDEN).setBodyDelay(2, TimeUnit.SECONDS) }
         geteilt(text(GOOGLE))
         warte { meldung().contains("rechtzeitig") }
         assertEquals("timed out", "Homes hat nicht rechtzeitig geantwortet. Bitte gleich noch einmal teilen.", meldung())
+        assertEquals(listOf("Noch einmal", "Schließen"), wahl())
 
         val vorher = homes.anfragen.size
         geteilt(text("Anna Schäfer\nMobil: 0151 2345678"))
         warte { meldung().startsWith("Das ist keine") }
         assertTrue("no vCard: no request", homes.anfragen.size == vorher)
+        assertEquals(listOf("Schließen"), wahl())
+        assertEquals("no name, no circle", View.GONE, sicht(R.id.fragen_initialen).visibility)
+        assertNull("no dialog at all", ShadowDialog.getLatestDialog())
     }
 
     @Test
@@ -292,6 +312,9 @@ class KontaktFragenTest {
         geteilt(text(GOOGLE))
         warte { meldung().contains("gekoppelt") }
         assertTrue(meldung().contains("nicht mit Homes gekoppelt"))
+        assertEquals(listOf("Schließen"), wahl())
+        sicht(R.id.fragen_zu).performClick()
+        assertTrue("← closes", letzte!!.isFinishing)
     }
 
     // --- the share sheet ------------------------------------------------------------
@@ -302,6 +325,7 @@ class KontaktFragenTest {
         val act = manifest.substringAfter("""android:name=".fragen.KontaktFragenActivity"""").substringBefore("</activity>")
         listOf("text/x-vcard", "text/vcard", "text/plain").forEach { assertTrue(it, act.contains("""android:mimeType="$it"""")) }
         assertTrue(act, act.contains("""android:taskAffinity=""""") && act.contains("android.intent.action.SEND"))
+        assertTrue("a screen of its own, opened directly", act.contains("""android:theme="@style/Theme.Homes"""") && !act.contains("Translucent"))
         assertTrue("WhatsApp is visible to the app", manifest.contains("""<package android:name="com.whatsapp" />"""))
 
         val c = ComponentName(ctx(), KontaktFragenActivity::class.java)
@@ -326,22 +350,22 @@ class KontaktFragenTest {
 
     private fun text(t: String) = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, t)
 
+    /** The screen shared to last. */
+    private var letzte: KontaktFragenActivity? = null
+
     private fun geteilt(i: Intent): KontaktFragenActivity =
-        Robolectric.buildActivity(KontaktFragenActivity::class.java, i).create().get()
+        Robolectric.buildActivity(KontaktFragenActivity::class.java, i).create().get().also { letzte = it }
 
-    private fun dialog(): AlertDialog = ShadowDialog.getLatestDialog() as AlertDialog
+    private fun sicht(id: Int): View = letzte!!.findViewById(id)
 
-    private fun meldung(): String =
-        (ShadowDialog.getLatestDialog() as AlertDialog?)?.findViewById<TextView>(R.id.ad_message)?.text?.toString().orEmpty()
+    private fun meldung(): String = (sicht(R.id.fragen_stand) as TextView).text.toString()
 
-    private fun knopf(): String = dialog().findViewById<android.widget.Button>(R.id.ad_cancel).text.toString()
+    private fun knoepfe(): List<Button> = (sicht(R.id.fragen_knoepfe) as ViewGroup).let { k -> (0 until k.childCount).map { k.getChildAt(it) as Button } }
 
-    private fun reihen() = dialog().findViewById<LinearLayout>(R.id.ad_items).let { s -> (0 until s.childCount).map { s.getChildAt(it) } }
-
-    private fun wahl(): List<String> = reihen().mapNotNull { it.findViewById<TextView>(R.id.ar_label)?.text?.toString() }
+    private fun wahl(): List<String> = knoepfe().map { it.text.toString() }
 
     private fun tippe(was: String) {
-        reihen().first { it.findViewById<TextView>(R.id.ar_label)?.text?.toString() == was }.performClick()
+        knoepfe().first { it.text.toString() == was }.performClick()
         shadowOf(Looper.getMainLooper()).idle()
     }
 

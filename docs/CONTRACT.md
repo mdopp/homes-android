@@ -1019,22 +1019,23 @@ module is on, and while that is unknown; Homes names no `teilen` key for it) tak
   - 200 `{"ok":true,"kontakt","vorname","link","text","fehlt":[…],"telefon"?,"neu"?}`
     → „Bei <vorname> fehlen: Adresse, Geburtstag“ (`fehlt` in Homes' words, as
     sent), or „Alles da – trotzdem fragen?“ when `fehlt` is empty; with `neu`
-    „<kontakt> ist jetzt im Haushalts-Adressbuch.“ first. Then „Per WhatsApp an
+    the line „Neu im Haushalts-Adressbuch angelegt.“ under it. Then, as buttons on the
+    screen (a screen of its own since 2026-11-28, no dialog), „Per WhatsApp an
     <vorname>“ (only with `telefon` and WhatsApp installed: `https://wa.me/<digits>?text=<text>`
     in `com.whatsapp`), „Per SMS“ (`smsto:` to `telefon`, else the card's first
     number, `sms_body` the `text`) and „Anders teilen …“ (`ACTION_SEND` of the
-    `text` through the chooser). Each ends the share. Without `text` the app
+    `text` through the chooser). One tap starts it and ends the share. Without `text` the app
     sends the `link`.
   - 404 `{"ok":false,"error","anlegen":true}` → Homes' sentence and
     „Ins Haushalts-Adressbuch aufnehmen und fragen“, which sends the same body
     with `"anlegen":true`. A 404 without `anlegen` is a refusal.
-  - 409 `{"kandidaten":[{"kontakt","uid"}]}` → one row per candidate (Homes'
+  - 409 `{"kandidaten":[{"kontakt","uid"}]}` → one button per candidate (Homes'
     `error` as the question, else „Mehrere Kontakte passen. Wer ist gemeint?“);
     the pick sends the body again with its `"uid"`.
   - `telefon` is `""` without a mobile number: no WhatsApp row then.
   - 401: pair again; 403 (not an admin), 400, 502, 503 and any other: Homes' `error`, else „Homes hat nicht
     lesbar geantwortet (<code>) …“; no answer in 20 s or no line: the app's
-    own sentence.
+    own sentence. „Schließen“ under each, and „Noch einmal“ (the same body again) after a 5xx, a timeout or no line.
 
 ## (m) Kontaktdaten eintragen lassen: a one-time link over NFC or QR
 
