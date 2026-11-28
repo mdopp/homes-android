@@ -3,16 +3,20 @@
 <resources>
     <string name="teilen_kanal">Teilen per Berührung</string>
     <string name="teilen_frage">Ein Telefon möchte etwas von dir. Was teilen?</string>
-    <string name="teilen_titel">Was teilen?</string>
-    <string name="teilen_hinweis">Tippe an, was das andere Telefon bekommen soll. Es bekommt genau das, einmal, in den nächsten zwei Minuten.</string>
+    <string name="teilen_titel">Teilen</string>
+    <string name="teilen_hinweis">NFC: Das andere Telefon bekommt genau das, einmal, in den nächsten zwei Minuten, solange dieser Bildschirm offen ist. QR: der Code zum Abfotografieren.</string>
     <string name="teilen_kontakt">Meine Kontaktdaten</string>
-    <string name="teilen_qr">QR-Code: %1$s</string>
-    <string name="teilen_karte_festlegen">Meine Visitenkarte festlegen …</string>
-    <string name="teilen_nichts">Nichts</string>
+    <string name="teilen_karte_fehlt">Noch nicht festgelegt</string>
+    <string name="teilen_nfc">NFC</string>
+    <string name="teilen_qr_knopf">QR</string>
+    <string name="teilen_festlegen">Festlegen</string>
+    <string name="teilen_iphone">iPhone: QR-Code</string>
+    <string name="teilen_kein_qr">Nur per NFC, ohne QR-Code</string>
+    <string name="teilen_halte">Halte das andere Telefon an deins … noch %1$s</string>
     <string name="teilen_art_wlan">WLAN „%1$s“</string>
     <string name="teilen_art_homes">Homes-Tag</string>
     <string name="teilen_geteilt">Geteilt.</string>
-    <string name="teilen_abgelaufen">Nicht geteilt – abgelaufen.</string>
+    <string name="teilen_abgelaufen">Abgelaufen.</string>
     <string name="teilen_unterwegs">Teilt per Berührung</string>
 
     <string name="behalten_titel">Behaltene Tags</string>
@@ -49,10 +53,31 @@
     <string name="karte_entfernen">Visitenkarte entfernen</string>
     <string name="karte_entfernt">Entfernt.</string>
     <string name="karte_gesetzt">Deine Visitenkarte ist festgelegt.</string>
-    <string name="karte_gesichert">Gesichert. Unter „Was teilen?“ heißt sie „Meine Kontaktdaten“.</string>
+    <string name="karte_gesichert">Gesichert. Unter „Teilen“ heißt sie „Meine Kontaktdaten“.</string>
     <string name="karte_ohne_recht">Ohne Zugriff auf die Kontakte kann Homes die Felder nicht lesen.</string>
     <string name="karte_nicht_lesbar">Dieser Kontakt ließ sich nicht lesen.</string>
     <string name="karte_ohne_namen">ohne Namen</string>
     <string name="karte_erst_waehlen">Wähle erst einen Kontakt.</string>
     <string name="karte_nichts_gewaehlt">Hake mindestens ein Feld an.</string>
+
+    <string name="gast_titel">Gast-WLAN</string>
+    <string name="gast_fehlt">Noch nicht festgelegt</string>
+    <string name="gast_festlegen">Gast-WLAN festlegen</string>
+    <string name="gast_hinweis">Das WLAN, das Gäste bekommen – am besten das Gastnetz der FRITZ!Box. Es bleibt verschlüsselt auf diesem Telefon.</string>
+    <string name="gast_kennwort">Kennwort</string>
+    <string name="gast_zeigen">Kennwort zeigen</string>
+    <string name="gast_mit_passwort">Mit Passwort</string>
+    <string name="gast_offen">Offen</string>
+    <string name="gast_entfernen">Gast-WLAN entfernen</string>
+    <string name="gast_entfernt">Entfernt.</string>
+    <string name="gast_gesichert">Gesichert. Unter „Teilen“ heißt „%1$s“ jetzt „Gast-WLAN“.</string>
+    <string name="gast_merken">Als Gast-WLAN merken</string>
+    <string name="gast_gemerkt">„%1$s“ ist jetzt dein Gast-WLAN.</string>
+
+    <string name="einladen_titel">Kontaktdaten eintragen lassen</string>
+    <string name="einladen_unter">Ein Link von Homes, gut für einmal</string>
+    <string name="einladen_laeuft">Homes macht einen Link …</string>
+    <string name="einladen_zeit">Homes hat nicht rechtzeitig geantwortet. Bitte gleich noch einmal tippen.</string>
+    <string name="einladen_offline">Homes ist gerade nicht erreichbar. Bitte später noch einmal, im WLAN zu Hause oder mit Netz.</string>
+    <string name="einladen_unlesbar">Homes hat nicht lesbar geantwortet (%1$d). Bitte später noch einmal.</string>
 </resources>

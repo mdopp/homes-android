@@ -1,5 +1,6 @@
 package cloud.dopp.homes.ausloeser
 
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -34,14 +35,10 @@ class WlanAnbietenActivity : AppCompatActivity() {
     private lateinit var knopf: Button
     private var vorbei = false
 
-    /** „Teilen per Berührung“: one reader, then „Geteilt.“ (owner 2026-11-28). */
-    private var einmal = false
-
     private val tick = object : Runnable {
         override fun run() {
-            if (WlanAngebot.geteilt) return ende(getString(R.string.teilen_geteilt))
             val rest = WlanAngebot.bis - SystemClock.elapsedRealtime()
-            if (rest <= 0) return ende(getString(if (einmal) R.string.teilen_abgelaufen else R.string.anbieten_vorbei))
+            if (rest <= 0) return ende(getString(R.string.anbieten_vorbei))
             stand.text = getString(R.string.anbieten_noch, dauer(rest))
             main.postDelayed(this, minOf(SEKUNDE, rest))
         }
@@ -58,9 +55,7 @@ class WlanAnbietenActivity : AppCompatActivity() {
             finish()
         }
         val ssid = WlanAngebot.ssid
-        einmal = WlanAngebot.einmal
-        if (einmal) findViewById<TextView>(R.id.anbieten_titel).setText(R.string.teilen_titel)
-        findViewById<TextView>(R.id.anbieten_netz).text = ssid?.let { if (einmal) it else getString(R.string.inhalt_wlan_name, it) }.orEmpty()
+        findViewById<TextView>(R.id.anbieten_netz).text = ssid?.let { getString(R.string.inhalt_wlan_name, it) }.orEmpty()
         if (ssid == null) ende(getString(R.string.anbieten_nichts)) // the process was gone: the credential with it
     }
 
@@ -68,15 +63,15 @@ class WlanAnbietenActivity : AppCompatActivity() {
         super.onResume()
         if (vorbei) return
         warum(this)?.let { return ende(it) }
-        if (!WlanAngebot.anfangen()) return ende(getString(if (einmal) R.string.teilen_abgelaufen else R.string.anbieten_vorbei))
-        bevorzugt(true)
+        if (!WlanAngebot.anfangen()) return ende(getString(R.string.anbieten_vorbei))
+        bevorzugt(this, true)
         main.post(tick)
     }
 
     override fun onPause() {
         WlanAngebot.pause() // nothing answered while the screen is not in front
         main.removeCallbacks(tick)
-        bevorzugt(false)
+        bevorzugt(this, false)
         super.onPause()
     }
 
@@ -93,15 +88,6 @@ class WlanAnbietenActivity : AppCompatActivity() {
         main.removeCallbacks(tick)
         stand.text = satz
         knopf.text = getString(R.string.inhalt_zu)
-    }
-
-    /** While in front, this app's service answers the NDEF AID before any other's. */
-    private fun bevorzugt(an: Boolean) {
-        val nfc = NfcAdapter.getDefaultAdapter(this) ?: return
-        runCatching {
-            val ce = CardEmulation.getInstance(nfc)
-            if (an) ce.setPreferredService(this, ComponentName(this, WlanAnbietenDienst::class.java)) else ce.unsetPreferredService(this)
-        }
     }
 
     private fun dauer(ms: Long): String {
@@ -123,9 +109,18 @@ class WlanAnbietenActivity : AppCompatActivity() {
             }
         }
 
-        /** Offer [n] ([name]): held in memory, the screen opened; [einmal]: to one reader only („Teilen“). */
-        fun oeffnen(ctx: Context, name: String, n: NdefMessage, einmal: Boolean = false) {
-            WlanAngebot.vorbereiten(name, n, einmal)
+        /** While [a] is in front, this app's service answers the NDEF AID before any other's (also „Teilen“). */
+        fun bevorzugt(a: Activity, an: Boolean) {
+            val nfc = NfcAdapter.getDefaultAdapter(a) ?: return
+            runCatching {
+                val ce = CardEmulation.getInstance(nfc)
+                if (an) ce.setPreferredService(a, ComponentName(a, WlanAnbietenDienst::class.java)) else ce.unsetPreferredService(a)
+            }
+        }
+
+        /** Offer [n] ([name]): held in memory, the screen opened. */
+        fun oeffnen(ctx: Context, name: String, n: NdefMessage) {
+            WlanAngebot.vorbereiten(name, n)
             ctx.startActivity(Intent(ctx, WlanAnbietenActivity::class.java))
         }
     }

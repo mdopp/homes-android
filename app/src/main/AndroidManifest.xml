@@ -403,6 +403,12 @@
             android:label="@string/karte_titel_visitenkarte"
             android:theme="@style/Theme.Homes" />
         <activity
+            android:name=".teilen.GastWlanActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:label="@string/gast_festlegen"
+            android:theme="@style/Theme.Homes" />
+        <activity
             android:name=".teilen.BehalteneActivity"
             android:exported="false"
             android:label="@string/behalten_titel"

@@ -295,6 +295,18 @@ class TagInhaltTest {
         shadowOf(a).receiveResult(gestartet.intent, Activity.RESULT_OK, Intent())
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals("„Zuhause“ ist im Telefon gespeichert.", a.karte())
+        assertEquals("then it can be kept as the guest Wi-Fi („Teilen“, owner 2026-11-28)", "Als Gast-WLAN merken", a.zwei().text.toString())
+        val vorher = cloud.dopp.homes.teilen.Tresor.schluessel
+        val k = javax.crypto.KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        cloud.dopp.homes.teilen.Tresor.schluessel = { k } // Robolectric has no Keystore
+        try {
+            a.zwei().performClick()
+            assertEquals("„Zuhause“ ist jetzt dein Gast-WLAN.", a.karte())
+            assertEquals("Zuhause", cloud.dopp.homes.teilen.Behalten.gastWlan(a)?.ssid)
+        } finally {
+            cloud.dopp.homes.teilen.Behalten.setzeGastWlan(a, null)
+            cloud.dopp.homes.teilen.Tresor.schluessel = vorher
+        }
         assertEquals("then it can be offered", "WLAN anbieten", a.zwei().text.toString())
         a.zwei().performClick()
         assertEquals(cloud.dopp.homes.ausloeser.WlanAnbietenActivity::class.java.name, shadowOf(a).nextStartedActivity.component?.className)

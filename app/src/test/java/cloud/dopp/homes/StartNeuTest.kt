@@ -241,9 +241,9 @@ class StartNeuTest {
     fun threeTilesARowAndTheLastKeepsTheColumns() {
         EinrichtungStore.neu(ctx(), antwort("dokumente", "musik", "rezepte", "fotos"))
         val g = start().findViewById<ViewGroup>(R.id.ueberblick_group)
-        // four modules, Auslöser (what the box can do unknown: as before) and Homes: two rows of three
-        assertEquals(2, g.childCount)
-        assertEquals(3, (g.getChildAt(1) as ViewGroup).childCount)
+        // four modules, Auslöser (what the box can do unknown: as before), Teilen and Homes: three rows of three
+        assertEquals(3, g.childCount)
+        assertEquals("one tile, two spaces", 3, (g.getChildAt(2) as ViewGroup).childCount)
     }
 
     // --- „Dieses Telefon“ ------------------------------------------------------------------------
