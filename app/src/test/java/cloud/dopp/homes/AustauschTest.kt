@@ -336,9 +336,9 @@ class AustauschTest {
     @Test
     fun aLockedPhoneIsNotInFront() {
         val vorn = Robolectric.buildActivity(TeilenActivity::class.java).setup().get()
-        shadowOf(ctx().getSystemService(KeyguardManager::class.java)).setIsKeyguardLocked(true)
+        shadowOf(ctx().getSystemService(KeyguardManager::class.java)).setKeyguardLocked(true)
         assertNull(Vorne.aktivitaet())
-        shadowOf(ctx().getSystemService(KeyguardManager::class.java)).setIsKeyguardLocked(false)
+        shadowOf(ctx().getSystemService(KeyguardManager::class.java)).setKeyguardLocked(false)
         shadowOf(ctx().getSystemService(PowerManager::class.java)).setIsInteractive(false)
         assertNull("screen off", Vorne.aktivitaet())
         shadowOf(ctx().getSystemService(PowerManager::class.java)).setIsInteractive(true)
