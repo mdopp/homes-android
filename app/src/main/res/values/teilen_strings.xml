@@ -93,7 +93,6 @@
     <string name="austausch_vorname">Dein Vorname steht immer da: %1$s</string>
     <string name="austausch_vorname_login">Dein Vorname steht immer da.</string>
     <string name="austausch_karte">Meine Kontaktkarte</string>
-    <string name="austausch_keine_karte">Noch keine Visitenkarte festgelegt.</string>
     <string name="austausch_eintragen">Seine Kontaktdaten eintragen lassen</string>
     <string name="austausch_freigeben">Freigeben</string>
     <string name="austausch_gibt_frei">Gibt frei …</string>
