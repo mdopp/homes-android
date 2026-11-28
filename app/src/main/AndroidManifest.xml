@@ -51,6 +51,8 @@
          without NFC installs the app all the same. -->
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
+    <!-- „WLAN anbieten“: the phone answers as a tag; without host card emulation the screen says it cannot. -->
+    <uses-feature android:name="android.hardware.nfc.hce" android:required="false" />
 
     <!-- Android 11+ package visibility: the Custom Tabs provider for pairing, and
          the apps of Homes' modules (cmd/homes/module.go), so the app can tell Homes
@@ -359,6 +361,30 @@
                 android:name="android.nfc.action.TECH_DISCOVERED"
                 android:resource="@xml/nfc_leer" />
         </activity>
+
+        <!-- „WLAN anbieten“ (owner 2026-11-27): while this screen is in front, two minutes at most, the
+             phone answers as a WLAN tag. Not in the recents: the credential lives in memory only. -->
+        <activity
+            android:name=".ausloeser.WlanAnbietenActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:label="@string/anbieten_titel"
+            android:theme="@style/Theme.Homes" />
+
+        <!-- Its tag (owner approved 2026-11-27: a bound HCE service, not a foreground service): only
+             Android's NFC stack binds it (BIND_NFC_SERVICE), for the NDEF application's AID, with the
+             phone unlocked (@xml/apduservice); it answers only while WlanAnbietenActivity offers. -->
+        <service
+            android:name=".ausloeser.WlanAnbietenDienst"
+            android:exported="true"
+            android:permission="android.permission.BIND_NFC_SERVICE">
+            <intent-filter>
+                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.nfc.cardemulation.host_apdu_service"
+                android:resource="@xml/apduservice" />
+        </service>
 
         <!-- Mehr → Auslöser (homes ADR 0004): HA's tags, a new tag written, „Ladestation melden“. -->
         <activity
