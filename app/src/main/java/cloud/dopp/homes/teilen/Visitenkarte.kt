@@ -64,7 +64,7 @@ object Visitenkarte {
         return Bitmap.createBitmap(pixel, px, px, Bitmap.Config.ARGB_8888)
     }
 
-    private fun esc(s: String) = s.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\;").replace("\n", "\\n")
+    private fun esc(s: String) = s.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
 
-    private fun qr(s: String) = s.replace(Regex("""([\;,:"])"""), """\\$1""")
+    private fun qr(s: String) = s.replace(Regex("""([\\;,:"])"""), """\\$1""")
 }
