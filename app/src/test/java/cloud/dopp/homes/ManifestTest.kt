@@ -541,7 +541,8 @@ class ManifestTest {
     /**
      * Which of Homes' module apps the phone has (owner, 2026-11-04): Android 11+
      * answers for the packages the manifest names, one by one — never every
-     * package (QUERY_ALL_PACKAGES is not among [ours]).
+     * package (QUERY_ALL_PACKAGES is not among [ours]). And WhatsApp, for Daten
+     * erfragen's „Per WhatsApp“ (owner 2026-11-28).
      */
     @Test
     fun theModulesAppsAreAskedForByName() {
@@ -550,7 +551,7 @@ class ManifestTest {
         assertEquals(
             setOf(
                 "app.alextran.immich", "org.jellyfin.mobile", "com.x8bit.bitwarden", "com.audiobookshelf.app",
-                "org.thoughtcrime.securesms", "io.homeassistant.companion.android",
+                "org.thoughtcrime.securesms", "io.homeassistant.companion.android", "com.whatsapp",
             ),
             pakete,
         )

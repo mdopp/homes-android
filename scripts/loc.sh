@@ -64,7 +64,7 @@ budget ui        4043  # 3,026: the activities: start screen, pairing, settings 
                        #   numbers as its line, read at most every five minutes with the screen on (ui/EnergieKachel.kt)
                        # 4029 -> 4043 (owner approved 2026-11-28 (Gerät-Widget oben)): „+ Gerät als Widget …“ atop „Deine Geräte“,
                        #   „Widget hinzufügen“ only for tools, gone without one; the „Dokumente-Adresse“ tile gone (net)
-budget data      3364  # 2,780: Homes' calls (Napi), clients, models, the token store;
+budget data      3394  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -87,17 +87,20 @@ budget data      3364  # 2,780: Homes' calls (Napi), clients, models, the token 
                        #   tools taken out (ToolDefs.AUSGEBAUT), a kept share's art and titel
                        # 3351 -> 3364 (owner approved 2026-11-27 („Bau alles“), mdopp/homes#391): a card's achtung, a task's dringend, an entry's neu
                        #   and the answer's bereiche, their keys and docs
+                       # 3364 -> 3394 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“):
+                       #   POST /napi/kontakte/fragen, its reply shape and the share key kontakt-fragen
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
                        # 1632 -> 1726 (owner approved 2026-11-05: contact pictures, homes#287): a card's
                        #   PHOTO read, written as the contact's picture with its hash read back, the person's own sent, at most 256 px
 budget standort  1098  # 1,046: Standortverlauf — recording, batching, import
-budget kann      467  #   340 on 2026-11-04: what the box can do, /napi/kann kept and read, „Hier anfordern“ (homes ADR 0001);
+budget kann      472  #   340 on 2026-11-04: what the box can do, /napi/kann kept and read, „Hier anfordern“ (homes ADR 0001);
                        # 360 -> 420 (owner-approved, homes ADR 0001 plan): the share targets switched by teilen, homes-android#232;
                        # 420 -> 460: the widget providers switched by widgets, homes-android#233
                        # 460 -> 469 (owner 2026-11-27: Notizen- und Dokumente-Widget ausgebaut — owner approved 2026-11-27 („Bau alles“)): the tool
                        #   widget's provider leaves the picker while no tool is offered (Anbieter.werkzeug)
+                       # 467 -> 472 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“): „Daten erfragen“ on while the kontakte module is
 budget einrichtung 599 #   599 on 2026-11-27 (owner approved 2026-11-27 („Bau alles“), mdopp/homes#391): bereiche parsed (Bereich), an entry's neu, a task's dringend and the orange count;   571 on 2026-11-27: „Öffnen“ became tiles of ui/Ueberblick, „Deine Aufgaben“ one row;   617 on 2026-11-14, the first three tasks and „Alle N Aufgaben“ (owner: „immer nur die ersten mit Verweis auf alle“); 574 on 2026-11-04, a new package (owner): /napi/einrichtung kept and read, „Öffnen“ and „Deine Aufgaben“
                        # on the start screen, the launcher's four shortcuts and their trampoline
 budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochladen job — music and Takeout ZIPs, with the screen off;
@@ -138,6 +141,9 @@ budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
 budget teilen     530  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
                        # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
+budget fragen     442  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“): Share →
+                       # „Homes: Daten erfragen“ — a shared vCard read (2.1 quoted-printable, 3.0), the contact looked for on Homes,
+                       # the link sent by WhatsApp, SMS or any app
 budget verbindung 236  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)
 budget .           35  #    33: HomesConfig.kt

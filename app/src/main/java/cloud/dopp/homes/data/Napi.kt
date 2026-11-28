@@ -443,6 +443,26 @@ object Napi {
     }
 
     /**
+     * `POST /napi/kontakte/fragen` (Daten erfragen, owner 2026-11-28): `{ok, kontakt, vorname, link, text, fehlt,
+     * telefon?, neu?}`; 404 `{ok: false, error, anlegen: true}` not in the household's address book, 409
+     * `{kandidaten: [{kontakt, uid}]}` more than one fits, any other refusal `{error}`, a German sentence.
+     */
+    object FragenJson {
+        const val OK = KorrekturErledigtJson.OK
+        const val KONTAKT = "kontakt"
+        const val VORNAME = "vorname"
+        const val LINK = "link"
+        const val TEXT = "text"
+        const val FEHLT = "fehlt"
+        const val TELEFON = "telefon"
+        const val NEU = "neu"
+        const val ANLEGEN = "anlegen"
+        const val KANDIDATEN = "kandidaten"
+        const val UID = "uid"
+        const val ERROR = MerkenJson.ERROR
+    }
+
+    /**
      * A refused `GET /napi/gemeinsam/…` (the Homes account, #206): `{fehler}`
      * with Homes' German sentence; the answer itself is vCard or iCalendar.
      */
@@ -642,6 +662,7 @@ object Napi {
         const val DATEN_SICHERN = "daten-sichern"
         const val STANDORTVERLAUF = "standortverlauf"
         const val ARCHIV = "archiv"
+        const val KONTAKT_FRAGEN = "kontakt-fragen" // „Daten erfragen“'s component key: on while the kontakte module is (kann/Teilen.kt)
         const val AUSLOESER = "ausloeser" // the geraete module's Mehr row: NFC tags and the charger (homes ADR 0004)
     }
 
@@ -855,6 +876,15 @@ object Napi {
      * on the box: every card, each with a UID, as [VCARD]; Homes mirrors the set.
      */
     val KONTAKTE = Endpoint(Method.POST, "/napi/kontakte", reply = listOf(KontakteJson))
+
+    /**
+     * Daten erfragen (owner 2026-11-28): a shared card's name, numbers and addresses; Homes finds the contact in the
+     * household's address book ([FragenJson.UID] the one picked, `anlegen` makes it first) and answers the link
+     * that asks its person for what is missing, with the words to send.
+     */
+    val KONTAKT_FRAGEN = Endpoint(
+        Method.POST, "/napi/kontakte/fragen", body = listOf("name", "telefon", "mail", "anlegen", "uid"), reply = listOf(FragenJson),
+    )
 
     /**
      * The Homes account (#206): the household's shared contacts, as [VCARD].

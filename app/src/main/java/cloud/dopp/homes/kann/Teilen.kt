@@ -23,6 +23,7 @@ object Teilen {
         KannKey.STANDORT_IMPORT to "cloud.dopp.homes.ui.StandortImportActivity",
         KannKey.MUSIK to "cloud.dopp.homes.hochladen.MusikTeilenActivity",
         KannKey.ARCHIV to "cloud.dopp.homes.archiv.ArchivTeilenActivity",
+        KannKey.KONTAKT_FRAGEN to "cloud.dopp.homes.fragen.KontaktFragenActivity",
     )
 
     /** Switch every target to what [kann] offers; true when one changed. */
@@ -31,7 +32,7 @@ object Teilen {
         var changed = false
         ZIELE.forEach { (key, cls) ->
             val c = ComponentName(ctx.packageName, cls)
-            val want = if (kann.hat(Liste.TEILEN, key)) {
+            val want = if (angeboten(kann, key)) {
                 PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
             } else {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED
@@ -43,6 +44,10 @@ object Teilen {
         }
         return changed
     }
+
+    /** Offered? „Daten erfragen“ while the `kontakte` module is on (Homes names no key for it, mdopp/homes#396). */
+    private fun angeboten(kann: Kann?, key: String): Boolean =
+        if (kann != null && key == KannKey.KONTAKT_FRAGEN) kann.module.any { it.name == "kontakte" && it.an } else kann.hat(Liste.TEILEN, key)
 
     /** Is the target of [key] enabled now? */
     fun an(ctx: Context, key: String): Boolean {
