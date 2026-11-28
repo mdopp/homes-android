@@ -157,6 +157,7 @@ class TeilenTest {
 
     @Test
     fun theQuestionComesAtMostEvery30Seconds() {
+        Teilen.zuletzt = 0 // another test may have asked already
         assertTrue(Teilen.fragt(1_000, 0))
         assertFalse(Teilen.fragt(30_999, 1_000))
         assertTrue(Teilen.fragt(31_000, 1_000))

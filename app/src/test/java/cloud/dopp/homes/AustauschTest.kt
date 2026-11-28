@@ -101,6 +101,7 @@ class AustauschTest {
         WlanAngebot.vergessen()
         Austausch.jetzt = null
         Austausch.http = null
+        Teilen.zuletzt = 0
         listOf("tresor", "austausch", "homes_server").forEach { ctx().getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit() }
         TokenStore.clear(ctx())
         runCatching { server.shutdown() }
