@@ -1,7 +1,13 @@
 package cloud.dopp.homes.ausloeser
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Rect
+import android.os.Build
+import android.os.PersistableBundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -28,6 +34,8 @@ internal class TagInhaltAnsicht(private val a: Activity) {
     private val zeigen = a.findViewById<Button>(R.id.inhalt_zeigen)
     private val knoepfe = listOf(a.findViewById<Button>(R.id.inhalt_eins), a.findViewById<Button>(R.id.inhalt_zwei))
     private val stand = a.findViewById<TextView>(R.id.inhalt_stand)
+    private val daten = a.findViewById<TextView>(R.id.inhalt_daten)
+    private val datenRahmen = a.findViewById<View>(R.id.inhalt_daten_rahmen)
 
     private var passwort: String? = null
     private var klar = false
@@ -38,7 +46,9 @@ internal class TagInhaltAnsicht(private val a: Activity) {
     }
 
     /** Open with [ueber] and [zeilen]; [geheim] a password shown only on „zeigen“. */
-    fun zeige(ueber: String, zeilen: List<String>, geheim: String?, mit: List<Knopf>) {
+    fun zeige(ueber: String, zeilen: List<String>, geheim: String?, mit: List<Knopf>, roh: String? = null) {
+        daten.text = roh.orEmpty()
+        datenRahmen.isVisible = roh != null
         titel.text = ueber
         text.text = zeilen.joinToString("\n")
         text.isVisible = zeilen.isNotEmpty()
@@ -62,6 +72,16 @@ internal class TagInhaltAnsicht(private val a: Activity) {
         karte.isVisible = false
         passwort = null
         pw.text = ""
+        daten.text = "" // a card's data: on the screen while open, nowhere else
+    }
+
+    /** „Kopieren“: [text] to the clipboard, marked sensitive (Android 13+ shows it masked). */
+    fun kopieren(text: String) {
+        val clip = ClipData.newPlainText(a.getString(R.string.karte_kopieren), text)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            clip.description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+        }
+        (a.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)?.setPrimaryClip(clip)
     }
 
     /** Its own line: how a button's work ended. */

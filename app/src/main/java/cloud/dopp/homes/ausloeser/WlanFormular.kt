@@ -156,6 +156,9 @@ internal class WlanFormular(
                 zeigeStand(e.satz)
             }
             is TagSchreiber.Ergebnis.Gelesen -> zeigeStand(a.getString(R.string.wlan_schon_beschrieben)) // never written over unasked
+            is TagSchreiber.Ergebnis.EigeneDaten -> zeigeStand(a.getString(R.string.karte_eigene_daten, e.karte.typ))
+            is TagSchreiber.Ergebnis.Unklar -> zeigeStand(a.getString(R.string.karte_unklar, e.karte.typ))
+            TagSchreiber.Ergebnis.Unlesbar -> zeigeStand(a.getString(R.string.ausloeser_unlesbar))
             else -> Unit // only looked at: not this form's
         }
     }

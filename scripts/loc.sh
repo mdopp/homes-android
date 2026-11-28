@@ -95,7 +95,7 @@ budget hochladen  741  #   555 on 2026-11-04, a new package (owner): the Hochlad
 budget archiv     247  #   new package 2026-11-11 (owner's call in its PR): Share → „Ins Archiv“, a Facebook or
                        # LinkedIn export told by its structure, encrypted on the phone to the archive, uploaded as `sozial`
 budget realtime   667  #   635: the live stream and its foreground service
-budget ausloeser  2475 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
+budget ausloeser  2894 #   new package 2026-11-26 (owner approved 2026-11-26, homes ADR 0004 step 1): the phone as a
                        # trigger for HA — the touched tag's activity, the Auslöser screen (writing, naming, renaming, removing a tag;
                        # §2 owner 2026-11-26), the charger's receiver, the client;
                        # 1000 -> 1070 (owner approved 2026-11-26 „Go. Passt alles“, §4): „Was soll der Tag tun?“, the action
@@ -116,6 +116,10 @@ budget ausloeser  2475 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        #   tag held to the screen (TagInhalt.kt: Homes, WLAN read back, any record in plain words), its card
                        #   (TagInhaltAnsicht.kt), „Bearbeiten“, „Auslösen“, „Ins Telefon übernehmen“ (WlanUebernahme.kt),
                        #   and „Überschreiben“ only after one question (TagSchreiber.darf, erlauben)
+                       # 2475 -> 2894 (owner approved 2026-11-28 („Mach das. Aber zeige mir die Daten.“), a field case): every
+                       #   tag read before it counts as blank, a card with data of its own never written (TagBefund.kt), what
+                       #   reads of it without keys (TagLeser.kt: Ultralight/NTAG pages, MIFARE Classic with the public keys,
+                       #   ISO-DEP applications by name, NFC-V blocks) on the screen with „Kopieren“
 budget verbindung 247  #   235 on 2026-11-04: what the app says about its line to Homes, one answer for the
                        # notification, the start screen and the widgets (box not reachable, no network, paused)
 budget .           35  #    33: HomesConfig.kt

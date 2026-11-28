@@ -110,7 +110,13 @@ These rules apply to every session, human or agent.
   written tag held to the Auslöser screen shows what is on it first
   (`TagInhalt`, a WLAN's password behind „zeigen“, held only while the card
   is open), and nothing that holds something is written over without „Der
-  Inhalt geht verloren.“ (`TagSchreiber.darf`, `TagInhaltTest`).
+  Inhalt geht verloren.“ (`TagSchreiber.darf`, `TagInhaltTest`). A card with
+  data of its own (an access, bank or transit card) is never written or
+  formatted (owner 2026-11-28; `TagBefund`, `TagLeser`, `TagKarteTest`):
+  blank is decided only after an actual read; what reads without keys is
+  shown on the screen only (MIFARE Classic with the four public default keys
+  alone, ISO-DEP by application name, never a record or the card number),
+  never stored, sent or logged — no UID in a log.
 - Standortverlauf (the owner's call, 2026-11-02; docs/CONTRACT.md (f)):
   behind its own switch and the background-location permission,
   Android's own LocationManager delivers by PendingIntent to

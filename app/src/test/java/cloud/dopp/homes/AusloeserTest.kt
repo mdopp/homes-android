@@ -528,11 +528,9 @@ class AusloeserTest {
         assertEquals(android.view.View.VISIBLE, a.findViewById<android.view.View>(R.id.ausloeser_formular).visibility)
         assertTrue("the name asked for", a.findViewById<EditText>(R.id.ausloeser_name).hasFocus())
         assertEquals("Tag beschreiben", a.knopf().text.toString())
-        schreiber.ergebnis!!(TagSchreiber.Ergebnis.Beschrieben)
+        schreiber.ergebnis!!(TagSchreiber.Ergebnis.Unlesbar)
         shadowOf(Looper.getMainLooper()).idle()
-        assertEquals("short", "Schon beschrieben. Zum Melden die Seite schließen.", a.stand())
-        shadowOf(Looper.getMainLooper()).idleFor(5, TimeUnit.SECONDS)
-        assertEquals("and gone again", "", a.stand())
+        assertEquals("Tag nicht lesbar – halte ihn ruhig noch einmal ans Telefon.", a.stand())
         assertTrue("nothing was sent", homes.anfragen.none { it.first.startsWith("POST") })
     }
 }

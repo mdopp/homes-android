@@ -194,9 +194,34 @@ class TagBeruehrtTest {
         assertFalse("neither", TagSchreiber.leer(formatierbar = false, ndef = false, nachricht = null))
     }
 
-    private fun beruehrtLeer(formatierbar: Boolean, nachricht: NdefMessage? = null): LeerTagActivity {
-        LeerTagActivity.lesen = { LeerTagActivity.Gelesen(Bundle(), formatierbar, !formatierbar, nachricht) }
+    /** [formatierbar]: a factory-new sticker without NDEF yet, its memory read empty; else an Ndef tag with [nachricht]. */
+    private fun beruehrtLeer(formatierbar: Boolean, nachricht: NdefMessage? = null): LeerTagActivity = beruehrt(
+        if (formatierbar) {
+            cloud.dopp.homes.ausloeser.Befund(ndef = false, formatierbar = true, speicherLeer = true, karte = cloud.dopp.homes.ausloeser.Karte("NTAG213", null))
+        } else {
+            cloud.dopp.homes.ausloeser.Befund(ndef = true, nachricht = nachricht)
+        },
+    )
+
+    private fun beruehrt(b: cloud.dopp.homes.ausloeser.Befund): LeerTagActivity {
+        LeerTagActivity.lesen = { LeerTagActivity.Gelesen(Bundle(), b) }
         return Robolectric.buildActivity(LeerTagActivity::class.java, Intent(NfcAdapter.ACTION_TECH_DISCOVERED)).setup().get()
+    }
+
+    @Test
+    fun aCardWithDataOfItsOwnNeverOpensTheForm() {
+        val zugang = cloud.dopp.homes.ausloeser.Befund(
+            ndef = false, formatierbar = true, speicherLeer = false,
+            karte = cloud.dopp.homes.ausloeser.Karte("MIFARE Classic 1K", byteArrayOf(1, 2, 3, 4)),
+        )
+        val l = beruehrt(zugang)
+        assertNull("no form for it", shadowOf(l).nextStartedActivity)
+        assertEquals("Das ist keine leere NFC-Karte.", ShadowToast.getTextOfLatestToast())
+        val unklar = cloud.dopp.homes.ausloeser.Befund(ndef = false, formatierbar = true, karte = cloud.dopp.homes.ausloeser.Karte("NFC-A", null))
+        assertNull("not sure: not here either", shadowOf(beruehrt(unklar)).nextStartedActivity)
+        val unlesbar = beruehrt(cloud.dopp.homes.ausloeser.Befund(ndef = true, unlesbar = true))
+        assertNull(shadowOf(unlesbar).nextStartedActivity)
+        assertEquals("Tag nicht lesbar – halte ihn ruhig noch einmal ans Telefon.", ShadowToast.getTextOfLatestToast())
     }
 
     @Test

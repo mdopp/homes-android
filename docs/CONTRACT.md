@@ -783,9 +783,33 @@ filters nothing. The row Mehr → Auslöser is there while `/napi/kann`'s
   that holds something is never written over without one question** („Der
   Inhalt geht verloren.“): only after the yes may the next write go onto
   that tag (its id, once; forgotten when the screen goes), also while a new
-  tag or a WLAN tag waits. Nothing read leaves the phone. One the phone
-  cannot read says „Schon beschrieben. Zum Melden die Seite schließen.“ for
-  four seconds. The charger's card is as before.
+  tag or a WLAN tag waits. Nothing read leaves the phone.
+- **Blank, or a card with data of its own** (owner 2026-11-28, a field
+  case: an access card was taken for a blank sticker; `ausloeser/TagBefund.kt`,
+  `TagLeser.kt`, `TagKarteTest`). Every tag is read before anything is
+  decided, here and for a blank tag touched anywhere (`LeerTagActivity`):
+  an NDEF tag's message really read (Android's cached one is null on some
+  phones); blank only with no message or empty records. Any other card is
+  one with data of its own — „Karte mit eigenen Daten (<Typ>) – vermutlich
+  eine Zugangs-, Bank- oder Fahrkarte. Homes beschreibt sie nicht.“, no
+  button that writes or formats, ever — unless its user memory read empty
+  (a factory-new NTAG/Ultralight, a MIFARE Classic all open with a public key
+  and all zero). When its memory cannot be read, „Ist ein leerer Aufkleber
+  …“ asks first („Falls das eine Zugangskarte ist, gehen ihre Daten
+  verloren. Ist es wirklich ein leerer Aufkleber?“, „Ja, leerer Aufkleber“ /
+  „Abbrechen“). A failed read says „Tag nicht lesbar – halte ihn ruhig noch
+  einmal ans Telefon.“ The card's data is shown on the screen only („zeige
+  mir die Daten“), monospace, with „Kopieren“ (the hex, marked sensitive):
+  type, UID, size, Android's tech list; an NTAG's or Ultralight's pages; a
+  MIFARE Classic's sectors opened with the four public default keys only
+  (FFFFFFFFFFFF, A0A1A2A3A4A5, D3F7D3F7D3F7, 000000000000), the others
+  „gesperrt“; an ISO-DEP card's applications by name from the payment
+  directory or SELECT of known AIDs (girocard, Maestro, Mastercard, Visa, the
+  eID …) — never a record, so „Bankkarte: …. Die Kartennummer liest Homes
+  nicht.“; an NFC-V card's blocks; FeliCa by type. Never stored, sent or
+  logged. LeerTagActivity opens the form only for a blank tag; for a card
+  with data, or one unclear, „Das ist keine leere NFC-Karte.“ The charger's
+  card is as before.
 - **A new tag.** On the Auslöser screen: a name (the list's `vorschlaege`,
   the house's rooms from HA and a few places, as one-tap words under the
   field) → `POST /napi/ausloeser/tag {"name":"Bürotür"}` →

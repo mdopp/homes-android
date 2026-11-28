@@ -112,11 +112,12 @@ class TagInhaltTest {
     @Test
     fun onlyABlankTagOrTheOneSaidYesForIsWritten() {
         val id = byteArrayOf(4, 1, 2, 3)
-        assertTrue(TagSchreiber.darf(true, id, null))
-        assertFalse("holds something, nobody said yes", TagSchreiber.darf(false, id, null))
-        assertTrue(TagSchreiber.darf(false, id, byteArrayOf(4, 1, 2, 3)))
-        assertFalse("another tag", TagSchreiber.darf(false, id, byteArrayOf(9)))
-        assertFalse("a tag without an id is never the one", TagSchreiber.darf(false, null, id))
+        val voll = TagSchreiber.Ergebnis.Gelesen(msg(NdefRecord.createUri("https://example.org")), id)
+        assertTrue(TagSchreiber.darf(TagSchreiber.Ergebnis.Leer, id, null))
+        assertFalse("holds something, nobody said yes", TagSchreiber.darf(voll, id, null))
+        assertTrue(TagSchreiber.darf(voll, id, byteArrayOf(4, 1, 2, 3)))
+        assertFalse("another tag", TagSchreiber.darf(voll, id, byteArrayOf(9)))
+        assertFalse("a tag without an id is never the one", TagSchreiber.darf(voll, null, id))
     }
 
     @Test
