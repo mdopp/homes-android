@@ -235,11 +235,11 @@ class NapiContractTest {
                 body = setOf("name", "telefon", "mail", "anlegen", "uid"),
                 sends = setOf("ok", "kontakt", "vorname", "link", "text", "fehlt", "telefon", "neu", "error", "anlegen", "kandidaten", "uid"),
             ),
-            // Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): mdopp/homes branch feat/kontakt-einladen, not
-            // pushed yet when this was written — the contract as agreed: 200 {ok, link, text, gueltig_bis}, 403/503/502
-            // {ok: false, error}, no body. File and lines follow once Homes' handler exists.
+            // Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): mdopp/homes#397 at fa999d0, not merged yet; no body read.
             Route(
-                "POST", "/napi/kontakte/einladen", "internal/napi/ (mdopp/homes feat/kontakt-einladen, not pushed yet): the agreed contract",
+                "POST", "/napi/kontakte/einladen",
+                "internal/napi/kontakte_fragen.go:83-97, the answer :96, registered :50 (module kontakte); refusals {ok:false,error} " +
+                    "sagNein (ausloeser.go:109): darf :63-80 (403 :71, :73; 503 :75), 503 :92",
                 sends = setOf("ok", "link", "text", "gueltig_bis", "error"),
             ),
             // Kontakt prüfen lassen (owner 2026-11-07 and 2026-11-08; mdopp/homes feat/kontakt-v2, homes#304; registered korrekturen.go:101-107, napi.go:329)

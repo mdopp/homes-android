@@ -1038,9 +1038,8 @@ module is on, and while that is unknown; Homes names no `teilen` key for it) tak
 ## (m) Kontaktdaten eintragen lassen: a one-time link over NFC or QR
 
 (The owner's request, 2026-11-28: „eine URL, in der die Person ihre
-Kontaktdaten eintragen kann“. Homes' side is being built in mdopp/homes
-branch `feat/kontakt-einladen`; the row in `NapiContractTest` is the agreed
-contract until its handler exists, then its file and lines.) „Teilen“'s row
+Kontaktdaten eintragen kann“. Homes' side is mdopp/homes#397,
+`internal/napi/kontakte_fragen.go` `einladen`, admins only.) „Teilen“'s row
 „Kontaktdaten eintragen lassen“ is there while the phone is paired and
 `/napi/kann`'s `kontakte` module is on (or that is unknown); who may use it
 Homes decides.
