@@ -41,7 +41,7 @@ budget sicherung 3880  # 3,031: Daten sichern — backups, contacts, SMS and cal
                        # 3680 -> 3880 (owner's request 2026-11-14: „Build the sealed-archive path for the phone's WhatsApp and Signal
                        #   backups“, archiv#64): WhatsApp and Signal age-encrypted for the archive while read, from any offset with
                        #   the kept randomness (Age.ab, Age.Umschlag, Uploader.Inhalt), a part of a forgotten encryption left alone
-budget ui        3929  # 3,026: the activities: start screen, pairing, settings screens;
+budget ui        3940  # 3,026: the activities: start screen, pairing, settings screens;
                        # 3177 -> 3200 (owner-approved, homes ADR 0001 plan): the traces and „Hier anfordern“ on the start screen, homes-android#231;
                        # 3200 -> 3220: a trace says what sharing to it would do, homes-android#232;
                        # 3220 -> 3320: the account's and the backup's missing parts as disabled switches with their trace, homes-android#233
@@ -56,6 +56,8 @@ budget ui        3929  # 3,026: the activities: start screen, pairing, settings 
                        #   seen once opened; Jetzt reads a card's achtung instead of guessing from its words (net)
                        # 3912 -> 3929 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): „Dieses
                        #   Telefon“'s rows for Teilen per Berührung (Was teilen?, Meine Visitenkarte, Behaltene Tags)
+                       # 3929 -> 3940 (owner 2026-11-28 „Die Version bitte weiterhin in der App anzeigen.“): the start
+                       #   screen's last line, „Version … · gekoppelt mit …“
 budget data      3364  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;

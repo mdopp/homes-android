@@ -433,5 +433,15 @@
 
         </LinearLayout>
 
+        <!-- The owner, 2026-11-28: „Die Version bitte weiterhin in der App anzeigen.“ One quiet line at the
+             bottom, paired or not; „Dieses Telefon“ keeps the pairing's details. -->
+        <TextView
+            android:id="@+id/home_version"
+            style="@style/Text.Homes.Label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:gravity="center" />
+
     </LinearLayout>
 </ScrollView>

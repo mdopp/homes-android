@@ -244,6 +244,16 @@ class StartNeuTest {
     }
 
     @Test
+    fun theVersionIsTheStartScreensLastLine() {
+        val v = start().findViewById<TextView>(R.id.home_version)
+        assertTrue(v.text.toString(), v.text.startsWith("Version ") && v.text.endsWith(" · gekoppelt mit homes.example"))
+        TokenStore.clear(ctx())
+        ServerStore.clear(ctx())
+        val los = start().findViewById<TextView>(R.id.home_version).text.toString()
+        assertTrue(los, los.startsWith("Version ") && los.endsWith(" · nicht gekoppelt"))
+    }
+
+    @Test
     fun thePagePairsAndShowsTheVersion() {
         val t = Robolectric.buildActivity(TelefonActivity::class.java).setup().get()
         assertEquals("Gekoppelt mit homes.example", t.findViewById<TextView>(R.id.status).text.toString())
