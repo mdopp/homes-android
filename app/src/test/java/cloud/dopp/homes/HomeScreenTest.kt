@@ -291,7 +291,7 @@ class HomeScreenTest {
         val row = geraet.getChildAt(0)
         assertTrue("a tap places it", row.hasOnClickListeners())
         assertTrue("48 dp to tap", row.minimumHeight >= (48 * ctx().resources.displayMetrics.density).toInt())
-        assertEquals("not a card", null, row.background?.takeIf { it is android.graphics.drawable.GradientDrawable })
+        assertNull("not a card", row.background)
     }
 
     /** No tool offered and the exemption granted: „Widget hinzufügen“ is gone, the version stays last. */

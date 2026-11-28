@@ -19,6 +19,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
 import cloud.dopp.homes.HomesConfig
 import cloud.dopp.homes.R
@@ -447,7 +448,7 @@ class HomeActivity : AppCompatActivity() {
         ) { key, m ->
             if (!StartAngebot.widget(key) || key == KannKey.GERAET) null else kept.firstOrNull { KannKey.TOOL + it.id == key }?.label ?: m.titel
         }
-        val tools = group.childCount > 0
+        val tools = group.isNotEmpty()
         listOf(R.id.widgets_titel, R.id.widgets_hinweis, R.id.widgets_group).forEach { findViewById<View>(it).isVisible = tools }
         findViewById<View>(R.id.widgets_card).isVisible = tools || findViewById<View>(R.id.live_row).isVisible
     }
