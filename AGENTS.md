@@ -71,7 +71,9 @@ These rules apply to every session, human or agent.
   phone unlocked (`@xml/apduservice`). It listens whenever the phone is
   unlocked (owner approved 2026-11-28) but answers only after an explicit
   choice: the WLAN offer while its screen is in front, or „Teilen per
-  Berührung“'s [NFC] once, for at most two minutes, while „Teilen“ is in front; else 6A82, and a reader asking
+  Berührung“'s [NFC] once, for at most two minutes, while „Teilen“ or „Was teilen?“ is in front —
+  or, with „Bei Berührung Kontakt austauschen“ on (owner 2026-11-28, on by default), the link of the
+  session a touch just started, once, within two minutes, with the screen on; else 6A82, and a reader asking
   then only makes it post that question. Recovery after a killed process rests
   on the battery-optimization exemption the person grants. `ManifestTest`
   holds this; `e2e/` proves it on emulators (`.github/workflows/live-e2e.yml`).
@@ -156,7 +158,13 @@ These rules apply to every session, human or agent.
   two minutes while the screen is in front, in the row („Geteilt.“ /
   „Abgelaufen.“); [QR] shows the code full-screen at full brightness (vCard,
   `WIFI:`, the link; off, with the reason, for a tag without one). A row not
-  set up says „Festlegen“. The card, the guest Wi-Fi and the kept tags are
+  set up says „Festlegen“. First comes „Kontakt austauschen“ (owner approved
+  2026-11-28; docs/CONTRACT.md (n)): a session on Homes whose link the other
+  phone opens — by [NFC], [QR] or a touch while nothing is armed and „Bei
+  Berührung Kontakt austauschen“ is on (the link alone shows only the first
+  name) — and „Was teilen?“ (`teilen/AustauschActivity.kt`) releases
+  exactly the switched fields of the card, the guest Wi-Fi, the form; the
+  page follows. The card, the guest Wi-Fi and the kept tags are
   encrypted with a Keystore AES-GCM key (`teilen/Tresor.kt`, not
   EncryptedSharedPreferences), on this phone only: never sent, backed up or
   logged (`TeilenTest`).

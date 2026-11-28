@@ -157,6 +157,7 @@ class TeilenTest {
 
     @Test
     fun theQuestionComesAtMostEvery30Seconds() {
+        Teilen.zuletzt = 0 // another test may have asked already
         assertTrue(Teilen.fragt(1_000, 0))
         assertFalse(Teilen.fragt(30_999, 1_000))
         assertTrue(Teilen.fragt(31_000, 1_000))
@@ -189,7 +190,7 @@ class TeilenTest {
     fun theCardIsAVcard30OfTheTickedFields() {
         val v = Visitenkarte.vcard(anna, setOf(Visitenkarte.Feld.NAME, Visitenkarte.Feld.TELEFON, Visitenkarte.Feld.FIRMA))
         assertEquals(
-            "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Anna Muster\r\nN:Muster;Anna;;;\r\nTEL;TYPE=CELL:+49 30 1234\r\nORG:Muster\\; GmbH\r\nEND:VCARD\r\n",
+            "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Anna Muster\r\nN:Muster;Anna;;;\r\nTEL;TYPE=VOICE:+49 30 1234\r\nORG:Muster\\; GmbH\r\nEND:VCARD\r\n",
             v,
         )
         assertFalse("not ticked: not in it", v.contains("anna@example.org") || v.contains("Hauptstr"))
@@ -201,13 +202,33 @@ class TeilenTest {
 
     @Test
     fun aContactFromItsRows() {
+        val z = Visitenkarte::Zeile
         val k = Visitenkarte.kontakt(
             listOf(
-                "vnd.android.cursor.item/name" to "Anna Muster", "vnd.android.cursor.item/phone_v2" to "+49 30 1234",
-                "vnd.android.cursor.item/phone_v2" to "+49 30 9999", "vnd.android.cursor.item/email_v2" to "anna@example.org",
+                z("vnd.android.cursor.item/name", "Anna Muster", 0), z("vnd.android.cursor.item/phone_v2", "+49 30 1234", 1),
+                z("vnd.android.cursor.item/phone_v2", "+49 170 9999", 2), z("vnd.android.cursor.item/email_v2", "anna@example.org", 0),
+                z("vnd.android.cursor.item/contact_event", "1990-04-01", 3), z("vnd.android.cursor.item/contact_event", "2015-06-01", 1),
             ),
         )
-        assertEquals(Visitenkarte.Kontakt("Anna Muster", "+49 30 1234", "anna@example.org", null, null), k)
+        assertEquals(Visitenkarte.Kontakt("Anna Muster", "+49 30 1234", "anna@example.org", null, null, mobil = "+49 170 9999", geburtstag = "1990-04-01"), k)
+    }
+
+    @Test
+    fun theCardIsReadBackForTheExchange() {
+        val k = anna.copy(mobil = "+49 170 9999", geburtstag = "--04-01")
+        val (vorname, felder) = Visitenkarte.lesen(Visitenkarte.vcard(k, Visitenkarte.Feld.entries.toSet()))
+        assertEquals("Anna", vorname)
+        assertEquals(
+            mapOf(
+                Visitenkarte.Feld.NAME to "Anna Muster", Visitenkarte.Feld.MOBIL to "+49 170 9999", Visitenkarte.Feld.TELEFON to "+49 30 1234",
+                Visitenkarte.Feld.MAIL to "anna@example.org", Visitenkarte.Feld.ADRESSE to "Hauptstr. 1, 10115 Berlin",
+                Visitenkarte.Feld.GEBURTSTAG to "--04-01", Visitenkarte.Feld.FIRMA to "Muster; GmbH",
+            ),
+            felder,
+        )
+        val ohneName = Visitenkarte.lesen(Visitenkarte.vcard(k, setOf(Visitenkarte.Feld.MAIL)))
+        assertNull("no name ticked: none", ohneName.first)
+        assertEquals(mapOf(Visitenkarte.Feld.MAIL to "anna@example.org"), ohneName.second)
     }
 
     @Test

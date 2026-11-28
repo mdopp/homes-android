@@ -40,11 +40,15 @@
     <string name="karte_hinweis">Wähle dich selbst aus deinen Kontakten und hake an, was du teilen willst. Die Karte bleibt auf diesem Telefon.</string>
     <string name="karte_waehlen">Kontakt wählen</string>
     <string name="karte_feld_name">Name: %1$s</string>
+    <string name="karte_feld_mobil">Mobil: %1$s</string>
+    <string name="karte_feld_geburtstag">Geburtstag: %1$s</string>
     <string name="karte_feld_telefon">Telefon: %1$s</string>
     <string name="karte_feld_mail">Mail: %1$s</string>
     <string name="karte_feld_adresse">Adresse: %1$s</string>
     <string name="karte_feld_firma">Firma: %1$s</string>
     <string name="karte_feld_name_leer">Name</string>
+    <string name="karte_feld_mobil_leer">Mobil</string>
+    <string name="karte_feld_geburtstag_leer">Geburtstag</string>
     <string name="karte_feld_telefon_leer">Telefon</string>
     <string name="karte_feld_mail_leer">Mail</string>
     <string name="karte_feld_adresse_leer">Adresse</string>
@@ -80,4 +84,30 @@
     <string name="einladen_zeit">Homes hat nicht rechtzeitig geantwortet. Bitte gleich noch einmal tippen.</string>
     <string name="einladen_offline">Homes ist gerade nicht erreichbar. Bitte später noch einmal, im WLAN zu Hause oder mit Netz.</string>
     <string name="einladen_unlesbar">Homes hat nicht lesbar geantwortet (%1$d). Bitte später noch einmal.</string>
+
+    <string name="austausch_titel">Kontakt austauschen</string>
+    <string name="austausch_unter">Ein Link: das andere Telefon sieht, was du freigibst, und kann seins eintragen</string>
+    <string name="austausch_beruehrung">Bei Berührung Kontakt austauschen</string>
+    <string name="austausch_frage">Was teilen?</string>
+    <string name="austausch_startet">Homes macht den Link …</string>
+    <string name="austausch_vorname">Dein Vorname steht immer da: %1$s</string>
+    <string name="austausch_vorname_login">Dein Vorname steht immer da.</string>
+    <string name="austausch_karte">Meine Kontaktkarte</string>
+    <string name="austausch_eintragen">Seine Kontaktdaten eintragen lassen</string>
+    <string name="austausch_freigeben">Freigeben</string>
+    <string name="austausch_gibt_frei">Gibt frei …</string>
+    <string name="austausch_freigegeben">Freigegeben. Die Seite zeigt es jetzt.</string>
+    <string name="austausch_beenden">Beenden</string>
+    <string name="austausch_beendet">Beendet. Die Seite sagt es dem anderen Telefon.</string>
+    <string name="austausch_vorbei">Dieses Teilen ist vorbei.</string>
+    <string name="austausch_bereit">Link bereit</string>
+    <string name="austausch_geteilt">Link geteilt</string>
+    <string name="austausch_geoeffnet">Seite geöffnet</string>
+    <string name="austausch_eingetragen">hat eingetragen</string>
+    <string name="austausch_nfc_nochmal">Per NFC</string>
+    <string name="austausch_qr_nochmal">QR-Code zeigen</string>
+    <string name="austausch_karte_festlegen">Meine Visitenkarte festlegen …</string>
+    <string name="austausch_nachname">Nachname: %1$s</string>
+    <string name="austausch_wlan">Gast-WLAN „%1$s“</string>
+    <string name="austausch_beruehrt">Kontakt austauschen: Was teilen?</string>
 </resources>

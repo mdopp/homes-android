@@ -235,13 +235,28 @@ class NapiContractTest {
                 body = setOf("name", "telefon", "mail", "anlegen", "uid"),
                 sends = setOf("ok", "kontakt", "vorname", "link", "text", "fehlt", "telefon", "neu", "error", "anlegen", "kandidaten", "uid"),
             ),
-            // Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): mdopp/homes#397 at fa999d0, not merged yet; no body read.
+            // Teilen → „Kontaktdaten eintragen lassen“ (owner 2026-11-28): mdopp/homes main at f4f7575, the merge of #397; no body read.
             Route(
                 "POST", "/napi/kontakte/einladen",
                 "internal/napi/kontakte_fragen.go:83-97, the answer :96, registered :50 (module kontakte); refusals {ok:false,error} " +
                     "sagNein (ausloeser.go:109): darf :63-80 (403 :71, :73; 503 :75), 503 :92",
                 sends = setOf("ok", "link", "text", "gueltig_bis", "error"),
             ),
+            // Kontakt austauschen (owner 2026-11-28): mdopp/homes#398 at 1a55a21, not merged yet; registered teilen.go:45-48
+            // (module kontakte); refusals {ok:false,error} teilenNein :70-88 (404, 410, 400, 429 + Retry-After), person :52-67 (403, 503).
+            Route(
+                "POST", "/napi/teilen", "internal/napi/teilen.go:101-117, the body :106-109, the answer :116",
+                body = setOf("vorname"), sends = setOf("ok", "id", "link", "gueltig_bis", "error"),
+            ),
+            Route(
+                "PUT", "/napi/teilen/{id}", "internal/napi/teilen.go:127-174, the body :120-125 (karte, wlan internal/teilen/teilen.go:53-68), 403 eintragen :150",
+                body = setOf("vorname", "karte", "wlan", "eintragen"), sends = setOf("ok", "error"),
+            ),
+            Route(
+                "GET", "/napi/teilen/{id}", "internal/napi/teilen.go:176-192, the answer :191",
+                sends = setOf("ok", "geoeffnet", "eingetragen", "gueltig_bis", "error"),
+            ),
+            Route("DELETE", "/napi/teilen/{id}", "internal/napi/teilen.go:194-205", sends = setOf("ok", "error")),
             // Kontakt prüfen lassen (owner 2026-11-07 and 2026-11-08; mdopp/homes feat/kontakt-v2, homes#304; registered korrekturen.go:101-107, napi.go:329)
             Route(
                 "GET", "/napi/kontakte/korrekturen",
@@ -452,7 +467,7 @@ class NapiContractTest {
             "POST /napi/merken",
             "GET /napi/sicherung/stand", "POST /napi/sicherung/fehlend", "POST /napi/sicherung/uploads",
             "HEAD /napi/sicherung/uploads/{id}", "PATCH /napi/sicherung/uploads/{id}",
-            "GET /napi/sicherung/schluessel", "POST /napi/kontakte", "POST /napi/kontakte/fragen", "POST /napi/kontakte/einladen",
+            "GET /napi/sicherung/schluessel", "POST /napi/kontakte", "POST /napi/kontakte/fragen", "POST /napi/kontakte/einladen", "POST /napi/teilen", "PUT /napi/teilen/{id}", "GET /napi/teilen/{id}", "DELETE /napi/teilen/{id}",
             "GET /napi/sicherung/letzte", "GET /napi/sicherung/letzte/{quelle}/{pfad...}",
             "GET /napi/standort", "POST /napi/standort",
             "POST /napi/standort/import", "HEAD /napi/standort/import/{id}",
@@ -497,6 +512,8 @@ class NapiContractTest {
             "app/src/main/java/cloud/dopp/homes/ausloeser/AusloeserClient.kt",
             "app/src/main/java/cloud/dopp/homes/fragen/FragenClient.kt",
             "app/src/main/java/cloud/dopp/homes/teilen/EinladenClient.kt",
+            "app/src/main/java/cloud/dopp/homes/teilen/AustauschClient.kt",
+            "app/src/main/java/cloud/dopp/homes/teilen/Austausch.kt",
         )
 
         private val literal = Regex(""""((?:[^"\\]|\\.)*)"""")

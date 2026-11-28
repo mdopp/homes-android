@@ -65,7 +65,7 @@ budget ui        4050  # 3,026: the activities: start screen, pairing, settings 
                        # 4029 -> 4043 (owner approved 2026-11-28 (Gerät-Widget oben)): „+ Gerät als Widget …“ atop „Deine Geräte“,
                        #   „Widget hinzufügen“ only for tools, gone without one; the „Dokumente-Adresse“ tile gone (net)
                        # 4043 -> 4050 (owner's request 2026-11-28 (Teilen: WLAN und Einladen), owner approved 2026-11-28 „Passt“): „Dieses Telefon“'s Gast-WLAN row, the start screen's „Teilen“ tile
-budget data      3410  # 2,780: Homes' calls (Napi), clients, models, the token store;
+budget data      3470  # 2,780: Homes' calls (Napi), clients, models, the token store;
                        # 2919 -> 2940 (owner-approved, homes ADR 0001 plan): /napi/kann and its client, homes-android#231;
                        # 2940 -> 2950 (owner, 2026-11-04: the Hochladen job): POST /napi/musik and the musik share key;
                        # 2950 -> 3007 (owner-approved 2026-11-05: writable Homes-Konto): the four write endpoints, If-Match,
@@ -91,6 +91,7 @@ budget data      3410  # 2,780: Homes' calls (Napi), clients, models, the token 
                        # 3364 -> 3394 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“):
                        #   POST /napi/kontakte/fragen, its reply shape and the share key kontakt-fragen
                        # 3394 -> 3410 (owner's request 2026-11-28 (Teilen: WLAN und Einladen), owner approved 2026-11-28 „Passt“): POST /napi/kontakte/einladen and its reply shape
+                       # 3410 -> 3470 (owner's request 2026-11-28 (Kontakt austauschen), owner approved 2026-11-28 „Ja“): the four /napi/teilen calls, their reply shapes and the karte and wlan field names
 budget konto     1726  # 1,242: das Homes-Konto, the sync adapters for contacts and calendars;
                        # 1304 -> 1632 (owner-approved 2026-11-05: writable Homes-Konto): the phone's changes sent before
                        #   each pull, the iCalendar writer, alarms, EXDATE, exceptions and versions in the reader
@@ -141,10 +142,13 @@ budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        # 3246 -> 3329 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“), Teilen per Berührung): the service
                        #   listens while unlocked and asks when read with nothing chosen, an offer answered once
                        #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
-budget teilen     904  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
+budget teilen     1566  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
                        # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
                        # 530 -> 904 (owner's request 2026-11-28 (Teilen: WLAN und Einladen), owner approved 2026-11-28 „Passt“): „Teilen“ as one row per topic with NFC and QR in place (TeilenActivity),
                        #   the guest Wi-Fi's form (GastWlanActivity), the invitation link's client (EinladenClient), a kept tag's QR
+                       # 904 -> 1566 (owner's request 2026-11-28 (Kontakt austauschen), owner approved 2026-11-28 „Ja“): „Was teilen?“ (AustauschActivity), the session's client and state
+                       #   (AustauschClient, Austausch), the touch that starts one (Teilen), the offer and the QR code shared (Anbieten),
+                       #   Mobil and Geburtstag on the card and the card read back (Visitenkarte)
 budget fragen     442  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“): Share →
                        # „Homes: Daten erfragen“ — a shared vCard read (2.1 quoted-printable, 3.0), the contact looked for on Homes,
                        # the link sent by WhatsApp, SMS or any app
