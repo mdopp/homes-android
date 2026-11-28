@@ -142,7 +142,7 @@ budget ausloeser  3329 #   new package 2026-11-26 (owner approved 2026-11-26, ho
                        # 3246 -> 3329 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“), Teilen per Berührung): the service
                        #   listens while unlocked and asks when read with nothing chosen, an offer answered once
                        #   (Typ4Tag.gelesen, WlanAngebot.einmal), „Im Telefon behalten“ on the Tag-Inhalt card
-budget teilen     1630  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
+budget teilen     1745  #   new package 2026-11-28 (owner approved 2026-11-28 („Ja, aber auch Karten die ich ausgelesen habe“)): Teilen per Berührung — the
                        # question, „Was teilen?“, Meine Visitenkarte, Behaltene Tags, the Keystore Tresor, vCard and QR
                        # 530 -> 904 (owner's request 2026-11-28 (Teilen: WLAN und Einladen), owner approved 2026-11-28 „Passt“): „Teilen“ as one row per topic with NFC and QR in place (TeilenActivity),
                        #   the guest Wi-Fi's form (GastWlanActivity), the invitation link's client (EinladenClient), a kept tag's QR
@@ -151,6 +151,9 @@ budget teilen     1630  #   new package 2026-11-28 (owner approved 2026-11-28 (�
                        #   Mobil and Geburtstag on the card and the card read back (Visitenkarte)
                        # 1566 -> 1630 (owner approved 2026-11-28 (Was teilen? vorne öffnen)): the foreground tracker (Vorne) and
                        #   the touch's „Was teilen?“ opened at once while a screen of the app is in front (Teilen)
+                       # 1630 -> 1745 (field failure 2026-11-28 (Was teilen? erschien nicht) — the raise to be OK'd in the PR): „Was teilen?“
+                       #   started on the touch from the bound HCE service, waiting for its session; the notification only as the
+                       #   fallback, on a new channel, until answered or over; a stale session no longer blocks a touch (Teilen, Austausch)
 budget fragen     442  #   new package 2026-11-28 (owner's request 2026-11-28 (Kontakte fragen), owner approved 2026-11-28 „Ja zu allen“): Share →
                        # „Homes: Daten erfragen“ — a shared vCard read (2.1 quoted-printable, 3.0), the contact looked for on Homes,
                        # the link sent by WhatsApp, SMS or any app

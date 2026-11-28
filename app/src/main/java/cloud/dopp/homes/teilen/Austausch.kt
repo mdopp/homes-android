@@ -27,6 +27,22 @@ object Austausch {
     @Volatile
     var jetzt: Sitzung? = null
 
+    /** A touch's session is being started ([Teilen]); cleared on the main thread once Homes answered. */
+    @Volatile
+    var startet = false
+
+    /** Why the last touch's session did not start, for the „Was teilen?“ it opened; null: it did. */
+    @Volatile
+    var gescheitert: AustauschClient.Antwort? = null
+
+    /** „Was teilen?“ waiting for a touch's session, told on the main thread when Homes answered. */
+    var wennGestartet: ((AustauschClient.Antwort) -> Unit)? = null
+
+    /** A session whose time is up is none (field failure 2026-11-28: a stale one must not block the next touch). */
+    fun aufraeumen(ms: Long = System.currentTimeMillis()) {
+        if (jetzt?.let { AustauschActivity.abgelaufen(it.bis, ms) } == true) jetzt = null
+    }
+
     /** The line to Homes; replaced in tests. */
     @VisibleForTesting
     var http: OkHttpClient? = null
